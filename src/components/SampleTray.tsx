@@ -29,6 +29,9 @@ export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
             onDragStart={(e) => {
               e.dataTransfer.setData(SAMPLE_DRAG_TYPE, s.id);
               e.dataTransfer.effectAllowed = "copy";
+              // Drag preview: just the picture, centred on the cursor.
+              const img = e.currentTarget.querySelector("img");
+              if (img) e.dataTransfer.setDragImage(img, img.width / 2, img.height / 2);
             }}
             onClick={() => void pipeline.spawn(s.url, CLICK_DROP.x, CLICK_DROP.y, s.caption)}
           >
