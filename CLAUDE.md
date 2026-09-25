@@ -16,9 +16,11 @@ A browser demo: a car drives along a top-down scrolling road. The user drags ima
 
 <!-- Fill in once the project is scaffolded -->
 
-- Dev:
-- Build:
-- Deploy:
+- Dev: `pnpm dev` (Vite + Worker in workerd via `@cloudflare/vite-plugin`)
+- Build: `pnpm build` (type check + Vite build of client and Worker)
+- Check: `pnpm typecheck`, `pnpm lint`
+- Deploy: `pnpm deploy`
+- Package manager: pnpm. TypeScript is pinned to 6.0.x because typescript-eslint doesn't support 7 yet.
 
 ## Rules
 
