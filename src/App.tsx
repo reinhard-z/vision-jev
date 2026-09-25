@@ -25,7 +25,7 @@ export function App() {
         <SpeedControl game={game} />
       </header>
       <main className="layout">
-        <SampleTray pipeline={pipeline} />
+        <SampleTray />
         <RoadCanvas game={game} pipeline={pipeline} />
         <ThoughtsPanel game={game} />
       </main>

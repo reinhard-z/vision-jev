@@ -118,7 +118,8 @@ h2 {
   cursor: grab;
 }
 
-.sample:hover {
+.sample:hover,
+.sample:active {
   border-color: var(--accent);
 }
 
@@ -127,15 +128,6 @@ h2 {
   height: 48px;
 }
 
-.upload {
-  width: 100%;
-  padding: 8px;
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px dashed var(--muted);
-  border-radius: 8px;
-  cursor: pointer;
-}
 
 /* Road */
 
@@ -374,10 +366,6 @@ h2 {
   }
   .tray-grid {
     grid-template-columns: 1fr;
-  }
-  .upload {
-    font-size: 11px;
-    padding: 6px 2px;
   }
   .thoughts {
     grid-column: 1 / -1;
