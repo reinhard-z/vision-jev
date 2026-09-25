@@ -344,18 +344,43 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 1000px) {
+/* The tray stays a side column at every width; it just gets narrower. */
+@media (max-width: 1100px) {
   .layout {
+    grid-template-columns: 160px 420px minmax(220px, 1fr);
+  }
+  .tray-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .app {
+    height: auto;
+    min-height: 100vh;
+  }
+  .layout {
+    grid-template-columns: 84px minmax(0, 420px);
+    grid-template-rows: 75vh auto;
+    justify-content: center;
+  }
+  .tray {
+    grid-row: 1;
+    padding: 8px 6px;
+  }
+  .tray h2,
+  .tray .hint {
+    display: none;
+  }
+  .tray-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 70vh auto;
   }
-  .road {
-    justify-self: center;
-    width: 420px;
-    max-width: 100%;
+  .upload {
+    font-size: 11px;
+    padding: 6px 2px;
   }
-  .tray,
   .thoughts {
+    grid-column: 1 / -1;
     border: 0;
   }
 }
