@@ -46,7 +46,7 @@ export function SampleTray() {
             key={s.id}
             className="sample"
             draggable
-            title={s.caption ?? s.label}
+            title={s.label}
             onDragStart={(e) => {
               setSampleDragData(e.dataTransfer, s);
               e.dataTransfer.effectAllowed = "copy";

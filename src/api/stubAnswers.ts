@@ -1,4 +1,4 @@
-// STAGE 1 ONLY. Hand-written fake answers so every behavior can be exercised
+// STAGES 1–2 ONLY. Hand-written fake answers so every behavior can be exercised
 // before Jev is wired up. Deleted in stage 3.
 import type {
   Action,
@@ -22,28 +22,29 @@ interface Canned {
 
 const onRoad = (road: Action): Canned["action"] => ({ road, sidewalk: "continue" });
 
-// Keyed by the placeholder captions in src/samples.ts.
+// Keyed by sample id (src/samples.ts), not by caption, so behaviors stay
+// testable whatever the vision model says.
 const CANNED: Record<string, Canned> = {
-  "a small child in a red jacket standing": { category: "person", action: onRoad("stop"), couldBePerson: 0.97 },
-  "an adult man walking across the street": { category: "person", action: onRoad("stop"), couldBePerson: 0.95 },
+  child: { category: "person", action: onRoad("stop"), couldBePerson: 0.97 },
+  adult: { category: "person", action: onRoad("stop"), couldBePerson: 0.95 },
   // Low-confidence obstacle; on the road the safety override kicks in.
-  "a teddy bear lying on the ground": { category: "obstacle", action: onRoad("slow_down"), couldBePerson: 0.34, confidence: 0.55 },
-  "a brown dog standing on the pavement": { category: "animal", action: { road: "stop", sidewalk: "slow_down" }, couldBePerson: 0.03 },
-  "a grey cat sitting": { category: "animal", action: onRoad("stop"), couldBePerson: 0.02 },
-  "a bicycle": { category: "vehicle", action: onRoad("stop"), couldBePerson: 0.12 },
-  "a red car parked": { category: "vehicle", action: onRoad("stop"), couldBePerson: 0.01 },
-  "a red octagonal stop sign": { category: "stop_sign", action: "stop", couldBePerson: 0.01 },
-  "a traffic light with the red lamp lit": { category: "traffic_light", action: "stop", light: "red", couldBePerson: 0.01 },
-  "a traffic light with the amber lamp lit": { category: "traffic_light", action: "slow_down", light: "amber", couldBePerson: 0.01 },
-  "a traffic light with the green lamp lit": { category: "traffic_light", action: "continue", light: "green", couldBePerson: 0.01 },
-  "a round speed limit sign showing 30": { category: "speed_limit_sign", action: "continue", limit: "30", couldBePerson: 0.01 },
-  "a round speed limit sign showing 80": { category: "speed_limit_sign", action: "continue", limit: "80", couldBePerson: 0.01 },
-  "a cardboard box": { category: "obstacle", action: onRoad("slow_down"), couldBePerson: 0.02 },
-  "a plastic shopping bag": { category: "harmless_debris", action: "continue", couldBePerson: 0.01 },
-  "a pile of dry autumn leaves": { category: "harmless_debris", action: "continue", couldBePerson: 0.01 },
+  teddy: { category: "obstacle", action: onRoad("slow_down"), couldBePerson: 0.34, confidence: 0.55 },
+  dog: { category: "animal", action: { road: "stop", sidewalk: "slow_down" }, couldBePerson: 0.03 },
+  cat: { category: "animal", action: onRoad("stop"), couldBePerson: 0.02 },
+  bicycle: { category: "vehicle", action: onRoad("stop"), couldBePerson: 0.12 },
+  car: { category: "vehicle", action: onRoad("stop"), couldBePerson: 0.01 },
+  stop: { category: "stop_sign", action: "stop", couldBePerson: 0.01 },
+  red: { category: "traffic_light", action: "stop", light: "red", couldBePerson: 0.01 },
+  amber: { category: "traffic_light", action: "slow_down", light: "amber", couldBePerson: 0.01 },
+  green: { category: "traffic_light", action: "continue", light: "green", couldBePerson: 0.01 },
+  limit30: { category: "speed_limit_sign", action: "continue", limit: "30", couldBePerson: 0.01 },
+  limit80: { category: "speed_limit_sign", action: "continue", limit: "80", couldBePerson: 0.01 },
+  box: { category: "obstacle", action: onRoad("slow_down"), couldBePerson: 0.02 },
+  bag: { category: "harmless_debris", action: "continue", couldBePerson: 0.01 },
+  leaves: { category: "harmless_debris", action: "continue", couldBePerson: 0.01 },
 };
 
-// Anything else (e.g. the user's own files before stage 2 captions them).
+// Anything else: the user's own images and files dropped onto the road.
 const FALLBACK: Canned = { category: "unclear", action: onRoad("stop"), couldBePerson: 0.15, confidence: 0.4 };
 
 function choice<T extends string>(labels: readonly T[], pick: T, confidence: number): ChoiceAnswer<T> {
@@ -52,8 +53,8 @@ function choice<T extends string>(labels: readonly T[], pick: T, confidence: num
   return { choice: pick, confidence, probabilities };
 }
 
-export function cannedAnswer(req: DecideRequest, latencyMs: number): DecideResponse {
-  const c = CANNED[req.caption] ?? FALLBACK;
+export function cannedAnswer(req: DecideRequest, sampleId: string | undefined, latencyMs: number): DecideResponse {
+  const c = (sampleId !== undefined ? CANNED[sampleId] : undefined) ?? FALLBACK;
   const conf = c.confidence ?? 0.9;
   const action = typeof c.action === "string" ? c.action : c.action[req.zone];
   return {
