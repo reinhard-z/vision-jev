@@ -1,3 +1,34 @@
+import { useEffect, useState } from "react";
+import { RoadCanvas } from "./components/RoadCanvas";
+import { SampleTray } from "./components/SampleTray";
+import { SpeedControl } from "./components/SpeedControl";
+import { ThoughtsPanel } from "./components/ThoughtsPanel";
+import { Game } from "./game/engine";
+import { Pipeline } from "./pipeline";
+
 export function App() {
-  return <h1>Jev Driver</h1>;
+  const [game] = useState(() => new Game());
+  const [pipeline] = useState(() => new Pipeline(game));
+
+  useEffect(() => {
+    // Dev-only handle for poking at the game from the console.
+    if (import.meta.env.DEV) (window as unknown as { __jev: unknown }).__jev = { game, pipeline };
+    return pipeline.attach();
+  }, [game, pipeline]);
+
+  return (
+    <div className="app">
+      <header className="topbar">
+        <h1>
+          Jev Driver <span>a toy, not a self-driving car</span>
+        </h1>
+        <SpeedControl game={game} />
+      </header>
+      <main className="layout">
+        <SampleTray pipeline={pipeline} />
+        <RoadCanvas game={game} pipeline={pipeline} />
+        <ThoughtsPanel game={game} />
+      </main>
+    </div>
+  );
 }
