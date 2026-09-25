@@ -123,6 +123,53 @@ h2 {
   border-color: var(--accent);
 }
 
+.sample span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sample {
+  position: relative;
+}
+
+.sample-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.sample-remove:hover {
+  background: var(--stop);
+}
+
+.upload {
+  width: 100%;
+  padding: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px dashed var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tray-file-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+  background: rgba(91, 141, 239, 0.08);
+}
+
 .sample img {
   width: 48px;
   height: 48px;
@@ -366,6 +413,10 @@ h2 {
   }
   .tray-grid {
     grid-template-columns: 1fr;
+  }
+  .upload {
+    font-size: 11px;
+    padding: 6px 2px;
   }
   .thoughts {
     grid-column: 1 / -1;

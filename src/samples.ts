@@ -5,8 +5,11 @@
 export interface Sample {
   id: string;
   label: string;
-  caption: string;
+  /** Known caption (placeholders only). User images get captioned by vision. */
+  caption?: string;
   url: string;
+  /** Added by the user this session; can be removed from the tray. */
+  own?: boolean;
 }
 
 const svg = (body: string, bg = "#f4f1ea") =>
@@ -61,8 +64,37 @@ export const SAMPLES: Sample[] = [
   { id: "leaves", label: "Leaves", caption: "a pile of dry autumn leaves", url: emoji("🍂") },
 ];
 
-export const SAMPLE_DRAG_TYPE = "application/x-jev-sample";
+// Drag payload from the tray to the road: the image and its known caption.
+const SAMPLE_DRAG_TYPE = "application/x-jev-sample";
 
-export function findSample(id: string): Sample | undefined {
-  return SAMPLES.find((s) => s.id === id);
+type DragPayload = Pick<Sample, "url" | "caption">;
+
+export function setSampleDragData(dt: DataTransfer, sample: Sample): void {
+  const payload: DragPayload = { url: sample.url, caption: sample.caption };
+  dt.setData(SAMPLE_DRAG_TYPE, JSON.stringify(payload));
+}
+
+export function getSampleDragData(dt: DataTransfer): DragPayload | null {
+  const raw = dt.getData(SAMPLE_DRAG_TYPE);
+  if (!raw) return null;
+  try {
+    const p = JSON.parse(raw) as DragPayload;
+    return typeof p.url === "string" ? p : null;
+  } catch {
+    return null;
+  }
+}
+
+let nextOwnId = 1;
+
+/** Turn image files into tray entries. Object URLs live for the session. */
+export function samplesFromFiles(files: Iterable<File>): Sample[] {
+  return [...files]
+    .filter((f) => f.type.startsWith("image/"))
+    .map((f) => ({
+      id: `own-${nextOwnId++}`,
+      label: f.name.replace(/\.[^.]+$/, ""),
+      url: URL.createObjectURL(f),
+      own: true,
+    }));
 }

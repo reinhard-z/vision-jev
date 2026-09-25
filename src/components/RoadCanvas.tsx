@@ -4,7 +4,7 @@ import type { Game } from "../game/engine";
 import { runLoop } from "../game/loop";
 import { render } from "../game/render";
 import type { Pipeline } from "../pipeline";
-import { SAMPLE_DRAG_TYPE, findSample } from "../samples";
+import { getSampleDragData } from "../samples";
 
 interface Props {
   game: Game;
@@ -68,7 +68,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
     e.preventDefault();
     game.setDropHint(null);
     const { x, y } = toCanvas(e);
-    const sample = findSample(e.dataTransfer.getData(SAMPLE_DRAG_TYPE));
+    const sample = getSampleDragData(e.dataTransfer);
     if (sample) {
       void pipeline.spawn(sample.url, x, y, sample.caption);
       return;
