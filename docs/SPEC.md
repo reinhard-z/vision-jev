@@ -115,7 +115,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 
 - Thoughts panel beside the road, per object: thumbnail, zone, category with confidence, bars for the three likeliest categories and for `could_be_person` and `mentions_child` (with their thresholds), the rule that fired (e.g. "Child on the sidewalk, slow down until passed"), override notice, latency (vision ms + Jev ms).
 - Tray of sample images for quick testing, plus drag-and-drop of your own files.
-- First-load progress bar for the vision model; note that images never leave the device, only the caption does.
+- First-load progress bar for the vision model.
 
 ## Abuse protection
 
