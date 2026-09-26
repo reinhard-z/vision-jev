@@ -84,6 +84,12 @@ export function RoadCanvas({ game, pipeline }: Props) {
 
   const onPointerDown = (e: PointerEvent<HTMLCanvasElement>) => {
     const { x, y } = toCanvas(e);
+    const removeId = game.hitTestRemove(x, y);
+    if (removeId) {
+      game.removeObject(removeId);
+      e.currentTarget.style.cursor = "default";
+      return;
+    }
     const id = game.hitTest(x, y);
     if (!id) return;
     dragId.current = id;
@@ -95,6 +101,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
   const onPointerMove = (e: PointerEvent<HTMLCanvasElement>) => {
     const { x, y } = toCanvas(e);
     if (dragId.current) game.dragTo(dragId.current, x, y);
+    else if (game.hitTestRemove(x, y)) e.currentTarget.style.cursor = "pointer";
     else e.currentTarget.style.cursor = game.hitTest(x, y) ? "grab" : "default";
   };
 

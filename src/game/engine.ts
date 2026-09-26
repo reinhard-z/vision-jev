@@ -13,6 +13,7 @@ import {
   OBJECT_HALF_LENGTH_M,
   OBJECT_SIZE_PX,
   PX_PER_M,
+  REMOVE_BUTTON_R,
   ROAD_LEFT,
   ROAD_RIGHT,
   SLOW_DOWN_FACTOR,
@@ -224,6 +225,28 @@ export class Game {
   }
 
   // --- dragging objects on the canvas -------------------------------------
+
+  /** Centre of an object's × button, kept inside the canvas. */
+  removeButtonCenter(obj: GameObject): { x: number; y: number } {
+    const half = OBJECT_SIZE_PX / 2;
+    const r = REMOVE_BUTTON_R;
+    return {
+      x: Math.min(CANVAS_WIDTH - r - 1, obj.x + half),
+      y: Math.max(r + 1, this.sToScreenY(obj.s) - half),
+    };
+  }
+
+  /** The object whose × button is under (x, y), if any. */
+  hitTestRemove(x: number, y: number): string | null {
+    const r = REMOVE_BUTTON_R + 2; // a little slack for the pointer
+    for (let i = this.objects.length - 1; i >= 0; i--) {
+      const o = this.objects[i]!;
+      if (o.dragging) continue;
+      const c = this.removeButtonCenter(o);
+      if ((x - c.x) ** 2 + (y - c.y) ** 2 <= r * r) return o.id;
+    }
+    return null;
+  }
 
   hitTest(x: number, y: number): string | null {
     const half = OBJECT_SIZE_PX / 2;

@@ -86,7 +86,7 @@ export function SampleTray() {
           e.target.value = "";
         }}
       />
-      <p className="hint">Or drop image files here. Drag an object off the canvas or double-click it to remove it.</p>
+      <p className="hint">Or drop image files here. Click an object's × (or drag it off the canvas) to remove it.</p>
       <p className="hint privacy">Images never leave your device. Only the caption is sent.</p>
     </aside>
   );

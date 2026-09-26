@@ -121,6 +121,15 @@ describe("resolveBehavior", () => {
 });
 
 describe("Game", () => {
+  it("removes an object through its × button hit area", () => {
+    const game = new Game();
+    const id = add(game, "road", 20);
+    const c = game.removeButtonCenter(game.get(id)!);
+    expect(game.hitTestRemove(c.x, c.y)).toBe(id);
+    const obj = game.get(id)!;
+    expect(game.hitTestRemove(obj.x, game.sToScreenY(obj.s))).toBeNull();
+  });
+
   it("stops for a person on the road and stays stopped until removed", () => {
     const game = new Game();
     const id = addDecided(game, "road", 50, "child");

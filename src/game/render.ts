@@ -4,6 +4,7 @@ import {
   OBJECT_HALF_LENGTH_M,
   OBJECT_SIZE_PX,
   PX_PER_M,
+  REMOVE_BUTTON_R,
   ROAD_LEFT,
   ROAD_RIGHT,
   ROAD_W,
@@ -161,6 +162,30 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
     if (badge) label(ctx, badge.text, cx + size / 2 - 4, y + size + 4, badge.color);
     if (obj.resolved?.safetyOverride) label(ctx, "⚠ override", cx, y - 16, COLORS.stop);
   }
+
+  if (!obj.dragging) drawRemoveButton(ctx, game.removeButtonCenter(obj));
+}
+
+function drawRemoveButton(ctx: CanvasRenderingContext2D, c: { x: number; y: number }): void {
+  const r = REMOVE_BUTTON_R;
+  const arm = r * 0.4;
+  ctx.save();
+  ctx.fillStyle = "rgba(20,20,30,0.85)";
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(c.x - arm, c.y - arm);
+  ctx.lineTo(c.x + arm, c.y + arm);
+  ctx.moveTo(c.x + arm, c.y - arm);
+  ctx.lineTo(c.x - arm, c.y + arm);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function badgeFor(obj: GameObject): { text: string; color: string } | null {

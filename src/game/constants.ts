@@ -32,5 +32,7 @@ export const ROAD_LEFT = GRASS_W + SIDEWALK_W;
 export const ROAD_RIGHT = ROAD_LEFT + ROAD_W;
 export const CAR_FRONT_FROM_BOTTOM_PX = 150;
 export const OBJECT_SIZE_PX = 52;
+// The × button on an object's top-right corner.
+export const REMOVE_BUTTON_R = 9;
 // Physical size matches the drawn tile, so "reached" means touching it.
 export const OBJECT_HALF_LENGTH_M = OBJECT_SIZE_PX / 2 / PX_PER_M;
