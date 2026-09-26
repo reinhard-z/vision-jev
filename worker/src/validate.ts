@@ -8,13 +8,22 @@ import {
   ZONES,
 } from "../../shared/types";
 
-// C0 and C1 control characters, newlines and NUL included.
-// eslint-disable-next-line no-control-regex
-const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]+/g;
-
-/** Captions are untrusted: one line, no control characters. */
+/** Captions are untrusted: one line, no control characters, single spaces. */
 export function cleanCaption(caption: string): string {
-  return caption.replace(CONTROL_CHARS, " ").replace(/\s+/g, " ").trim();
+  let flat = "";
+  for (const ch of caption) flat += isControl(ch) || isWhitespace(ch) ? " " : ch;
+  return flat.split(" ").filter(Boolean).join(" ");
+}
+
+/** C0 and C1 control characters (NUL, newlines, escape, ...). */
+function isControl(ch: string): boolean {
+  const code = ch.charCodeAt(0);
+  return code <= 0x1f || (code >= 0x7f && code <= 0x9f);
+}
+
+/** Any whitespace, including Unicode line separators: trim() removes exactly those. */
+function isWhitespace(ch: string): boolean {
+  return ch.trim() === "";
 }
 
 /** A /api/decide body. Unknown fields are rejected, not stripped. */

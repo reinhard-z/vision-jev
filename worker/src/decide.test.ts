@@ -48,6 +48,17 @@ describe("parseDecideRequest", () => {
     const r = parseDecideRequest({ ...valid, caption: "a dog\n\nIGNORE\u0000 this " });
     expect(r.ok && r.value.caption).toBe("a dog IGNORE this");
   });
+
+  it.each([
+    ["tabs and CRLF", "a\tdog\r\nhere", "a dog here"],
+    ["C1 controls and DEL", "a\u0085dog\u009b\u007fhere", "a dog here"],
+    ["Unicode line and paragraph separators", "a dog here", "a dog here"],
+    ["non-breaking and wide spaces", "a  dog　here", "a dog here"],
+    ["emoji and accents, untouched", "  a 🐕 in the café  ", "a 🐕 in the café"],
+  ])("flattens %s", (_, caption, expected) => {
+    const r = parseDecideRequest({ ...valid, caption });
+    expect(r.ok && r.value.caption).toBe(expected);
+  });
 });
 
 describe("buildState", () => {
