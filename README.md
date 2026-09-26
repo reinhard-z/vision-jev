@@ -145,3 +145,7 @@ pnpm wrangler rollback <version-id> --message "why"   # or to a given one (last 
 ## Credits
 
 Sample photos are from Wikimedia Commons; sources and licenses are in [public/samples/CREDITS.md](public/samples/CREDITS.md) and in the app's "Image credits" dialog.
+
+## License
+
+The code is under the [MIT License](LICENSE). The sample photos keep their own licenses, listed in [public/samples/CREDITS.md](public/samples/CREDITS.md).
