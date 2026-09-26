@@ -1,0 +1,3 @@
+# Vite emits onnxruntime-web's fallback wasm (~27 MB, over the 25 MiB asset
+# limit). It's never fetched: Transformers.js loads the runtime from jsDelivr.
+*.wasm

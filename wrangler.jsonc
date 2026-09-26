@@ -6,6 +6,16 @@
   "assets": {
     "run_worker_first": ["/api/*"]
   },
+  "routes": [{ "pattern": "drive.mrza.ch", "custom_domain": true }],
   "ai": { "binding": "AI" },
+  // Per-IP limits, local to each Cloudflare location and eventually
+  // consistent: a brake on scripted abuse, not exact accounting.
+  "ratelimits": [
+    // One decision per drop or move; a busy player stays well under this.
+    { "name": "DECIDE_LIMITER", "namespace_id": "4101", "simple": { "limit": 60, "period": 60 } },
+    // A session lasts an hour; a few per minute covers reloads.
+    { "name": "SESSION_LIMITER", "namespace_id": "4102", "simple": { "limit": 5, "period": 60 } }
+  ],
+  // Secrets (wrangler secret put; .dev.vars locally): TURNSTILE_SECRET_KEY, SESSION_SECRET.
   "observability": { "enabled": true }
 }

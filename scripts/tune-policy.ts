@@ -5,6 +5,9 @@
 //
 //   pnpm dev   # in another terminal
 //   pnpm tune [baseUrl]   (default http://localhost:5173)
+//
+// Needs the dev server: its Turnstile test secret accepts any token. The
+// rate limit (60 decisions a minute) makes a full run take about 3 minutes.
 import { readFileSync, writeFileSync } from "node:fs";
 import { ZONES, type DecideResponse, type Zone } from "../shared/types.ts";
 
@@ -100,18 +103,14 @@ const roundTripMs: number[] = [];
 let checks = 0;
 let misses = 0;
 
+const cookie = await openSession();
+
 for (const c of cases) {
   const key = c.variant ? `${c.id}/${c.variant}` : c.id;
   const want = expectationFor(c, key);
   const zones = [];
   for (const zone of ZONES) {
-    const started = performance.now();
-    const res = await fetch(`${base}/api/decide`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ caption: c.caption, zone }),
-    });
-    const rt = Math.round(performance.now() - started);
+    const { res, rt } = await decide(c.caption, zone);
     if (!res.ok) {
       console.log(`${key} ${zone}: HTTP ${res.status} ${await res.text()}`);
       misses++;
@@ -150,4 +149,29 @@ const stats = (xs: number[]) => {
 console.log(`\n${misses} misses in ${checks} checks`);
 console.log(`Jev in Worker: ${stats(jevMs)}`);
 console.log(`Round trip:    ${stats(roundTripMs)}`);
+async function openSession(): Promise<string> {
+  const res = await fetch(`${base}/api/session`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ turnstileToken: "XXXX.DUMMY.TOKEN.XXXX" }),
+  });
+  const cookie = res.headers.get("set-cookie")?.split(";")[0];
+  if (!res.ok || !cookie) throw new Error(`/api/session returned ${res.status}; is this the dev server?`);
+  return cookie;
+}
+
+/** The response and its round trip, not counting waits for the rate limit. */
+async function decide(caption: string, zone: Zone): Promise<{ res: Response; rt: number }> {
+  for (;;) {
+    const started = performance.now();
+    const res = await fetch(`${base}/api/decide`, {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify({ caption, zone }),
+    });
+    if (res.status !== 429) return { res, rt: Math.round(performance.now() - started) };
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  }
+}
+
 writeFileSync(new URL("results.json", dir), JSON.stringify(rows, null, 2) + "\n");

@@ -47,21 +47,23 @@ Only when there is no answer at all (no caption, or the request failed) does the
 
 ## Decision (Worker)
 
+### `POST /api/session`
+
+Request: `{ "turnstileToken": "..." }` (1–2048 chars, nothing else). The Worker verifies the token with Turnstile and sets an HttpOnly, signed `jev_session` cookie valid for one hour. Response: `{ "expiresAt": <ms since epoch> }`. 403 if Turnstile rejects the token.
+
 ### `POST /api/decide`
 
-Request (validated; anything else is rejected):
+Needs the session cookie (401 without it). Request (validated; anything else is rejected):
 
 ```json
 {
   "caption": "a small child in a red jacket standing",
-  "zone": "near_sidewalk",
-  "turnstileToken": "..."
+  "zone": "near_sidewalk"
 }
 ```
 
 - `caption`: string, 1–300 chars
 - `zone`: `own_lane`, `oncoming_lane`, `near_sidewalk` or `far_sidewalk`
-- `turnstileToken`: added in stage 5
 
 Response:
 
@@ -101,9 +103,9 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 ## Abuse protection
 
 - Strict validation and 300-char caption cap.
-- Per-IP rate limiting (Cloudflare Workers rate limiting binding; check current docs).
-- Cloudflare Turnstile token verified server-side before calling Jev.
-- Spending: check Jev pricing for Workers AI in the Cloudflare dashboard and set up usage notifications.
+- Per-IP rate limiting (Workers rate limiting binding): 60 decisions and 5 sessions per minute.
+- Cloudflare Turnstile, verified server-side, buys a one-hour session; `/api/decide` needs the session.
+- Spending: ~$0.00004 per decision from AI Gateway credits; set up usage notifications in the Cloudflare dashboard.
 
 ## Hosting
 
@@ -118,7 +120,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - [x] **3. Jev.** Worker endpoint, `worker/src/jev.ts`, replace the stub. Tune policy wording against the samples.
 - [x] **4. Lanes and children.** Split the road into your lane and the oncoming lane, treat children differently from adults, and move the driving rules from Jev into a table in code.
 - [x] **4b. Jev drives.** Jev decides the action from the caption and the zone, moving an object asks again, and captioning starts at drag start. Replaces stage 4's table.
-- [ ] **5. Harden and deploy.** Validation, rate limiting, Turnstile, pinned model revision, deploy.
+- [x] **5. Harden and deploy.** Validation, rate limiting, Turnstile, pinned model revision, deploy.
 
 ## Decisions log
 
@@ -219,6 +221,16 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **`slow_down` now names who it is for:** "a person or animal that is not in the car's lane, but could move into it". Two other wordings were tried and dropped. Naming "a vehicle in the oncoming lane" in `continue` pulled lights in the oncoming lane toward `continue` and weakened `stop` for a car in your lane (43 vs 42). "Such as oncoming traffic" also pulled people in the oncoming lane toward `continue`.
 - **Two sidewalks:** `sidewalk` is split into `near_sidewalk` (right of your lane) and `far_sidewalk` (beyond the oncoming lane), each described to Jev in words. Jev now slows down for adults on the near side (slow down 74–91) and drives past them on the far side (continue 66–71). Children and animals still get slow down on the far side, less sure (45–63). A stop sign on the near sidewalk is obeyed (46 vs continue 40); on the far one it's taken as meant for oncoming traffic. With no answer, the game continues on both sidewalks.
 - **Tuning:** 5 vehicle captions added (truck, bus, parked van, motorbike, cyclist); 40 captions × 4 zones, 160 Jev calls per run. The reference now wants `continue` for vehicles in the oncoming lane (riders may get slow down) and per sidewalk: adults slow down near, continue far. Before: 11/117 misses with three zones; after: 5/156. The misses are the known ones (teddy bear and boxes in your lane, amber light in the oncoming lane) plus "A person standing in the middle of a road" on the far sidewalk (slow down, defensible). Thin margin: the parked red car in the oncoming lane (continue 34, slow down 39; it went the other way in one run). Jev in the Worker: median 330 ms, p95 421 ms (n=160).
+
+### Stage 5
+
+- **Turnstile buys a session, not a decision.** Tokens are single-use and valid for 5 minutes, and a challenge per decision would add its latency to every drop and move. The page solves one while the vision model downloads and trades it at `POST /api/session` for a one-hour cookie: `v1.<expiry>.<HMAC-SHA256>`, signed with `SESSION_SECRET`, nothing stored. HttpOnly, `SameSite=Strict`, `Path=/api/`, Secure over HTTPS. The client renews it a minute before expiry, and once more on a 401. `turnstileToken` moved from `/api/decide` to `/api/session`.
+- **Widget:** managed mode with `appearance: "interaction-only"`, so it stays invisible unless Cloudflare wants a click (bottom right). Created through the API for `drive.mrza.ch`; the site key is in `src/api/session.ts`. Dev uses Cloudflare's test key and secret (`.dev.vars`), which pass on localhost; `vite preview` runs the production site key on localhost, so the challenge fails there.
+- **Rate limits** per `cf-connecting-ip`: `/api/decide` 60 a minute, `/api/session` 5 a minute. Both are checked before any other work. The binding counts per Cloudflare location and is eventually consistent, so it's a brake, not exact accounting. The worst case for one IP is ~86k decisions a day, ~$3.50. `pnpm tune` waits and retries on 429, so a full run takes ~3 minutes.
+- **Secrets:** `TURNSTILE_SECRET_KEY` and `SESSION_SECRET` via `wrangler secret put`; locally in `.dev.vars` (gitignored).
+- **Onnxruntime fallback wasm** (26.9 MB, over the 25 MiB per-file limit) is excluded by `public/.assetsignore`. It's never fetched; Transformers.js loads the runtime from jsDelivr.
+- **Pinned revisions** were already in place: Florence-2 `e88a44ea`, Transformers.js `4.3.0` exactly, onnxruntime-web pinned by it.
+- **Hosting:** Custom Domain `drive.mrza.ch` (route in `wrangler.jsonc`; Cloudflare creates the DNS record and certificate).
 
 ## Edge cases to try
 

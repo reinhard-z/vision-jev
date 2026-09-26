@@ -583,3 +583,11 @@ h2 {
     border: 0;
   }
 }
+
+/* Turnstile; stays empty unless Cloudflare asks the visitor to click. */
+.human-check {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+}

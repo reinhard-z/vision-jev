@@ -1,6 +1,7 @@
-// API contract for POST /api/decide, shared by the frontend and the Worker.
-// See docs/SPEC.md "Decision (Worker)". The Worker validates requests with a
-// Zod schema (worker/src/validate.ts) that a test pins to DecideRequest.
+// API contract for POST /api/session and POST /api/decide, shared by the
+// frontend and the Worker. See docs/SPEC.md "Decision (Worker)". The Worker
+// validates requests with Zod schemas (worker/src/validate.ts) that a test
+// pins to these types.
 //
 // Jev decides what the car does from the caption and the zone. Distance and
 // speed stay in the game, which does the braking and the timers
@@ -46,10 +47,20 @@ export type SpeedLimit = (typeof SPEED_LIMITS)[number];
 export const CAPTION_MAX_LENGTH = 300;
 export const TURNSTILE_TOKEN_MAX_LENGTH = 2048;
 
+/** Trades a solved Turnstile challenge for a session cookie. */
+export interface SessionRequest {
+  turnstileToken: string; // 1–2048 chars
+}
+
+export interface SessionResponse {
+  /** When the session cookie stops working, in ms since the epoch. */
+  expiresAt: number;
+}
+
+/** Needs the session cookie from POST /api/session. */
 export interface DecideRequest {
   caption: string; // 1–300 chars
   zone: Zone;
-  turnstileToken?: string; // added in stage 5
 }
 
 export interface ChoiceAnswer<T extends string> {

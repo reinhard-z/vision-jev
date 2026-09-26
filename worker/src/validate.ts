@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { DecideRequest } from "../../shared/types";
+import type { DecideRequest, SessionRequest } from "../../shared/types";
 import { CAPTION_MAX_LENGTH, TURNSTILE_TOKEN_MAX_LENGTH, ZONES } from "../../shared/types";
 
 /**
@@ -40,14 +40,25 @@ export const DecideRequestSchema = z.strictObject({
     .transform(cleanCaption)
     .pipe(z.string().min(1, `caption must be 1–${CAPTION_MAX_LENGTH} chars`)),
   zone: z.enum(ZONES),
-  // Stage 5 verifies the token; until then it's allowed but unused.
-  turnstileToken: z.string().max(TURNSTILE_TOKEN_MAX_LENGTH).optional(),
 });
 
-export type Parsed = { ok: true; value: DecideRequest } | { ok: false; error: string };
+/** A /api/session body. The token itself is checked by Turnstile. */
+export const SessionRequestSchema = z.strictObject({
+  turnstileToken: z.string().min(1).max(TURNSTILE_TOKEN_MAX_LENGTH),
+});
 
-export function parseDecideRequest(body: unknown): Parsed {
-  const result = DecideRequestSchema.safeParse(body);
+export type Parsed<T> = { ok: true; value: T } | { ok: false; error: string };
+
+export function parseDecideRequest(body: unknown): Parsed<DecideRequest> {
+  return parse(DecideRequestSchema, body);
+}
+
+export function parseSessionRequest(body: unknown): Parsed<SessionRequest> {
+  return parse(SessionRequestSchema, body);
+}
+
+function parse<T>(schema: z.ZodType<T>, body: unknown): Parsed<T> {
+  const result = schema.safeParse(body);
   if (result.success) return { ok: true, value: result.data };
   // One short line for the client; the full issue list isn't useful to it.
   const issue = result.error.issues[0];
