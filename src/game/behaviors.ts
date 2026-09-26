@@ -18,12 +18,13 @@ export function resolveBehavior(res: DecideResponse, zone: Zone): ResolvedBehavi
 
 /**
  * Without a caption or an answer from Jev there is nothing to decide with:
- * stop for it in the car's lane, slow down beside it, ignore it on the sidewalk.
+ * stop for it in the car's lane, slow down beside it, ignore it on a sidewalk.
  */
 export const NO_DECISION: Record<Zone, "continue" | "slow_down" | "stop"> = {
   own_lane: "stop",
   oncoming_lane: "slow_down",
-  sidewalk: "continue",
+  near_sidewalk: "continue",
+  far_sidewalk: "continue",
 };
 
 export function failedBehavior(zone: Zone, stage: FailedStage): ResolvedBehavior {
@@ -87,7 +88,8 @@ const WHAT: Record<Category, string> = {
 const WHERE: Record<Zone, string> = {
   own_lane: "in your lane",
   oncoming_lane: "in the oncoming lane",
-  sidewalk: "on the sidewalk",
+  near_sidewalk: "on the near sidewalk",
+  far_sidewalk: "on the far sidewalk",
 };
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

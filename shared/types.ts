@@ -7,10 +7,11 @@
 // (src/game/behaviors.ts maps Jev's action to a game behavior).
 
 /**
- * Where an object is, by its centre: the car's lane, the oncoming lane, or
- * either sidewalk.
+ * Where an object is, by its centre: the car's lane, the oncoming lane, the
+ * near sidewalk (next to the car's lane) or the far sidewalk (beyond the
+ * oncoming lane).
  */
-export const ZONES = ["own_lane", "oncoming_lane", "sidewalk"] as const;
+export const ZONES = ["own_lane", "oncoming_lane", "near_sidewalk", "far_sidewalk"] as const;
 export type Zone = (typeof ZONES)[number];
 
 export const CATEGORIES = [

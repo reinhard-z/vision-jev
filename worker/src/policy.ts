@@ -16,7 +16,8 @@ import type { ChoiceAnswer as JevChoiceAnswer, JevResult, Questions } from "./je
 const LOCATION: Record<Zone, string> = {
   own_lane: "on the road, in the car's lane, ahead of the car",
   oncoming_lane: "on the road, in the oncoming lane next to the car's lane",
-  sidewalk: "on the sidewalk beside the road, not on the road",
+  near_sidewalk: "on the sidewalk right beside the car's lane, not on the road",
+  far_sidewalk: "on the sidewalk across the road, beyond the oncoming lane, not on the road",
 };
 
 /** The caption and where the object is, in words. */
@@ -31,7 +32,8 @@ export const QUESTIONS = {
     criteria: {
       continue:
         "Drive on at the current speed: it can't get into the car's way, or it is light enough to drive over, such as a bag, paper or leaves",
-      slow_down: "Drive on at half speed until past it: it is not in the car's lane, but could move into it",
+      slow_down:
+        "Drive on at half speed until past it: a person or animal that is not in the car's lane, but could move into it",
       stop: "Stop before it and wait until it is gone: a person, animal, vehicle or solid object blocks the car's lane",
       stop_then_go: "Stop at it, wait two seconds, then drive on: a stop sign",
       wait_for_green: "Stop at it and wait until a light turns green: a red or amber traffic light",

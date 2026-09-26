@@ -6,7 +6,7 @@ import { evaluate, JevError } from "./jev";
 import { buildState, QUESTIONS, toDecideResponse } from "./policy";
 import { DecideRequestSchema, parseDecideRequest } from "./validate";
 
-const valid: DecideRequest = { caption: "A red stop sign against a blue sky", zone: "sidewalk" };
+const valid: DecideRequest = { caption: "A red stop sign against a blue sky", zone: "near_sidewalk" };
 
 describe("parseDecideRequest", () => {
   it("produces exactly the shared DecideRequest type", () => {
@@ -58,9 +58,9 @@ describe("parseDecideRequest", () => {
 
 describe("buildState", () => {
   it("gives Jev the caption and the zone in words", () => {
-    expect(buildState({ caption: "a dog", zone: "sidewalk", turnstileToken: "t" })).toEqual({
+    expect(buildState({ caption: "a dog", zone: "far_sidewalk", turnstileToken: "t" })).toEqual({
       object_seen: "a dog",
-      location: "on the sidewalk beside the road, not on the road",
+      location: "on the sidewalk across the road, beyond the oncoming lane, not on the road",
     });
   });
 });

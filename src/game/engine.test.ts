@@ -43,7 +43,8 @@ function answer(name: string): DecideResponse {
 const ZONE_X: Record<Zone, number> = {
   own_lane: (ROAD_MID + ROAD_RIGHT) / 2,
   oncoming_lane: (ROAD_LEFT + ROAD_MID) / 2,
-  sidewalk: 40,
+  near_sidewalk: ROAD_RIGHT + 40,
+  far_sidewalk: 40,
 };
 
 /** Add an object whose near edge is `ahead` metres in front of the car. */
@@ -80,14 +81,14 @@ const kmh = (game: Game) => msToKmh(game.speedMs);
 const kind = (game: Game, id: string) => game.get(id)!.decision?.resolved.behavior.kind;
 
 describe("zoneAt", () => {
-  it("splits the road at the centre line; the car drives in the right lane", () => {
+  it("splits the road at the centre line; the car drives in the right lane, next to the near sidewalk", () => {
     const game = new Game();
-    expect(game.zoneAt(ROAD_LEFT - 1)).toBe("sidewalk");
+    expect(game.zoneAt(ROAD_LEFT - 1)).toBe("far_sidewalk");
     expect(game.zoneAt(ROAD_LEFT + 1)).toBe("oncoming_lane");
     expect(game.zoneAt(ROAD_MID - 1)).toBe("oncoming_lane");
     expect(game.zoneAt(ROAD_MID)).toBe("own_lane");
     expect(game.zoneAt(ROAD_RIGHT)).toBe("own_lane");
-    expect(game.zoneAt(ROAD_RIGHT + 1)).toBe("sidewalk");
+    expect(game.zoneAt(ROAD_RIGHT + 1)).toBe("near_sidewalk");
   });
 });
 
@@ -106,9 +107,11 @@ describe("resolveBehavior", () => {
 
   it("names what Jev thinks it is, where, and what the car does", () => {
     expect(resolveBehavior(answer("stop"), "own_lane").label).toBe("Person in your lane: stop until cleared");
-    expect(resolveBehavior(answer("slow"), "sidewalk").label).toBe("Person on the sidewalk: slow down until passed");
-    expect(resolveBehavior(answer("limit30"), "sidewalk").label).toBe(
-      "Speed limit sign on the sidewalk: change speed to 30 km/h",
+    expect(resolveBehavior(answer("slow"), "near_sidewalk").label).toBe(
+      "Person on the near sidewalk: slow down until passed",
+    );
+    expect(resolveBehavior(answer("limit30"), "far_sidewalk").label).toBe(
+      "Speed limit sign on the far sidewalk: change speed to 30 km/h",
     );
   });
 
@@ -120,10 +123,11 @@ describe("resolveBehavior", () => {
     });
   });
 
-  it("without an answer, stops in the lane, slows beside it and ignores the sidewalk", () => {
+  it("without an answer, stops in the lane, slows beside it and ignores the sidewalks", () => {
     expect(ZONES.map((zone) => failedBehavior(zone, "decision").behavior.kind)).toEqual([
       "stop",
       "slow_down",
+      "continue",
       "continue",
     ]);
   });
@@ -186,7 +190,7 @@ describe("Game", () => {
 
   it("waits 2 s at a stop sign, then continues", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 50, "stop_sign");
+    const id = addDecided(game, "far_sidewalk", 50, "stop_sign");
     let stoppedFor = 0;
     run(game, 15, () => {
       if (game.speedMs === 0) stoppedFor += 1 / 120;
@@ -198,10 +202,10 @@ describe("Game", () => {
 
   it("holds at a red light until a green light is dropped", () => {
     const game = new Game();
-    const red = addDecided(game, "sidewalk", 50, "red");
+    const red = addDecided(game, "far_sidewalk", 50, "red");
     run(game, 15);
     expect(game.speedMs).toBe(0);
-    addDecided(game, "sidewalk", 30, "green");
+    addDecided(game, "far_sidewalk", 30, "green");
     expect(game.get(red)!.decision!.released).toBe(true);
     run(game, 5);
     expect(kmh(game)).toBeGreaterThan(20);
@@ -209,7 +213,7 @@ describe("Game", () => {
 
   it("applies a speed limit when passing the sign", () => {
     const game = new Game();
-    addDecided(game, "sidewalk", 40, "limit30");
+    addDecided(game, "far_sidewalk", 40, "limit30");
     expect(game.baseTargetKmh).toBe(50);
     run(game, 8);
     expect(game.baseTargetKmh).toBe(30);
@@ -237,13 +241,16 @@ describe("Game", () => {
     expect(game.speedMs).toBeGreaterThan(0);
   });
 
-  it.each(["oncoming_lane", "sidewalk"] as const)("does not count undecided objects in the %s as too late", (zone) => {
-    const game = new Game();
-    const id = add(game, zone, 10);
-    run(game, 2);
-    expect(game.get(id)!.phase.kind).toBe("passed"); // not "too_late"
-    expect(kmh(game)).toBeCloseTo(50, 0);
-  });
+  it.each(["oncoming_lane", "near_sidewalk", "far_sidewalk"] as const)(
+    "does not count undecided objects in the %s as too late",
+    (zone) => {
+      const game = new Game();
+      const id = add(game, zone, 10);
+      run(game, 2);
+      expect(game.get(id)!.phase.kind).toBe("passed"); // not "too_late"
+      expect(kmh(game)).toBeCloseTo(50, 0);
+    },
+  );
 
   it("without an answer from Jev, stops in the lane until removed", () => {
     const game = new Game();
@@ -253,7 +260,7 @@ describe("Game", () => {
       game.failDecision(id, game.beginDecision(id)!.seq);
       return id;
     });
-    expect(ids.map((id) => kind(game, id))).toEqual(["stop", "slow_down", "continue"]);
+    expect(ids.map((id) => kind(game, id))).toEqual(["stop", "slow_down", "continue", "continue"]);
     run(game, 10);
     expect(game.speedMs).toBe(0);
     game.removeObject(ids[0]!);
@@ -269,16 +276,16 @@ describe("Game", () => {
     run(game, 10);
     expect(game.speedMs).toBe(0);
 
-    move(game, id, "sidewalk");
+    move(game, id, "far_sidewalk");
     expect(needs).toEqual([id]);
     const obj = game.get(id)!;
-    expect(obj.zone).toBe("sidewalk");
+    expect(obj.zone).toBe("far_sidewalk");
     expect(obj.phase.kind).toBe("deciding");
     run(game, 3);
     expect(game.speedMs).toBe(0); // still Jev's stop
 
     const t = game.beginDecision(id)!;
-    expect(t.zone).toBe("sidewalk");
+    expect(t.zone).toBe("far_sidewalk");
     game.applyDecision(id, t.seq, answer("ignore"));
     expect(game.get(id)!.phase.kind).toBe("decided");
     run(game, 3);
@@ -311,7 +318,7 @@ describe("Game", () => {
 
   it("reacts too late when the car reaches a moved object before Jev answers again", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 10, "ignore");
+    const id = addDecided(game, "far_sidewalk", 10, "ignore");
     move(game, id, "own_lane");
     run(game, 2);
     expect(game.get(id)!.phase.kind).toBe("too_late");
@@ -324,13 +331,13 @@ describe("Game", () => {
     const id = add(game, "own_lane", 60);
     game.setCaption(id, "caption of child", 0);
     const first = game.beginDecision(id)!;
-    move(game, id, "sidewalk");
+    move(game, id, "far_sidewalk");
     expect(needs).toEqual([id]);
     game.applyDecision(id, first.seq, answer("stop"));
     expect(game.get(id)!.phase.kind).toBe("deciding");
 
     const second = game.beginDecision(id)!;
-    expect(second).toMatchObject({ zone: "sidewalk" });
+    expect(second).toMatchObject({ zone: "far_sidewalk" });
     game.applyDecision(id, second.seq, answer("slow"));
     expect(kind(game, id)).toBe("slow_down");
   });
@@ -364,7 +371,7 @@ describe("Game", () => {
 
   it("asks again for a passed object that is dragged back into the lane ahead", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 20, "ignore");
+    const id = addDecided(game, "far_sidewalk", 20, "ignore");
     while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
 
     move(game, id, "own_lane", 40);
@@ -377,10 +384,10 @@ describe("Game", () => {
 
   it("starts over for a passed stop sign moved ahead within the same zone", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 20, "stop_sign");
+    const id = addDecided(game, "far_sidewalk", 20, "stop_sign");
     while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
     expect(game.get(id)!.decision!.released).toBe(true);
-    move(game, id, "sidewalk", 40);
+    move(game, id, "far_sidewalk", 40);
     expect(game.get(id)!.phase.kind).toBe("deciding");
     const t = game.beginDecision(id)!;
     game.applyDecision(id, t.seq, answer("stop_sign"));
@@ -390,7 +397,7 @@ describe("Game", () => {
   it("stops for an object in its lane the vision model couldn't caption, until it is moved", () => {
     const game = new Game();
     const lane = add(game, "own_lane", 50);
-    const side = add(game, "sidewalk", 30);
+    const side = add(game, "far_sidewalk", 30);
     game.failPerception(lane);
     game.failPerception(side);
     expect(game.get(lane)!.phase.kind).toBe("decided");
@@ -404,7 +411,7 @@ describe("Game", () => {
     expect(game.get(lane)!.phase.kind).toBe("decided"); // not "too late": it wasn't slow, it failed
 
     // Moved to the sidewalk it no longer blocks; there's no caption to ask with.
-    move(game, lane, "sidewalk");
+    move(game, lane, "far_sidewalk");
     expect(kind(game, lane)).toBe("continue");
     run(game, 3);
     expect(game.speedMs).toBeGreaterThan(0);
@@ -426,8 +433,8 @@ describe("Game", () => {
     const game = new Game();
     let updates = 0;
     game.ui.subscribe(() => updates++);
-    const a = add(game, "sidewalk", 60);
-    const b = add(game, "sidewalk", 70);
+    const a = add(game, "far_sidewalk", 60);
+    const b = add(game, "far_sidewalk", 70);
     expect(game.ui.getState().cards.map((c) => c.id)).toEqual([b, a]);
     updates = 0;
     run(game, 1); // 120 frames, nothing passed or decided

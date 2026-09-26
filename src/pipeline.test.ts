@@ -91,7 +91,7 @@ describe("Pipeline", () => {
     game.startDrag(obj.id, obj.x, 100);
     game.endDrag(obj.id, 20, 100, true);
     await settle();
-    expect(vi.mocked(decide).mock.calls.map((c) => c[0].zone)).toEqual(["own_lane", "sidewalk"]);
+    expect(vi.mocked(decide).mock.calls.map((c) => c[0].zone)).toEqual(["own_lane", "far_sidewalk"]);
     expect(obj.phase.kind).toBe("decided");
   });
 

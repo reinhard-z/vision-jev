@@ -51,9 +51,9 @@
               "none": 1
             }
           },
-          "latencyMs": 429
+          "latencyMs": 562
         },
-        "roundTripMs": 493
+        "roundTripMs": 736
       },
       {
         "zone": "oncoming_lane",
@@ -66,11 +66,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.65,
+            "confidence": 0.75,
             "probabilities": {
               "continue": 0.03,
-              "slow_down": 0.71,
-              "stop": 0.26,
+              "slow_down": 0.79,
+              "stop": 0.18,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -104,25 +104,25 @@
               "none": 1
             }
           },
-          "latencyMs": 429
+          "latencyMs": 372
         },
-        "roundTripMs": 460
+        "roundTripMs": 384
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
           "slow_down",
-          "continue"
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.91,
+            "confidence": 0.98,
             "probabilities": {
-              "continue": 0.07,
-              "slow_down": 0.93,
+              "continue": 0.02,
+              "slow_down": 0.98,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -157,9 +157,62 @@
               "none": 1
             }
           },
-          "latencyMs": 288
+          "latencyMs": 313
         },
-        "roundTripMs": 304
+        "roundTripMs": 330
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.63,
+            "probabilities": {
+              "continue": 0.31,
+              "slow_down": 0.69,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 350
+        },
+        "roundTripMs": 364
       }
     ]
   },
@@ -177,7 +230,7 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 1,
+            "confidence": 0.99,
             "probabilities": {
               "continue": 0,
               "slow_down": 0,
@@ -215,9 +268,9 @@
               "none": 1
             }
           },
-          "latencyMs": 302
+          "latencyMs": 314
         },
-        "roundTripMs": 318
+        "roundTripMs": 327
       },
       {
         "zone": "oncoming_lane",
@@ -230,10 +283,10 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.87,
+            "confidence": 0.88,
             "probabilities": {
-              "continue": 0.05,
-              "slow_down": 0.9,
+              "continue": 0.04,
+              "slow_down": 0.91,
               "stop": 0.05,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -268,25 +321,24 @@
               "none": 1
             }
           },
-          "latencyMs": 305
+          "latencyMs": 328
         },
-        "roundTripMs": 321
+        "roundTripMs": 341
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.5,
+            "confidence": 0.74,
             "probabilities": {
-              "continue": 0.42,
-              "slow_down": 0.58,
+              "continue": 0.22,
+              "slow_down": 0.78,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -321,9 +373,61 @@
               "none": 1
             }
           },
-          "latencyMs": 305
+          "latencyMs": 294
         },
-        "roundTripMs": 320
+        "roundTripMs": 310
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.68,
+            "probabilities": {
+              "continue": 0.73,
+              "slow_down": 0.26,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 279
+        },
+        "roundTripMs": 296
       }
     ]
   },
@@ -333,19 +437,19 @@
     "zones": [
       {
         "zone": "own_lane",
-        "got": "stop",
-        "ok": true,
+        "got": "continue",
+        "ok": false,
         "want": [
           "stop"
         ],
         "response": {
           "action": {
-            "choice": "stop",
-            "confidence": 0.53,
+            "choice": "continue",
+            "confidence": 0.41,
             "probabilities": {
-              "continue": 0.38,
+              "continue": 0.49,
               "slow_down": 0.01,
-              "stop": 0.61,
+              "stop": 0.5,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -379,13 +483,13 @@
               "none": 1
             }
           },
-          "latencyMs": 290
+          "latencyMs": 280
         },
-        "roundTripMs": 305
+        "roundTripMs": 299
       },
       {
         "zone": "oncoming_lane",
-        "got": "slow_down",
+        "got": "continue",
         "ok": true,
         "want": [
           "continue",
@@ -393,11 +497,11 @@
         ],
         "response": {
           "action": {
-            "choice": "slow_down",
-            "confidence": 0.46,
+            "choice": "continue",
+            "confidence": 0.41,
             "probabilities": {
-              "continue": 0.44,
-              "slow_down": 0.54,
+              "continue": 0.5,
+              "slow_down": 0.48,
               "stop": 0.02,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -432,12 +536,12 @@
               "none": 1
             }
           },
-          "latencyMs": 309
+          "latencyMs": 474
         },
-        "roundTripMs": 332
+        "roundTripMs": 490
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
@@ -447,10 +551,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.68,
+            "confidence": 0.71,
             "probabilities": {
-              "continue": 0.73,
-              "slow_down": 0.27,
+              "continue": 0.76,
+              "slow_down": 0.24,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -460,17 +564,17 @@
           },
           "category": {
             "choice": "obstacle",
-            "confidence": 0.88,
+            "confidence": 0.95,
             "probabilities": {
               "person": 0,
-              "animal": 0.02,
+              "animal": 0.01,
               "vehicle": 0,
               "traffic_light": 0,
               "stop_sign": 0,
               "speed_limit_sign": 0,
               "other_sign": 0,
-              "obstacle": 0.9,
-              "harmless_debris": 0.08,
+              "obstacle": 0.96,
+              "harmless_debris": 0.03,
               "unclear": 0
             }
           },
@@ -485,9 +589,62 @@
               "none": 1
             }
           },
-          "latencyMs": 318
+          "latencyMs": 305
         },
-        "roundTripMs": 336
+        "roundTripMs": 320
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.93,
+            "probabilities": {
+              "continue": 0.95,
+              "slow_down": 0.05,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "obstacle",
+            "confidence": 0.84,
+            "probabilities": {
+              "person": 0,
+              "animal": 0.04,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.87,
+              "harmless_debris": 0.08,
+              "unclear": 0.01
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 301
+        },
+        "roundTripMs": 315
       }
     ]
   },
@@ -543,9 +700,9 @@
               "none": 1
             }
           },
-          "latencyMs": 315
+          "latencyMs": 448
         },
-        "roundTripMs": 334
+        "roundTripMs": 463
       },
       {
         "zone": "oncoming_lane",
@@ -558,11 +715,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.82,
+            "confidence": 0.77,
             "probabilities": {
-              "continue": 0.05,
-              "slow_down": 0.86,
-              "stop": 0.09,
+              "continue": 0.04,
+              "slow_down": 0.81,
+              "stop": 0.15,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -596,12 +753,64 @@
               "none": 1
             }
           },
-          "latencyMs": 267
+          "latencyMs": 274
         },
-        "roundTripMs": 295
+        "roundTripMs": 292
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.93,
+            "probabilities": {
+              "continue": 0.06,
+              "slow_down": 0.94,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "animal",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 1,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 282
+        },
+        "roundTripMs": 298
+      },
+      {
+        "zone": "far_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
@@ -611,14 +820,14 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.77,
+            "confidence": 0.48,
             "probabilities": {
-              "continue": 0.19,
-              "slow_down": 0.8,
-              "stop": 0.01,
+              "continue": 0.43,
+              "slow_down": 0.56,
+              "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
-              "go": 0,
+              "go": 0.01,
               "change_speed": 0
             }
           },
@@ -649,9 +858,9 @@
               "none": 1
             }
           },
-          "latencyMs": 304
+          "latencyMs": 344
         },
-        "roundTripMs": 311
+        "roundTripMs": 357
       }
     ]
   },
@@ -669,7 +878,7 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.98,
+            "confidence": 0.97,
             "probabilities": {
               "continue": 0,
               "slow_down": 0.02,
@@ -707,9 +916,9 @@
               "none": 1
             }
           },
-          "latencyMs": 266
+          "latencyMs": 355
         },
-        "roundTripMs": 275
+        "roundTripMs": 368
       },
       {
         "zone": "oncoming_lane",
@@ -722,11 +931,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.8,
+            "confidence": 0.76,
             "probabilities": {
-              "continue": 0.1,
-              "slow_down": 0.83,
-              "stop": 0.07,
+              "continue": 0.12,
+              "slow_down": 0.8,
+              "stop": 0.08,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -760,25 +969,24 @@
               "none": 1
             }
           },
-          "latencyMs": 270
+          "latencyMs": 314
         },
-        "roundTripMs": 287
+        "roundTripMs": 326
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.8,
+            "confidence": 0.95,
             "probabilities": {
-              "continue": 0.17,
-              "slow_down": 0.83,
+              "continue": 0.04,
+              "slow_down": 0.96,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -813,9 +1021,62 @@
               "none": 1
             }
           },
-          "latencyMs": 333
+          "latencyMs": 316
         },
-        "roundTripMs": 354
+        "roundTripMs": 328
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.51,
+            "probabilities": {
+              "continue": 0.42,
+              "slow_down": 0.58,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "animal",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 1,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 276
+        },
+        "roundTripMs": 287
       }
     ]
   },
@@ -833,11 +1094,11 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.9,
+            "confidence": 0.92,
             "probabilities": {
-              "continue": 0.06,
-              "slow_down": 0.02,
-              "stop": 0.92,
+              "continue": 0.05,
+              "slow_down": 0.01,
+              "stop": 0.93,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -871,26 +1132,25 @@
               "none": 1
             }
           },
-          "latencyMs": 274
+          "latencyMs": 337
         },
-        "roundTripMs": 291
+        "roundTripMs": 349
       },
       {
         "zone": "oncoming_lane",
-        "got": "slow_down",
+        "got": "continue",
         "ok": true,
         "want": [
-          "continue",
-          "slow_down"
+          "continue"
         ],
         "response": {
           "action": {
-            "choice": "slow_down",
-            "confidence": 0.65,
+            "choice": "continue",
+            "confidence": 0.5,
             "probabilities": {
-              "continue": 0.25,
-              "slow_down": 0.7,
-              "stop": 0.04,
+              "continue": 0.58,
+              "slow_down": 0.32,
+              "stop": 0.09,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0.01,
@@ -924,12 +1184,12 @@
               "none": 1
             }
           },
-          "latencyMs": 292
+          "latencyMs": 328
         },
-        "roundTripMs": 307
+        "roundTripMs": 338
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
@@ -939,10 +1199,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.76,
+            "confidence": 0.83,
             "probabilities": {
-              "continue": 0.79,
-              "slow_down": 0.21,
+              "continue": 0.86,
+              "slow_down": 0.14,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -977,9 +1237,61 @@
               "none": 1
             }
           },
-          "latencyMs": 273
+          "latencyMs": 329
         },
-        "roundTripMs": 285
+        "roundTripMs": 343
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.97,
+            "probabilities": {
+              "continue": 0.97,
+              "slow_down": 0.03,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 291
+        },
+        "roundTripMs": 304
       }
     ]
   },
@@ -997,11 +1309,11 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.74,
+            "confidence": 0.8,
             "probabilities": {
-              "continue": 0.11,
-              "slow_down": 0.1,
-              "stop": 0.79,
+              "continue": 0.14,
+              "slow_down": 0.02,
+              "stop": 0.84,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -1035,79 +1347,25 @@
               "none": 1
             }
           },
-          "latencyMs": 285
+          "latencyMs": 306
         },
-        "roundTripMs": 296
+        "roundTripMs": 321
       },
       {
         "zone": "oncoming_lane",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "continue",
-          "slow_down"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.69,
-            "probabilities": {
-              "continue": 0.22,
-              "slow_down": 0.75,
-              "stop": 0.03,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "vehicle",
-            "confidence": 1,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 1,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 265
-        },
-        "roundTripMs": 281
-      },
-      {
-        "zone": "sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
-          "continue",
-          "slow_down"
+          "continue"
         ],
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.43,
+            "confidence": 0.34,
             "probabilities": {
-              "continue": 0.51,
-              "slow_down": 0.45,
-              "stop": 0.03,
+              "continue": 0.44,
+              "slow_down": 0.39,
+              "stop": 0.16,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0.01,
@@ -1141,9 +1399,114 @@
               "none": 1
             }
           },
-          "latencyMs": 284
+          "latencyMs": 346
         },
-        "roundTripMs": 298
+        "roundTripMs": 360
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.79,
+            "probabilities": {
+              "continue": 0.82,
+              "slow_down": 0.13,
+              "stop": 0.04,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.99,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0.99,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 347
+        },
+        "roundTripMs": 358
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.95,
+            "probabilities": {
+              "continue": 0.96,
+              "slow_down": 0.04,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 309
+        },
+        "roundTripMs": 332
       }
     ]
   },
@@ -1199,9 +1562,9 @@
               "none": 1
             }
           },
-          "latencyMs": 302
+          "latencyMs": 348
         },
-        "roundTripMs": 318
+        "roundTripMs": 363
       },
       {
         "zone": "oncoming_lane",
@@ -1214,12 +1577,12 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.48,
+            "confidence": 0.63,
             "probabilities": {
-              "continue": 0.55,
-              "slow_down": 0.24,
-              "stop": 0.04,
-              "stop_then_go": 0.16,
+              "continue": 0.68,
+              "slow_down": 0.03,
+              "stop": 0.05,
+              "stop_then_go": 0.23,
               "wait_for_green": 0,
               "go": 0.01,
               "change_speed": 0
@@ -1252,29 +1615,28 @@
               "none": 1
             }
           },
-          "latencyMs": 273
+          "latencyMs": 338
         },
-        "roundTripMs": 300
+        "roundTripMs": 350
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "stop_then_go",
         "ok": true,
         "want": [
-          "stop_then_go",
-          "continue"
+          "stop_then_go"
         ],
         "response": {
           "action": {
             "choice": "stop_then_go",
-            "confidence": 0.37,
+            "confidence": 0.46,
             "probabilities": {
               "continue": 0.4,
-              "slow_down": 0.09,
-              "stop": 0.04,
-              "stop_then_go": 0.47000000000000003,
+              "slow_down": 0.03,
+              "stop": 0.03,
+              "stop_then_go": 0.53,
               "wait_for_green": 0,
-              "go": 0,
+              "go": 0.01,
               "change_speed": 0
             }
           },
@@ -1305,9 +1667,62 @@
               "none": 1
             }
           },
-          "latencyMs": 247
+          "latencyMs": 298
         },
-        "roundTripMs": 261
+        "roundTripMs": 311
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "stop_then_go",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.62,
+            "probabilities": {
+              "continue": 0.67,
+              "slow_down": 0.02,
+              "stop": 0.04,
+              "stop_then_go": 0.26,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "stop_sign",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 1,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 279
+        },
+        "roundTripMs": 291
       }
     ]
   },
@@ -1363,9 +1778,9 @@
               "none": 1
             }
           },
-          "latencyMs": 256
+          "latencyMs": 338
         },
-        "roundTripMs": 273
+        "roundTripMs": 354
       },
       {
         "zone": "oncoming_lane",
@@ -1377,14 +1792,14 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.37,
+            "confidence": 0.56,
             "probabilities": {
-              "continue": 0.43,
-              "slow_down": 0.07,
-              "stop": 0.01,
+              "continue": 0.31,
+              "slow_down": 0.01,
+              "stop": 0.03,
               "stop_then_go": 0,
-              "wait_for_green": 0.46,
-              "go": 0.03,
+              "wait_for_green": 0.63,
+              "go": 0.02,
               "change_speed": 0
             }
           },
@@ -1415,12 +1830,12 @@
               "none": 1
             }
           },
-          "latencyMs": 343
+          "latencyMs": 333
         },
-        "roundTripMs": 355
+        "roundTripMs": 347
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "wait_for_green",
         "ok": true,
         "want": [
@@ -1429,13 +1844,13 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.77,
+            "confidence": 0.95,
             "probabilities": {
-              "continue": 0.14,
-              "slow_down": 0.02,
-              "stop": 0.03,
+              "continue": 0.02,
+              "slow_down": 0,
+              "stop": 0.02,
               "stop_then_go": 0,
-              "wait_for_green": 0.8,
+              "wait_for_green": 0.96,
               "go": 0,
               "change_speed": 0
             }
@@ -1467,18 +1882,12 @@
               "none": 1
             }
           },
-          "latencyMs": 311
+          "latencyMs": 351
         },
-        "roundTripMs": 323
-      }
-    ]
-  },
-  {
-    "id": "amber",
-    "caption": "A traffic light that is yellow in the middle of the street",
-    "zones": [
+        "roundTripMs": 363
+      },
       {
-        "zone": "own_lane",
+        "zone": "far_sidewalk",
         "got": "wait_for_green",
         "ok": true,
         "want": [
@@ -1487,124 +1896,20 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.87,
+            "confidence": 0.84,
             "probabilities": {
-              "continue": 0.02,
-              "slow_down": 0.01,
-              "stop": 0.07,
+              "continue": 0.11,
+              "slow_down": 0,
+              "stop": 0.03,
               "stop_then_go": 0,
-              "wait_for_green": 0.89,
-              "go": 0.01,
+              "wait_for_green": 0.86,
+              "go": 0,
               "change_speed": 0
             }
           },
           "category": {
             "choice": "traffic_light",
-            "confidence": 0.99,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0.99,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0.01,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
             "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 309
-        },
-        "roundTripMs": 324
-      },
-      {
-        "zone": "oncoming_lane",
-        "got": "slow_down",
-        "ok": false,
-        "want": [
-          "wait_for_green"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.25,
-            "probabilities": {
-              "continue": 0.35,
-              "slow_down": 0.36,
-              "stop": 0.02,
-              "stop_then_go": 0,
-              "wait_for_green": 0.26,
-              "go": 0.01,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "traffic_light",
-            "confidence": 0.99,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0.99,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0.01,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 290
-        },
-        "roundTripMs": 307
-      },
-      {
-        "zone": "sidewalk",
-        "got": "continue",
-        "ok": false,
-        "want": [
-          "wait_for_green"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.27,
-            "probabilities": {
-              "continue": 0.38,
-              "slow_down": 0.27,
-              "stop": 0.01,
-              "stop_then_go": 0,
-              "wait_for_green": 0.33,
-              "go": 0.01,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "traffic_light",
-            "confidence": 0.99,
             "probabilities": {
               "person": 0,
               "animal": 0,
@@ -1629,9 +1934,223 @@
               "none": 1
             }
           },
-          "latencyMs": 348
+          "latencyMs": 314
         },
-        "roundTripMs": 368
+        "roundTripMs": 349
+      }
+    ]
+  },
+  {
+    "id": "amber",
+    "caption": "A traffic light that is yellow in the middle of the street",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "wait_for_green",
+        "ok": true,
+        "want": [
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "wait_for_green",
+            "confidence": 0.84,
+            "probabilities": {
+              "continue": 0.03,
+              "slow_down": 0.01,
+              "stop": 0.08,
+              "stop_then_go": 0,
+              "wait_for_green": 0.87,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 0.98,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0.99,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 279
+        },
+        "roundTripMs": 290
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": false,
+        "want": [
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.38,
+            "probabilities": {
+              "continue": 0.47,
+              "slow_down": 0.1,
+              "stop": 0.04,
+              "stop_then_go": 0,
+              "wait_for_green": 0.37,
+              "go": 0.02,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 0.99,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0.99,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 287
+        },
+        "roundTripMs": 300
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "wait_for_green",
+        "ok": true,
+        "want": [
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "wait_for_green",
+            "confidence": 0.66,
+            "probabilities": {
+              "continue": 0.17,
+              "slow_down": 0.09,
+              "stop": 0.01,
+              "stop_then_go": 0,
+              "wait_for_green": 0.72,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 0.99,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0.99,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 317
+        },
+        "roundTripMs": 329
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "wait_for_green",
+        "ok": true,
+        "want": [
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "wait_for_green",
+            "confidence": 0.43,
+            "probabilities": {
+              "continue": 0.39,
+              "slow_down": 0.06,
+              "stop": 0.01,
+              "stop_then_go": 0,
+              "wait_for_green": 0.52,
+              "go": 0.02,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 0.99,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0.99,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 271
+        },
+        "roundTripMs": 286
       }
     ]
   },
@@ -1688,9 +2207,9 @@
               "none": 1
             }
           },
-          "latencyMs": 343
+          "latencyMs": 339
         },
-        "roundTripMs": 358
+        "roundTripMs": 353
       },
       {
         "zone": "oncoming_lane",
@@ -1703,14 +2222,14 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.57,
+            "confidence": 0.45,
             "probabilities": {
-              "continue": 0.63,
-              "slow_down": 0.04,
-              "stop": 0,
+              "continue": 0.53,
+              "slow_down": 0.01,
+              "stop": 0.01,
               "stop_then_go": 0,
-              "wait_for_green": 0.01,
-              "go": 0.32,
+              "wait_for_green": 0.02,
+              "go": 0.43,
               "change_speed": 0
             }
           },
@@ -1741,12 +2260,12 @@
               "none": 1
             }
           },
-          "latencyMs": 315
+          "latencyMs": 342
         },
-        "roundTripMs": 328
+        "roundTripMs": 354
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "go",
         "ok": true,
         "want": [
@@ -1756,14 +2275,14 @@
         "response": {
           "action": {
             "choice": "go",
-            "confidence": 0.54,
+            "confidence": 0.82,
             "probabilities": {
-              "continue": 0.37,
-              "slow_down": 0.02,
+              "continue": 0.14,
+              "slow_down": 0,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
-              "go": 0.61,
+              "go": 0.86,
               "change_speed": 0
             }
           },
@@ -1794,9 +2313,62 @@
               "none": 1
             }
           },
-          "latencyMs": 266
+          "latencyMs": 343
         },
-        "roundTripMs": 279
+        "roundTripMs": 361
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "go",
+        "ok": true,
+        "want": [
+          "go",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "go",
+            "confidence": 0.69,
+            "probabilities": {
+              "continue": 0.25,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0.01,
+              "go": 0.74,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 1,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 320
+        },
+        "roundTripMs": 334
       }
     ]
   },
@@ -1814,15 +2386,67 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.93,
+            "confidence": 0.97,
             "probabilities": {
-              "continue": 0.04,
+              "continue": 0.02,
               "slow_down": 0,
-              "stop": 0.02,
+              "stop": 0.01,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.94
+              "change_speed": 0.97
+            }
+          },
+          "category": {
+            "choice": "speed_limit_sign",
+            "confidence": 0.98,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0.98,
+              "other_sign": 0.01,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "30",
+            "confidence": 1,
+            "probabilities": {
+              "30": 1,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 0
+            }
+          },
+          "latencyMs": 349
+        },
+        "roundTripMs": 362
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "change_speed 30",
+        "ok": true,
+        "want": [
+          "change_speed 30"
+        ],
+        "response": {
+          "action": {
+            "choice": "change_speed",
+            "confidence": 0.73,
+            "probabilities": {
+              "continue": 0.21,
+              "slow_down": 0.02,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0.77
             }
           },
           "category": {
@@ -1852,12 +2476,12 @@
               "none": 0
             }
           },
-          "latencyMs": 326
+          "latencyMs": 317
         },
-        "roundTripMs": 340
+        "roundTripMs": 331
       },
       {
-        "zone": "oncoming_lane",
+        "zone": "near_sidewalk",
         "got": "change_speed 30",
         "ok": true,
         "want": [
@@ -1866,72 +2490,20 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.57,
+            "confidence": 0.86,
             "probabilities": {
-              "continue": 0.28,
-              "slow_down": 0.09,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0.63
-            }
-          },
-          "category": {
-            "choice": "speed_limit_sign",
-            "confidence": 0.99,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0.99,
-              "other_sign": 0.01,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "30",
-            "confidence": 1,
-            "probabilities": {
-              "30": 1,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 0
-            }
-          },
-          "latencyMs": 345
-        },
-        "roundTripMs": 359
-      },
-      {
-        "zone": "sidewalk",
-        "got": "change_speed 30",
-        "ok": true,
-        "want": [
-          "change_speed 30"
-        ],
-        "response": {
-          "action": {
-            "choice": "change_speed",
-            "confidence": 0.93,
-            "probabilities": {
-              "continue": 0.05,
+              "continue": 0.11,
               "slow_down": 0.01,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.94
+              "change_speed": 0.88
             }
           },
           "category": {
             "choice": "speed_limit_sign",
-            "confidence": 0.98,
+            "confidence": 0.97,
             "probabilities": {
               "person": 0,
               "animal": 0,
@@ -1956,9 +2528,61 @@
               "none": 0
             }
           },
-          "latencyMs": 286
+          "latencyMs": 305
         },
-        "roundTripMs": 301
+        "roundTripMs": 318
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "change_speed 30",
+        "ok": true,
+        "want": [
+          "change_speed 30"
+        ],
+        "response": {
+          "action": {
+            "choice": "change_speed",
+            "confidence": 0.72,
+            "probabilities": {
+              "continue": 0.23,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0.77
+            }
+          },
+          "category": {
+            "choice": "speed_limit_sign",
+            "confidence": 0.95,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0.96,
+              "other_sign": 0.04,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "30",
+            "confidence": 1,
+            "probabilities": {
+              "30": 1,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 0
+            }
+          },
+          "latencyMs": 298
+        },
+        "roundTripMs": 310
       }
     ]
   },
@@ -1976,15 +2600,15 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.95,
+            "confidence": 0.98,
             "probabilities": {
-              "continue": 0.02,
+              "continue": 0.01,
               "slow_down": 0,
-              "stop": 0.02,
+              "stop": 0.01,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.96
+              "change_speed": 0.98
             }
           },
           "category": {
@@ -2014,9 +2638,9 @@
               "none": 0
             }
           },
-          "latencyMs": 271
+          "latencyMs": 286
         },
-        "roundTripMs": 286
+        "roundTripMs": 297
       },
       {
         "zone": "oncoming_lane",
@@ -2028,15 +2652,15 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.51,
+            "confidence": 0.72,
             "probabilities": {
-              "continue": 0.37,
-              "slow_down": 0.05,
+              "continue": 0.23,
+              "slow_down": 0.01,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.58
+              "change_speed": 0.76
             }
           },
           "category": {
@@ -2066,12 +2690,12 @@
               "none": 0
             }
           },
-          "latencyMs": 322
+          "latencyMs": 378
         },
-        "roundTripMs": 337
+        "roundTripMs": 392
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "change_speed 80",
         "ok": true,
         "want": [
@@ -2080,15 +2704,15 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.76,
+            "confidence": 0.79,
             "probabilities": {
               "continue": 0.17,
-              "slow_down": 0.03,
+              "slow_down": 0.01,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.8
+              "change_speed": 0.82
             }
           },
           "category": {
@@ -2118,9 +2742,61 @@
               "none": 0
             }
           },
-          "latencyMs": 271
+          "latencyMs": 302
         },
-        "roundTripMs": 283
+        "roundTripMs": 315
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "change_speed 80",
+        "ok": true,
+        "want": [
+          "change_speed 80"
+        ],
+        "response": {
+          "action": {
+            "choice": "change_speed",
+            "confidence": 0.71,
+            "probabilities": {
+              "continue": 0.24,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0.76
+            }
+          },
+          "category": {
+            "choice": "speed_limit_sign",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 1,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "80",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 1,
+              "120": 0,
+              "none": 0
+            }
+          },
+          "latencyMs": 291
+        },
+        "roundTripMs": 301
       }
     ]
   },
@@ -2138,11 +2814,64 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.56,
+            "confidence": 0.52,
             "probabilities": {
-              "continue": 0.63,
+              "continue": 0.59,
               "slow_down": 0.02,
-              "stop": 0.35,
+              "stop": 0.39,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "obstacle",
+            "confidence": 0.98,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.98,
+              "harmless_debris": 0.02,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 389
+        },
+        "roundTripMs": 404
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.74,
+            "probabilities": {
+              "continue": 0.79,
+              "slow_down": 0.2,
+              "stop": 0.01,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -2176,65 +2905,12 @@
               "none": 1
             }
           },
-          "latencyMs": 287
+          "latencyMs": 395
         },
-        "roundTripMs": 299
+        "roundTripMs": 409
       },
       {
-        "zone": "oncoming_lane",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "continue",
-          "slow_down"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.44,
-            "probabilities": {
-              "continue": 0.47,
-              "slow_down": 0.53,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "obstacle",
-            "confidence": 0.97,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0.97,
-              "harmless_debris": 0.03,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 295
-        },
-        "roundTripMs": 306
-      },
-      {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
@@ -2244,10 +2920,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.79,
+            "confidence": 0.89,
             "probabilities": {
-              "continue": 0.83,
-              "slow_down": 0.17,
+              "continue": 0.91,
+              "slow_down": 0.09,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -2257,7 +2933,7 @@
           },
           "category": {
             "choice": "obstacle",
-            "confidence": 0.75,
+            "confidence": 0.91,
             "probabilities": {
               "person": 0,
               "animal": 0,
@@ -2266,8 +2942,8 @@
               "stop_sign": 0,
               "speed_limit_sign": 0,
               "other_sign": 0,
-              "obstacle": 0.78,
-              "harmless_debris": 0.22,
+              "obstacle": 0.92,
+              "harmless_debris": 0.08,
               "unclear": 0
             }
           },
@@ -2282,9 +2958,61 @@
               "none": 1
             }
           },
-          "latencyMs": 265
+          "latencyMs": 263
         },
-        "roundTripMs": 279
+        "roundTripMs": 276
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.98,
+            "probabilities": {
+              "continue": 0.98,
+              "slow_down": 0.02,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "obstacle",
+            "confidence": 0.69,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.73,
+              "harmless_debris": 0.27,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 427
+        },
+        "roundTripMs": 442
       }
     ]
   },
@@ -2302,169 +3030,7 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.99,
-            "probabilities": {
-              "continue": 0.99,
-              "slow_down": 0,
-              "stop": 0.01,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "harmless_debris",
             "confidence": 1,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 1,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 284
-        },
-        "roundTripMs": 298
-      },
-      {
-        "zone": "oncoming_lane",
-        "got": "continue",
-        "ok": true,
-        "want": [
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.81,
-            "probabilities": {
-              "continue": 0.84,
-              "slow_down": 0.16,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "harmless_debris",
-            "confidence": 1,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 1,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 316
-        },
-        "roundTripMs": 325
-      },
-      {
-        "zone": "sidewalk",
-        "got": "continue",
-        "ok": true,
-        "want": [
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.91,
-            "probabilities": {
-              "continue": 0.93,
-              "slow_down": 0.07,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "harmless_debris",
-            "confidence": 1,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 1,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 291
-        },
-        "roundTripMs": 307
-      }
-    ]
-  },
-  {
-    "id": "leaves",
-    "caption": "A pile of brown leaves in the middle of a park",
-    "zones": [
-      {
-        "zone": "own_lane",
-        "got": "continue",
-        "ok": true,
-        "want": [
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.99,
             "probabilities": {
               "continue": 1,
               "slow_down": 0,
@@ -2502,9 +3068,9 @@
               "none": 1
             }
           },
-          "latencyMs": 350
+          "latencyMs": 346
         },
-        "roundTripMs": 365
+        "roundTripMs": 361
       },
       {
         "zone": "oncoming_lane",
@@ -2516,10 +3082,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.75,
+            "confidence": 0.97,
             "probabilities": {
-              "continue": 0.79,
-              "slow_down": 0.21,
+              "continue": 0.98,
+              "slow_down": 0.02,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -2554,12 +3120,12 @@
               "none": 1
             }
           },
-          "latencyMs": 309
+          "latencyMs": 338
         },
-        "roundTripMs": 321
+        "roundTripMs": 352
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
@@ -2568,10 +3134,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.93,
+            "confidence": 0.97,
             "probabilities": {
-              "continue": 0.94,
-              "slow_down": 0.06,
+              "continue": 0.98,
+              "slow_down": 0.02,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -2606,9 +3172,275 @@
               "none": 1
             }
           },
-          "latencyMs": 307
+          "latencyMs": 355
         },
-        "roundTripMs": 324
+        "roundTripMs": 367
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 1,
+            "probabilities": {
+              "continue": 1,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 335
+        },
+        "roundTripMs": 349
+      }
+    ]
+  },
+  {
+    "id": "leaves",
+    "caption": "A pile of brown leaves in the middle of a park",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 1,
+            "probabilities": {
+              "continue": 1,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 317
+        },
+        "roundTripMs": 332
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.94,
+            "probabilities": {
+              "continue": 0.95,
+              "slow_down": 0.04,
+              "stop": 0.01,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 417
+        },
+        "roundTripMs": 431
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.99,
+            "probabilities": {
+              "continue": 0.99,
+              "slow_down": 0.01,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 344
+        },
+        "roundTripMs": 358
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 1,
+            "probabilities": {
+              "continue": 1,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 324
+        },
+        "roundTripMs": 338
       }
     ]
   },
@@ -2629,14 +3461,14 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.92,
+            "confidence": 0.9,
             "probabilities": {
               "continue": 0,
               "slow_down": 0,
               "stop": 0.02,
               "stop_then_go": 0,
-              "wait_for_green": 0.93,
-              "go": 0.04,
+              "wait_for_green": 0.92,
+              "go": 0.06,
               "change_speed": 0
             }
           },
@@ -2667,9 +3499,9 @@
               "none": 1
             }
           },
-          "latencyMs": 288
+          "latencyMs": 409
         },
-        "roundTripMs": 300
+        "roundTripMs": 438
       },
       {
         "zone": "oncoming_lane",
@@ -2683,13 +3515,13 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.47,
+            "confidence": 0.6,
             "probabilities": {
-              "continue": 0.27,
-              "slow_down": 0.14,
+              "continue": 0.28,
+              "slow_down": 0.02,
               "stop": 0.01,
               "stop_then_go": 0,
-              "wait_for_green": 0.55,
+              "wait_for_green": 0.66,
               "go": 0.03,
               "change_speed": 0
             }
@@ -2721,12 +3553,12 @@
               "none": 1
             }
           },
-          "latencyMs": 318
+          "latencyMs": 328
         },
-        "roundTripMs": 332
+        "roundTripMs": 341
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "wait_for_green",
         "ok": true,
         "want": [
@@ -2737,14 +3569,14 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.49,
+            "confidence": 0.63,
             "probabilities": {
-              "continue": 0.29,
-              "slow_down": 0.09,
+              "continue": 0.21,
+              "slow_down": 0.05,
               "stop": 0.01,
               "stop_then_go": 0,
-              "wait_for_green": 0.57,
-              "go": 0.04,
+              "wait_for_green": 0.68,
+              "go": 0.05,
               "change_speed": 0
             }
           },
@@ -2775,9 +3607,63 @@
               "none": 1
             }
           },
-          "latencyMs": 278
+          "latencyMs": 317
         },
-        "roundTripMs": 291
+        "roundTripMs": 330
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "wait_for_green",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "stop",
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "wait_for_green",
+            "confidence": 0.42,
+            "probabilities": {
+              "continue": 0.4,
+              "slow_down": 0.02,
+              "stop": 0.01,
+              "stop_then_go": 0.01,
+              "wait_for_green": 0.5,
+              "go": 0.06,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 1,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 333
+        },
+        "roundTripMs": 347
       }
     ]
   },
@@ -2798,14 +3684,14 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.94,
+            "confidence": 0.93,
             "probabilities": {
               "continue": 0,
               "slow_down": 0,
-              "stop": 0.02,
+              "stop": 0.01,
               "stop_then_go": 0,
-              "wait_for_green": 0.95,
-              "go": 0.03,
+              "wait_for_green": 0.94,
+              "go": 0.05,
               "change_speed": 0
             }
           },
@@ -2836,9 +3722,9 @@
               "none": 1
             }
           },
-          "latencyMs": 271
+          "latencyMs": 304
         },
-        "roundTripMs": 285
+        "roundTripMs": 314
       },
       {
         "zone": "oncoming_lane",
@@ -2852,13 +3738,13 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.39,
+            "confidence": 0.59,
             "probabilities": {
-              "continue": 0.36,
-              "slow_down": 0.13,
+              "continue": 0.27,
+              "slow_down": 0.03,
               "stop": 0.01,
               "stop_then_go": 0,
-              "wait_for_green": 0.47,
+              "wait_for_green": 0.66,
               "go": 0.03,
               "change_speed": 0
             }
@@ -2890,12 +3776,12 @@
               "none": 1
             }
           },
-          "latencyMs": 272
+          "latencyMs": 315
         },
-        "roundTripMs": 286
+        "roundTripMs": 328
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "wait_for_green",
         "ok": true,
         "want": [
@@ -2906,13 +3792,13 @@
         "response": {
           "action": {
             "choice": "wait_for_green",
-            "confidence": 0.61,
+            "confidence": 0.76,
             "probabilities": {
-              "continue": 0.24,
-              "slow_down": 0.06,
+              "continue": 0.15,
+              "slow_down": 0.01,
               "stop": 0,
               "stop_then_go": 0,
-              "wait_for_green": 0.67,
+              "wait_for_green": 0.81,
               "go": 0.03,
               "change_speed": 0
             }
@@ -2944,9 +3830,63 @@
               "none": 1
             }
           },
-          "latencyMs": 279
+          "latencyMs": 317
         },
-        "roundTripMs": 291
+        "roundTripMs": 329
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "wait_for_green",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "stop",
+          "wait_for_green"
+        ],
+        "response": {
+          "action": {
+            "choice": "wait_for_green",
+            "confidence": 0.64,
+            "probabilities": {
+              "continue": 0.25,
+              "slow_down": 0.01,
+              "stop": 0.01,
+              "stop_then_go": 0,
+              "wait_for_green": 0.69,
+              "go": 0.04,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "traffic_light",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 1,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 298
+        },
+        "roundTripMs": 308
       }
     ]
   },
@@ -3003,9 +3943,9 @@
               "none": 1
             }
           },
-          "latencyMs": 304
+          "latencyMs": 287
         },
-        "roundTripMs": 317
+        "roundTripMs": 297
       },
       {
         "zone": "oncoming_lane",
@@ -3017,10 +3957,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.89,
+            "confidence": 0.99,
             "probabilities": {
-              "continue": 0.91,
-              "slow_down": 0.09,
+              "continue": 0.99,
+              "slow_down": 0.01,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -3055,12 +3995,12 @@
               "none": 1
             }
           },
-          "latencyMs": 326
+          "latencyMs": 298
         },
-        "roundTripMs": 341
+        "roundTripMs": 311
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [
@@ -3069,10 +4009,10 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.98,
+            "confidence": 1,
             "probabilities": {
-              "continue": 0.98,
-              "slow_down": 0.02,
+              "continue": 1,
+              "slow_down": 0,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -3107,9 +4047,61 @@
               "none": 1
             }
           },
-          "latencyMs": 282
+          "latencyMs": 275
         },
-        "roundTripMs": 300
+        "roundTripMs": 288
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 1,
+            "probabilities": {
+              "continue": 1,
+              "slow_down": 0,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "harmless_debris",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 1,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 332
+        },
+        "roundTripMs": 341
       }
     ]
   },
@@ -3129,29 +4121,29 @@
         "response": {
           "action": {
             "choice": "change_speed",
-            "confidence": 0.75,
+            "confidence": 0.8,
             "probabilities": {
-              "continue": 0.12,
+              "continue": 0.07,
               "slow_down": 0,
-              "stop": 0.08,
+              "stop": 0.09,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
-              "change_speed": 0.8
+              "change_speed": 0.84
             }
           },
           "category": {
             "choice": "speed_limit_sign",
-            "confidence": 0.77,
+            "confidence": 0.73,
             "probabilities": {
               "person": 0,
               "animal": 0,
               "vehicle": 0,
               "traffic_light": 0,
               "stop_sign": 0,
-              "speed_limit_sign": 0.8,
-              "other_sign": 0.16,
-              "obstacle": 0.02,
+              "speed_limit_sign": 0.77,
+              "other_sign": 0.18,
+              "obstacle": 0.03,
               "harmless_debris": 0.02,
               "unclear": 0
             }
@@ -3167,13 +4159,13 @@
               "none": 0.02
             }
           },
-          "latencyMs": 265
+          "latencyMs": 353
         },
-        "roundTripMs": 279
+        "roundTripMs": 366
       },
       {
         "zone": "oncoming_lane",
-        "got": "continue",
+        "got": "change_speed 30",
         "ok": true,
         "want": [
           "change_speed 30",
@@ -3181,83 +4173,30 @@
         ],
         "response": {
           "action": {
-            "choice": "continue",
-            "confidence": 0.36,
+            "choice": "change_speed",
+            "confidence": 0.43,
             "probabilities": {
-              "continue": 0.46,
-              "slow_down": 0.21,
-              "stop": 0.01,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0.32
-            }
-          },
-          "category": {
-            "choice": "speed_limit_sign",
-            "confidence": 0.79,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0.8200000000000001,
-              "other_sign": 0.18,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "30",
-            "confidence": 0.99,
-            "probabilities": {
-              "30": 0.99,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 0.01
-            }
-          },
-          "latencyMs": 284
-        },
-        "roundTripMs": 300
-      },
-      {
-        "zone": "sidewalk",
-        "got": "continue",
-        "ok": true,
-        "want": [
-          "change_speed 30",
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.37,
-            "probabilities": {
-              "continue": 0.47000000000000003,
-              "slow_down": 0.12,
+              "continue": 0.44,
+              "slow_down": 0.04,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0.41
+              "go": 0.01,
+              "change_speed": 0.51
             }
           },
           "category": {
             "choice": "speed_limit_sign",
-            "confidence": 0.6,
+            "confidence": 0.72,
             "probabilities": {
               "person": 0,
               "animal": 0,
               "vehicle": 0,
               "traffic_light": 0,
               "stop_sign": 0,
-              "speed_limit_sign": 0.65,
-              "other_sign": 0.34,
-              "obstacle": 0.01,
+              "speed_limit_sign": 0.76,
+              "other_sign": 0.24,
+              "obstacle": 0,
               "harmless_debris": 0,
               "unclear": 0
             }
@@ -3273,9 +4212,115 @@
               "none": 0.02
             }
           },
-          "latencyMs": 268
+          "latencyMs": 343
         },
-        "roundTripMs": 278
+        "roundTripMs": 360
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "change_speed 30",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.6,
+            "probabilities": {
+              "continue": 0.66,
+              "slow_down": 0.05,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0.29
+            }
+          },
+          "category": {
+            "choice": "speed_limit_sign",
+            "confidence": 0.61,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0.66,
+              "other_sign": 0.34,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "30",
+            "confidence": 0.95,
+            "probabilities": {
+              "30": 0.96,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 0.04
+            }
+          },
+          "latencyMs": 281
+        },
+        "roundTripMs": 293
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "change_speed 30",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.78,
+            "probabilities": {
+              "continue": 0.81,
+              "slow_down": 0.03,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0.15
+            }
+          },
+          "category": {
+            "choice": "speed_limit_sign",
+            "confidence": 0.45,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0.52,
+              "other_sign": 0.47,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0.01
+            }
+          },
+          "speedLimit": {
+            "choice": "30",
+            "confidence": 0.98,
+            "probabilities": {
+              "30": 0.98,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 0.02
+            }
+          },
+          "latencyMs": 498
+        },
+        "roundTripMs": 511
       }
     ]
   },
@@ -3292,11 +4337,11 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.47,
+            "confidence": 0.46,
             "probabilities": {
-              "continue": 0.54,
+              "continue": 0.53,
               "slow_down": 0.02,
-              "stop": 0.4,
+              "stop": 0.41,
               "stop_then_go": 0.02,
               "wait_for_green": 0,
               "go": 0.01,
@@ -3305,7 +4350,7 @@
           },
           "category": {
             "choice": "other_sign",
-            "confidence": 0.96,
+            "confidence": 0.98,
             "probabilities": {
               "person": 0,
               "animal": 0,
@@ -3313,8 +4358,8 @@
               "traffic_light": 0,
               "stop_sign": 0,
               "speed_limit_sign": 0,
-              "other_sign": 0.97,
-              "obstacle": 0.02,
+              "other_sign": 0.98,
+              "obstacle": 0.01,
               "harmless_debris": 0.01,
               "unclear": 0
             }
@@ -3330,9 +4375,9 @@
               "none": 1
             }
           },
-          "latencyMs": 289
+          "latencyMs": 304
         },
-        "roundTripMs": 307
+        "roundTripMs": 316
       },
       {
         "zone": "oncoming_lane",
@@ -3342,12 +4387,12 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.51,
+            "confidence": 0.82,
             "probabilities": {
-              "continue": 0.59,
-              "slow_down": 0.4,
+              "continue": 0.85,
+              "slow_down": 0.13,
               "stop": 0.01,
-              "stop_then_go": 0,
+              "stop_then_go": 0.01,
               "wait_for_green": 0,
               "go": 0,
               "change_speed": 0
@@ -3362,8 +4407,8 @@
               "vehicle": 0,
               "traffic_light": 0,
               "stop_sign": 0,
-              "speed_limit_sign": 0.01,
-              "other_sign": 0.99,
+              "speed_limit_sign": 0,
+              "other_sign": 1,
               "obstacle": 0,
               "harmless_debris": 0,
               "unclear": 0
@@ -3380,22 +4425,22 @@
               "none": 1
             }
           },
-          "latencyMs": 260
+          "latencyMs": 399
         },
-        "roundTripMs": 274
+        "roundTripMs": 412
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "continue",
         "ok": true,
         "want": [],
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.83,
+            "confidence": 0.93,
             "probabilities": {
-              "continue": 0.86,
-              "slow_down": 0.14,
+              "continue": 0.95,
+              "slow_down": 0.05,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -3430,9 +4475,59 @@
               "none": 1
             }
           },
-          "latencyMs": 341
+          "latencyMs": 385
         },
-        "roundTripMs": 358
+        "roundTripMs": 394
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.97,
+            "probabilities": {
+              "continue": 0.98,
+              "slow_down": 0.02,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "other_sign",
+            "confidence": 0.99,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 1,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 402
+        },
+        "roundTripMs": 413
       }
     ]
   },
@@ -3452,336 +4547,6 @@
           "action": {
             "choice": "stop",
             "confidence": 0.99,
-            "probabilities": {
-              "continue": 0,
-              "slow_down": 0,
-              "stop": 1,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 288
-        },
-        "roundTripMs": 300
-      },
-      {
-        "zone": "oncoming_lane",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "stop",
-          "slow_down"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.59,
-            "probabilities": {
-              "continue": 0.03,
-              "slow_down": 0.65,
-              "stop": 0.32,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 318
-        },
-        "roundTripMs": 334
-      },
-      {
-        "zone": "sidewalk",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "slow_down",
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.88,
-            "probabilities": {
-              "continue": 0.1,
-              "slow_down": 0.9,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 304
-        },
-        "roundTripMs": 315
-      }
-    ]
-  },
-  {
-    "id": "child",
-    "variant": "little-boy-768",
-    "caption": "A little boy playing with a soccer ball on the beach.",
-    "zones": [
-      {
-        "zone": "own_lane",
-        "got": "stop",
-        "ok": true,
-        "want": [
-          "stop"
-        ],
-        "response": {
-          "action": {
-            "choice": "stop",
-            "confidence": 1,
-            "probabilities": {
-              "continue": 0,
-              "slow_down": 0,
-              "stop": 1,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 333
-        },
-        "roundTripMs": 344
-      },
-      {
-        "zone": "oncoming_lane",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "stop",
-          "slow_down"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.56,
-            "probabilities": {
-              "continue": 0.02,
-              "slow_down": 0.63,
-              "stop": 0.35,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 341
-        },
-        "roundTripMs": 355
-      },
-      {
-        "zone": "sidewalk",
-        "got": "slow_down",
-        "ok": true,
-        "want": [
-          "slow_down",
-          "continue"
-        ],
-        "response": {
-          "action": {
-            "choice": "slow_down",
-            "confidence": 0.89,
-            "probabilities": {
-              "continue": 0.09,
-              "slow_down": 0.91,
-              "stop": 0,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "person",
-            "confidence": 1,
-            "probabilities": {
-              "person": 1,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0,
-              "harmless_debris": 0,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 295
-        },
-        "roundTripMs": 309
-      }
-    ]
-  },
-  {
-    "id": "adult",
-    "variant": "three-women-768",
-    "caption": "Three women walking down a street in the middle of the day.",
-    "zones": [
-      {
-        "zone": "own_lane",
-        "got": "stop",
-        "ok": true,
-        "want": [
-          "stop"
-        ],
-        "response": {
-          "action": {
-            "choice": "stop",
-            "confidence": 0.98,
             "probabilities": {
               "continue": 0,
               "slow_down": 0.01,
@@ -3819,9 +4584,9 @@
               "none": 1
             }
           },
-          "latencyMs": 299
+          "latencyMs": 313
         },
-        "roundTripMs": 313
+        "roundTripMs": 331
       },
       {
         "zone": "oncoming_lane",
@@ -3834,11 +4599,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.91,
+            "confidence": 0.59,
             "probabilities": {
-              "continue": 0.03,
-              "slow_down": 0.93,
-              "stop": 0.04,
+              "continue": 0.01,
+              "slow_down": 0.66,
+              "stop": 0.33,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -3872,25 +4637,25 @@
               "none": 1
             }
           },
-          "latencyMs": 385
+          "latencyMs": 297
         },
-        "roundTripMs": 401
+        "roundTripMs": 308
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
-          "slow_down"
+          "slow_down",
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.49,
+            "confidence": 0.97,
             "probabilities": {
-              "continue": 0.44,
-              "slow_down": 0.56,
+              "continue": 0.02,
+              "slow_down": 0.98,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -3925,16 +4690,69 @@
               "none": 1
             }
           },
-          "latencyMs": 306
+          "latencyMs": 302
         },
-        "roundTripMs": 317
+        "roundTripMs": 313
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.61,
+            "probabilities": {
+              "continue": 0.33,
+              "slow_down": 0.67,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 295
+        },
+        "roundTripMs": 308
       }
     ]
   },
   {
-    "id": "adult",
-    "variant": "coats-768",
-    "caption": "Three women walking down a street in coats.",
+    "id": "child",
+    "variant": "little-boy-768",
+    "caption": "A little boy playing with a soccer ball on the beach.",
     "zones": [
       {
         "zone": "own_lane",
@@ -3946,7 +4764,225 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.97,
+            "confidence": 0.99,
+            "probabilities": {
+              "continue": 0,
+              "slow_down": 0.01,
+              "stop": 0.99,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 462
+        },
+        "roundTripMs": 473
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "stop",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.67,
+            "probabilities": {
+              "continue": 0.02,
+              "slow_down": 0.73,
+              "stop": 0.25,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 405
+        },
+        "roundTripMs": 415
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.98,
+            "probabilities": {
+              "continue": 0.01,
+              "slow_down": 0.99,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 334
+        },
+        "roundTripMs": 347
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.58,
+            "probabilities": {
+              "continue": 0.35,
+              "slow_down": 0.65,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 344
+        },
+        "roundTripMs": 354
+      }
+    ]
+  },
+  {
+    "id": "adult",
+    "variant": "three-women-768",
+    "caption": "Three women walking down a street in the middle of the day.",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.98,
             "probabilities": {
               "continue": 0,
               "slow_down": 0.02,
@@ -3984,9 +5020,9 @@
               "none": 1
             }
           },
-          "latencyMs": 297
+          "latencyMs": 343
         },
-        "roundTripMs": 304
+        "roundTripMs": 353
       },
       {
         "zone": "oncoming_lane",
@@ -3999,10 +5035,10 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.88,
+            "confidence": 0.89,
             "probabilities": {
-              "continue": 0.06,
-              "slow_down": 0.9,
+              "continue": 0.05,
+              "slow_down": 0.91,
               "stop": 0.04,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4037,25 +5073,24 @@
               "none": 1
             }
           },
-          "latencyMs": 385
+          "latencyMs": 320
         },
-        "roundTripMs": 399
+        "roundTripMs": 334
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.48,
+            "confidence": 0.74,
             "probabilities": {
-              "continue": 0.45,
-              "slow_down": 0.55,
+              "continue": 0.22,
+              "slow_down": 0.78,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4090,9 +5125,277 @@
               "none": 1
             }
           },
-          "latencyMs": 313
+          "latencyMs": 333
         },
-        "roundTripMs": 326
+        "roundTripMs": 346
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.66,
+            "probabilities": {
+              "continue": 0.71,
+              "slow_down": 0.29,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 323
+        },
+        "roundTripMs": 332
+      }
+    ]
+  },
+  {
+    "id": "adult",
+    "variant": "coats-768",
+    "caption": "Three women walking down a street in coats.",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.96,
+            "probabilities": {
+              "continue": 0,
+              "slow_down": 0.03,
+              "stop": 0.97,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 280
+        },
+        "roundTripMs": 292
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "stop",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.88,
+            "probabilities": {
+              "continue": 0.07,
+              "slow_down": 0.91,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 389
+        },
+        "roundTripMs": 404
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.74,
+            "probabilities": {
+              "continue": 0.22,
+              "slow_down": 0.78,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 346
+        },
+        "roundTripMs": 362
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.71,
+            "probabilities": {
+              "continue": 0.76,
+              "slow_down": 0.24,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 288
+        },
+        "roundTripMs": 304
       }
     ]
   },
@@ -4111,64 +5414,11 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.45,
+            "confidence": 0.47,
             "probabilities": {
-              "continue": 0.54,
+              "continue": 0.56,
               "slow_down": 0.01,
-              "stop": 0.45,
-              "stop_then_go": 0,
-              "wait_for_green": 0,
-              "go": 0,
-              "change_speed": 0
-            }
-          },
-          "category": {
-            "choice": "obstacle",
-            "confidence": 0.99,
-            "probabilities": {
-              "person": 0,
-              "animal": 0,
-              "vehicle": 0,
-              "traffic_light": 0,
-              "stop_sign": 0,
-              "speed_limit_sign": 0,
-              "other_sign": 0,
-              "obstacle": 0.99,
-              "harmless_debris": 0.01,
-              "unclear": 0
-            }
-          },
-          "speedLimit": {
-            "choice": "none",
-            "confidence": 1,
-            "probabilities": {
-              "30": 0,
-              "50": 0,
-              "80": 0,
-              "120": 0,
-              "none": 1
-            }
-          },
-          "latencyMs": 330
-        },
-        "roundTripMs": 340
-      },
-      {
-        "zone": "oncoming_lane",
-        "got": "continue",
-        "ok": true,
-        "want": [
-          "continue",
-          "slow_down"
-        ],
-        "response": {
-          "action": {
-            "choice": "continue",
-            "confidence": 0.4,
-            "probabilities": {
-              "continue": 0.5,
-              "slow_down": 0.48,
-              "stop": 0.02,
+              "stop": 0.43,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4204,10 +5454,10 @@
           },
           "latencyMs": 340
         },
-        "roundTripMs": 358
+        "roundTripMs": 354
       },
       {
-        "zone": "sidewalk",
+        "zone": "oncoming_lane",
         "got": "continue",
         "ok": true,
         "want": [
@@ -4217,11 +5467,11 @@
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.75,
+            "confidence": 0.61,
             "probabilities": {
-              "continue": 0.79,
-              "slow_down": 0.21,
-              "stop": 0,
+              "continue": 0.68,
+              "slow_down": 0.3,
+              "stop": 0.02,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4230,17 +5480,17 @@
           },
           "category": {
             "choice": "obstacle",
-            "confidence": 0.86,
+            "confidence": 0.99,
             "probabilities": {
               "person": 0,
-              "animal": 0.03,
+              "animal": 0,
               "vehicle": 0,
               "traffic_light": 0,
               "stop_sign": 0,
               "speed_limit_sign": 0,
               "other_sign": 0,
-              "obstacle": 0.89,
-              "harmless_debris": 0.08,
+              "obstacle": 0.99,
+              "harmless_debris": 0.01,
               "unclear": 0
             }
           },
@@ -4255,9 +5505,115 @@
               "none": 1
             }
           },
-          "latencyMs": 288
+          "latencyMs": 397
         },
-        "roundTripMs": 300
+        "roundTripMs": 416
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.83,
+            "probabilities": {
+              "continue": 0.86,
+              "slow_down": 0.14,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "obstacle",
+            "confidence": 0.92,
+            "probabilities": {
+              "person": 0,
+              "animal": 0.01,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.93,
+              "harmless_debris": 0.05,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 324
+        },
+        "roundTripMs": 337
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.95,
+            "probabilities": {
+              "continue": 0.96,
+              "slow_down": 0.04,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "obstacle",
+            "confidence": 0.79,
+            "probabilities": {
+              "person": 0,
+              "animal": 0.05,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.81,
+              "harmless_debris": 0.12,
+              "unclear": 0.01
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 345
+        },
+        "roundTripMs": 358
       }
     ]
   },
@@ -4314,9 +5670,9 @@
               "none": 1
             }
           },
-          "latencyMs": 267
+          "latencyMs": 344
         },
-        "roundTripMs": 280
+        "roundTripMs": 358
       },
       {
         "zone": "oncoming_lane",
@@ -4329,11 +5685,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.69,
+            "confidence": 0.73,
             "probabilities": {
-              "continue": 0.01,
-              "slow_down": 0.75,
-              "stop": 0.24,
+              "continue": 0.02,
+              "slow_down": 0.78,
+              "stop": 0.2,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4367,25 +5723,25 @@
               "none": 1
             }
           },
-          "latencyMs": 267
+          "latencyMs": 421
         },
-        "roundTripMs": 283
+        "roundTripMs": 435
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
           "slow_down",
-          "continue"
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.94,
+            "confidence": 0.99,
             "probabilities": {
-              "continue": 0.05,
-              "slow_down": 0.95,
+              "continue": 0.01,
+              "slow_down": 0.99,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4420,9 +5776,62 @@
               "none": 1
             }
           },
-          "latencyMs": 255
+          "latencyMs": 280
         },
-        "roundTripMs": 269
+        "roundTripMs": 293
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.59,
+            "probabilities": {
+              "continue": 0.34,
+              "slow_down": 0.65,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 350
+        },
+        "roundTripMs": 363
       }
     ]
   },
@@ -4479,9 +5888,9 @@
               "none": 1
             }
           },
-          "latencyMs": 274
+          "latencyMs": 282
         },
-        "roundTripMs": 289
+        "roundTripMs": 304
       },
       {
         "zone": "oncoming_lane",
@@ -4494,11 +5903,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.76,
+            "confidence": 0.8,
             "probabilities": {
               "continue": 0,
-              "slow_down": 0.8,
-              "stop": 0.2,
+              "slow_down": 0.84,
+              "stop": 0.16,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4532,25 +5941,25 @@
               "none": 1
             }
           },
-          "latencyMs": 267
+          "latencyMs": 354
         },
-        "roundTripMs": 278
+        "roundTripMs": 367
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
           "slow_down",
-          "continue"
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.95,
+            "confidence": 0.98,
             "probabilities": {
-              "continue": 0.03,
-              "slow_down": 0.96,
+              "continue": 0.01,
+              "slow_down": 0.98,
               "stop": 0.01,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4585,9 +5994,62 @@
               "none": 1
             }
           },
-          "latencyMs": 294
+          "latencyMs": 337
         },
-        "roundTripMs": 308
+        "roundTripMs": 352
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.63,
+            "probabilities": {
+              "continue": 0.3,
+              "slow_down": 0.6900000000000001,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 283
+        },
+        "roundTripMs": 297
       }
     ]
   },
@@ -4606,7 +6068,7 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.99,
+            "confidence": 0.98,
             "probabilities": {
               "continue": 0,
               "slow_down": 0.01,
@@ -4644,9 +6106,9 @@
               "none": 1
             }
           },
-          "latencyMs": 297
+          "latencyMs": 405
         },
-        "roundTripMs": 313
+        "roundTripMs": 416
       },
       {
         "zone": "oncoming_lane",
@@ -4659,10 +6121,10 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.93,
+            "confidence": 0.9,
             "probabilities": {
-              "continue": 0.04,
-              "slow_down": 0.94,
+              "continue": 0.06,
+              "slow_down": 0.92,
               "stop": 0.02,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4697,25 +6159,25 @@
               "none": 1
             }
           },
-          "latencyMs": 299
+          "latencyMs": 289
         },
-        "roundTripMs": 311
+        "roundTripMs": 305
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
           "slow_down",
-          "continue"
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.88,
+            "confidence": 0.93,
             "probabilities": {
-              "continue": 0.1,
-              "slow_down": 0.9,
+              "continue": 0.06,
+              "slow_down": 0.94,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4750,9 +6212,62 @@
               "none": 1
             }
           },
-          "latencyMs": 268
+          "latencyMs": 344
         },
-        "roundTripMs": 280
+        "roundTripMs": 361
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.46,
+            "probabilities": {
+              "continue": 0.54,
+              "slow_down": 0.46,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 347
+        },
+        "roundTripMs": 360
       }
     ]
   },
@@ -4809,9 +6324,9 @@
               "none": 1
             }
           },
-          "latencyMs": 343
+          "latencyMs": 329
         },
-        "roundTripMs": 355
+        "roundTripMs": 341
       },
       {
         "zone": "oncoming_lane",
@@ -4824,11 +6339,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.89,
+            "confidence": 0.91,
             "probabilities": {
-              "continue": 0.01,
-              "slow_down": 0.91,
-              "stop": 0.08,
+              "continue": 0.02,
+              "slow_down": 0.93,
+              "stop": 0.05,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4862,25 +6377,25 @@
               "none": 1
             }
           },
-          "latencyMs": 300
+          "latencyMs": 344
         },
-        "roundTripMs": 315
+        "roundTripMs": 358
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
           "slow_down",
-          "continue"
+          "stop"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.94,
+            "confidence": 0.98,
             "probabilities": {
-              "continue": 0.05,
-              "slow_down": 0.95,
+              "continue": 0.02,
+              "slow_down": 0.98,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -4915,9 +6430,62 @@
               "none": 1
             }
           },
-          "latencyMs": 282
+          "latencyMs": 310
         },
-        "roundTripMs": 297
+        "roundTripMs": 323
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.48,
+            "probabilities": {
+              "continue": 0.44,
+              "slow_down": 0.55,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 345
+        },
+        "roundTripMs": 357
       }
     ]
   },
@@ -4939,8 +6507,8 @@
             "confidence": 0.99,
             "probabilities": {
               "continue": 0,
-              "slow_down": 0,
-              "stop": 1,
+              "slow_down": 0.01,
+              "stop": 0.99,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -4974,9 +6542,9 @@
               "none": 1
             }
           },
-          "latencyMs": 398
+          "latencyMs": 342
         },
-        "roundTripMs": 417
+        "roundTripMs": 354
       },
       {
         "zone": "oncoming_lane",
@@ -4989,11 +6557,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.88,
+            "confidence": 0.92,
             "probabilities": {
-              "continue": 0.06,
-              "slow_down": 0.9,
-              "stop": 0.04,
+              "continue": 0.05,
+              "slow_down": 0.93,
+              "stop": 0.02,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5029,23 +6597,22 @@
           },
           "latencyMs": 300
         },
-        "roundTripMs": 312
+        "roundTripMs": 313
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.54,
+            "confidence": 0.91,
             "probabilities": {
-              "continue": 0.39,
-              "slow_down": 0.61,
+              "continue": 0.08,
+              "slow_down": 0.92,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -5080,9 +6647,61 @@
               "none": 1
             }
           },
-          "latencyMs": 268
+          "latencyMs": 289
         },
-        "roundTripMs": 279
+        "roundTripMs": 302
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.68,
+            "probabilities": {
+              "continue": 0.73,
+              "slow_down": 0.27,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 279
+        },
+        "roundTripMs": 291
       }
     ]
   },
@@ -5139,9 +6758,9 @@
               "none": 1
             }
           },
-          "latencyMs": 291
+          "latencyMs": 366
         },
-        "roundTripMs": 304
+        "roundTripMs": 379
       },
       {
         "zone": "oncoming_lane",
@@ -5154,11 +6773,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.85,
+            "confidence": 0.9,
             "probabilities": {
-              "continue": 0.02,
-              "slow_down": 0.87,
-              "stop": 0.11,
+              "continue": 0.01,
+              "slow_down": 0.92,
+              "stop": 0.07,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5192,26 +6811,25 @@
               "none": 1
             }
           },
-          "latencyMs": 275
+          "latencyMs": 304
         },
-        "roundTripMs": 309
+        "roundTripMs": 314
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.49,
+            "confidence": 0.91,
             "probabilities": {
-              "continue": 0.3,
-              "slow_down": 0.56,
-              "stop": 0.14,
+              "continue": 0.07,
+              "slow_down": 0.93,
+              "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5220,7 +6838,7 @@
           },
           "category": {
             "choice": "person",
-            "confidence": 1,
+            "confidence": 0.99,
             "probabilities": {
               "person": 1,
               "animal": 0,
@@ -5247,7 +6865,59 @@
           },
           "latencyMs": 283
         },
-        "roundTripMs": 308
+        "roundTripMs": 297
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": false,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.47,
+            "probabilities": {
+              "continue": 0.32,
+              "slow_down": 0.55,
+              "stop": 0.12,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 303
+        },
+        "roundTripMs": 316
       }
     ]
   },
@@ -5304,9 +6974,9 @@
               "none": 1
             }
           },
-          "latencyMs": 283
+          "latencyMs": 315
         },
-        "roundTripMs": 294
+        "roundTripMs": 325
       },
       {
         "zone": "oncoming_lane",
@@ -5319,11 +6989,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.72,
+            "confidence": 0.82,
             "probabilities": {
-              "continue": 0.08,
-              "slow_down": 0.77,
-              "stop": 0.15,
+              "continue": 0.04,
+              "slow_down": 0.85,
+              "stop": 0.11,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5357,28 +7027,79 @@
               "none": 1
             }
           },
-          "latencyMs": 271
+          "latencyMs": 352
         },
-        "roundTripMs": 289
+        "roundTripMs": 366
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.55,
+            "confidence": 0.82,
             "probabilities": {
-              "continue": 0.25,
-              "slow_down": 0.62,
-              "stop": 0.11,
+              "continue": 0.09,
+              "slow_down": 0.86,
+              "stop": 0.05,
               "stop_then_go": 0,
-              "wait_for_green": 0.01,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 1,
+            "probabilities": {
+              "person": 1,
+              "animal": 0,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 342
+        },
+        "roundTripMs": 354
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.44,
+            "probabilities": {
+              "continue": 0.53,
+              "slow_down": 0.42,
+              "stop": 0.04,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
               "go": 0.01,
               "change_speed": 0
             }
@@ -5410,9 +7131,9 @@
               "none": 1
             }
           },
-          "latencyMs": 423
+          "latencyMs": 378
         },
-        "roundTripMs": 438
+        "roundTripMs": 387
       }
     ]
   },
@@ -5469,9 +7190,9 @@
               "none": 1
             }
           },
-          "latencyMs": 324
+          "latencyMs": 290
         },
-        "roundTripMs": 335
+        "roundTripMs": 303
       },
       {
         "zone": "oncoming_lane",
@@ -5484,11 +7205,11 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.67,
+            "confidence": 0.52,
             "probabilities": {
-              "continue": 0.07,
-              "slow_down": 0.73,
-              "stop": 0.2,
+              "continue": 0.04,
+              "slow_down": 0.6,
+              "stop": 0.36,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5522,25 +7243,24 @@
               "none": 1
             }
           },
-          "latencyMs": 278
+          "latencyMs": 337
         },
-        "roundTripMs": 287
+        "roundTripMs": 352
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
-          "continue",
           "slow_down"
         ],
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.93,
+            "confidence": 0.99,
             "probabilities": {
-              "continue": 0.06,
-              "slow_down": 0.94,
+              "continue": 0.01,
+              "slow_down": 0.99,
               "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
@@ -5575,9 +7295,62 @@
               "none": 1
             }
           },
-          "latencyMs": 305
+          "latencyMs": 330
         },
-        "roundTripMs": 314
+        "roundTripMs": 341
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.45,
+            "probabilities": {
+              "continue": 0.46,
+              "slow_down": 0.53,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "animal",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 1,
+              "vehicle": 0,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 344
+        },
+        "roundTripMs": 360
       }
     ]
   },
@@ -5596,15 +7369,15 @@
         "response": {
           "action": {
             "choice": "stop",
-            "confidence": 0.54,
+            "confidence": 0.55,
             "probabilities": {
-              "continue": 0.32,
-              "slow_down": 0.05,
+              "continue": 0.33,
+              "slow_down": 0.03,
               "stop": 0.61,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0.02,
-              "change_speed": 0
+              "change_speed": 0.01
             }
           },
           "category": {
@@ -5634,26 +7407,25 @@
               "none": 1
             }
           },
-          "latencyMs": 290
+          "latencyMs": 362
         },
-        "roundTripMs": 301
+        "roundTripMs": 376
       },
       {
         "zone": "oncoming_lane",
         "got": "continue",
         "ok": true,
         "want": [
-          "continue",
-          "slow_down"
+          "continue"
         ],
         "response": {
           "action": {
             "choice": "continue",
-            "confidence": 0.71,
+            "confidence": 0.89,
             "probabilities": {
-              "continue": 0.76,
-              "slow_down": 0.23,
-              "stop": 0,
+              "continue": 0.9,
+              "slow_down": 0.08,
+              "stop": 0.01,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0.01,
@@ -5687,12 +7459,12 @@
               "none": 1
             }
           },
-          "latencyMs": 339
+          "latencyMs": 333
         },
-        "roundTripMs": 353
+        "roundTripMs": 343
       },
       {
-        "zone": "sidewalk",
+        "zone": "near_sidewalk",
         "got": "slow_down",
         "ok": true,
         "want": [
@@ -5702,11 +7474,174 @@
         "response": {
           "action": {
             "choice": "slow_down",
-            "confidence": 0.57,
+            "confidence": 0.47,
             "probabilities": {
-              "continue": 0.21,
-              "slow_down": 0.64,
-              "stop": 0.15,
+              "continue": 0.43,
+              "slow_down": 0.55,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.97,
+            "probabilities": {
+              "person": 0.02,
+              "animal": 0,
+              "vehicle": 0.98,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 396
+        },
+        "roundTripMs": 445
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.63,
+            "probabilities": {
+              "continue": 0.68,
+              "slow_down": 0.23,
+              "stop": 0.08,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 354
+        },
+        "roundTripMs": 368
+      }
+    ]
+  },
+  {
+    "id": "car",
+    "variant": "truck",
+    "caption": "A large white truck driving down a highway",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.49,
+            "probabilities": {
+              "continue": 0.35,
+              "slow_down": 0.06,
+              "stop": 0.56,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.02,
+              "change_speed": 0.01
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 287
+        },
+        "roundTripMs": 300
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.94,
+            "probabilities": {
+              "continue": 0.96,
+              "slow_down": 0.04,
+              "stop": 0,
               "stop_then_go": 0,
               "wait_for_green": 0,
               "go": 0,
@@ -5740,9 +7675,982 @@
               "none": 1
             }
           },
-          "latencyMs": 295
+          "latencyMs": 302
         },
-        "roundTripMs": 309
+        "roundTripMs": 316
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.38,
+            "probabilities": {
+              "continue": 0.43,
+              "slow_down": 0.47,
+              "stop": 0.1,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 362
+        },
+        "roundTripMs": 373
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.87,
+            "probabilities": {
+              "continue": 0.89,
+              "slow_down": 0.09,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 346
+        },
+        "roundTripMs": 355
+      }
+    ]
+  },
+  {
+    "id": "car",
+    "variant": "bus",
+    "caption": "A red double decker bus driving down a street",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.82,
+            "probabilities": {
+              "continue": 0.12,
+              "slow_down": 0.02,
+              "stop": 0.85,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 285
+        },
+        "roundTripMs": 296
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.95,
+            "probabilities": {
+              "continue": 0.97,
+              "slow_down": 0.03,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 302
+        },
+        "roundTripMs": 316
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.54,
+            "probabilities": {
+              "continue": 0.2,
+              "slow_down": 0.61,
+              "stop": 0.19,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 355
+        },
+        "roundTripMs": 365
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.72,
+            "probabilities": {
+              "continue": 0.77,
+              "slow_down": 0.17,
+              "stop": 0.05,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 344
+        },
+        "roundTripMs": 357
+      }
+    ]
+  },
+  {
+    "id": "car",
+    "variant": "van",
+    "caption": "A white van parked on the street",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.97,
+            "probabilities": {
+              "continue": 0.01,
+              "slow_down": 0.01,
+              "stop": 0.98,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 289
+        },
+        "roundTripMs": 300
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.76,
+            "probabilities": {
+              "continue": 0.79,
+              "slow_down": 0.17,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 351
+        },
+        "roundTripMs": 361
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.67,
+            "probabilities": {
+              "continue": 0.72,
+              "slow_down": 0.26,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 356
+        },
+        "roundTripMs": 370
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.94,
+            "probabilities": {
+              "continue": 0.95,
+              "slow_down": 0.05,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 1,
+            "probabilities": {
+              "person": 0,
+              "animal": 0,
+              "vehicle": 1,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 314
+        },
+        "roundTripMs": 326
+      }
+    ]
+  },
+  {
+    "id": "car",
+    "variant": "motorbike",
+    "caption": "A man riding a motorcycle down a road",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.55,
+            "probabilities": {
+              "continue": 0.15,
+              "slow_down": 0.22,
+              "stop": 0.62,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.61,
+            "probabilities": {
+              "person": 0.35,
+              "animal": 0,
+              "vehicle": 0.65,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 294
+        },
+        "roundTripMs": 306
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.57,
+            "probabilities": {
+              "continue": 0.34,
+              "slow_down": 0.63,
+              "stop": 0.02,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.63,
+            "probabilities": {
+              "person": 0.33,
+              "animal": 0,
+              "vehicle": 0.67,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 309
+        },
+        "roundTripMs": 323
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.95,
+            "probabilities": {
+              "continue": 0.03,
+              "slow_down": 0.96,
+              "stop": 0.01,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.57,
+            "probabilities": {
+              "person": 0.38,
+              "animal": 0,
+              "vehicle": 0.62,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 358
+        },
+        "roundTripMs": 371
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.44,
+            "probabilities": {
+              "continue": 0.47,
+              "slow_down": 0.52,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0.01,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "vehicle",
+            "confidence": 0.62,
+            "probabilities": {
+              "person": 0.34,
+              "animal": 0,
+              "vehicle": 0.66,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 300
+        },
+        "roundTripMs": 310
+      }
+    ]
+  },
+  {
+    "id": "bicycle",
+    "variant": "cyclist",
+    "caption": "A man riding a bicycle down a street",
+    "zones": [
+      {
+        "zone": "own_lane",
+        "got": "stop",
+        "ok": true,
+        "want": [
+          "stop"
+        ],
+        "response": {
+          "action": {
+            "choice": "stop",
+            "confidence": 0.68,
+            "probabilities": {
+              "continue": 0.01,
+              "slow_down": 0.26,
+              "stop": 0.73,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 0.68,
+            "probabilities": {
+              "person": 0.71,
+              "animal": 0,
+              "vehicle": 0.28,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0.01,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 338
+        },
+        "roundTripMs": 352
+      },
+      {
+        "zone": "oncoming_lane",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.89,
+            "probabilities": {
+              "continue": 0.03,
+              "slow_down": 0.91,
+              "stop": 0.06,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 0.69,
+            "probabilities": {
+              "person": 0.73,
+              "animal": 0,
+              "vehicle": 0.27,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 305
+        },
+        "roundTripMs": 331
+      },
+      {
+        "zone": "near_sidewalk",
+        "got": "slow_down",
+        "ok": true,
+        "want": [
+          "slow_down",
+          "continue"
+        ],
+        "response": {
+          "action": {
+            "choice": "slow_down",
+            "confidence": 0.94,
+            "probabilities": {
+              "continue": 0.05,
+              "slow_down": 0.95,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 0.72,
+            "probabilities": {
+              "person": 0.76,
+              "animal": 0,
+              "vehicle": 0.24,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 431
+        },
+        "roundTripMs": 443
+      },
+      {
+        "zone": "far_sidewalk",
+        "got": "continue",
+        "ok": true,
+        "want": [
+          "continue",
+          "slow_down"
+        ],
+        "response": {
+          "action": {
+            "choice": "continue",
+            "confidence": 0.42,
+            "probabilities": {
+              "continue": 0.51,
+              "slow_down": 0.49,
+              "stop": 0,
+              "stop_then_go": 0,
+              "wait_for_green": 0,
+              "go": 0,
+              "change_speed": 0
+            }
+          },
+          "category": {
+            "choice": "person",
+            "confidence": 0.75,
+            "probabilities": {
+              "person": 0.78,
+              "animal": 0,
+              "vehicle": 0.22,
+              "traffic_light": 0,
+              "stop_sign": 0,
+              "speed_limit_sign": 0,
+              "other_sign": 0,
+              "obstacle": 0,
+              "harmless_debris": 0,
+              "unclear": 0
+            }
+          },
+          "speedLimit": {
+            "choice": "none",
+            "confidence": 1,
+            "probabilities": {
+              "30": 0,
+              "50": 0,
+              "80": 0,
+              "120": 0,
+              "none": 1
+            }
+          },
+          "latencyMs": 289
+        },
+        "roundTripMs": 306
       }
     ]
   }

@@ -90,10 +90,11 @@ function drawDropHint(ctx: CanvasRenderingContext2D, game: Game): void {
   const { x, y } = game.dropHint;
   const zone = game.zoneAt(x);
   ctx.save();
-  ctx.fillStyle = zone === "sidewalk" ? "rgba(255,230,120,0.22)" : "rgba(255,255,255,0.12)";
+  ctx.fillStyle =
+    zone === "near_sidewalk" || zone === "far_sidewalk" ? "rgba(255,230,120,0.22)" : "rgba(255,255,255,0.12)";
   if (zone === "own_lane") ctx.fillRect(ROAD_MID, 0, ROAD_RIGHT - ROAD_MID, game.viewHeight);
   else if (zone === "oncoming_lane") ctx.fillRect(ROAD_LEFT, 0, ROAD_MID - ROAD_LEFT, game.viewHeight);
-  else if (x < ROAD_LEFT) ctx.fillRect(0, 0, ROAD_LEFT, game.viewHeight);
+  else if (zone === "far_sidewalk") ctx.fillRect(0, 0, ROAD_LEFT, game.viewHeight);
   else ctx.fillRect(ROAD_RIGHT, 0, CANVAS_WIDTH - ROAD_RIGHT, game.viewHeight);
   ctx.strokeStyle = "#fff";
   ctx.setLineDash([5, 4]);

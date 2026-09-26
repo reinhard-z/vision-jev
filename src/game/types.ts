@@ -6,7 +6,8 @@ export { ZONES, type Zone } from "../../shared/types";
 export const ZONE_LABEL: Record<Zone, string> = {
   own_lane: "your lane",
   oncoming_lane: "oncoming lane",
-  sidewalk: "sidewalk",
+  near_sidewalk: "near sidewalk",
+  far_sidewalk: "far sidewalk",
 };
 
 /** What the game does about an object: Jev's action, carried out. */

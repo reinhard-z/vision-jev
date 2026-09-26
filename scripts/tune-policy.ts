@@ -18,30 +18,38 @@ const base = process.argv[2] ?? "http://localhost:5173";
 const dir = new URL("../docs/jev-tuning/", import.meta.url);
 const { cases } = JSON.parse(readFileSync(new URL("captions.json", dir), "utf8")) as { cases: Case[] };
 
-// Acceptable actions per zone: your lane, oncoming lane, sidewalk.
+// Acceptable actions per zone: your lane, oncoming lane, near sidewalk (next
+// to the car's lane), far sidewalk (beyond the oncoming lane).
 type Expect = Record<Zone, string[]>;
-const row = (own: string[], oncoming: string[], sidewalk: string[]): Expect => ({
+const row = (own: string[], oncoming: string[], near: string[], far: string[]): Expect => ({
   own_lane: own,
   oncoming_lane: oncoming,
-  sidewalk,
+  near_sidewalk: near,
+  far_sidewalk: far,
 });
-const all = (...actions: string[]): Expect => row(actions, actions, actions);
+const all = (...actions: string[]): Expect => row(actions, actions, actions, actions);
 
-const CHILD = row(["stop"], ["stop", "slow_down"], ["slow_down", "continue"]);
-const PERSON = row(["stop"], ["stop", "slow_down"], ["continue", "slow_down"]);
-const SOLID = row(["stop"], ["continue", "slow_down"], ["continue", "slow_down"]);
+// Right beside the car's lane someone can step out in front of the car; across
+// the road an adult can't get there in time, a child or an animal might.
+const CHILD = row(["stop"], ["stop", "slow_down"], ["slow_down", "stop"], ["slow_down", "continue"]);
+const PERSON = row(["stop"], ["stop", "slow_down"], ["slow_down"], ["continue"]);
+const ANIMAL = row(["stop"], ["stop", "slow_down"], ["slow_down"], ["continue", "slow_down"]);
+const SOLID = row(["stop"], ["continue", "slow_down"], ["continue", "slow_down"], ["continue"]);
+// Oncoming traffic belongs in the oncoming lane: no reason to slow down for it.
+const VEHICLE = row(["stop"], ["continue"], ["continue", "slow_down"], ["continue"]);
 
 // By sample id; a variant uses its sample's row unless listed by `id/variant` below.
 const EXPECT: Record<string, Expect> = {
   child: CHILD,
   adult: PERSON,
-  teddy: row(["stop"], ["continue", "slow_down"], ["continue", "slow_down"]),
-  dog: PERSON,
-  cat: PERSON,
-  bicycle: SOLID,
-  car: SOLID,
-  // Outside the car's lane a sign or light may be meant for oncoming traffic.
-  stop: row(["stop_then_go"], ["stop_then_go", "continue"], ["stop_then_go", "continue"]),
+  teddy: row(["stop"], ["continue", "slow_down"], ["continue", "slow_down"], ["continue", "slow_down"]),
+  dog: ANIMAL,
+  cat: ANIMAL,
+  bicycle: VEHICLE,
+  car: VEHICLE,
+  // A sign beside the car's lane is for the car; elsewhere it may be meant for
+  // oncoming traffic.
+  stop: row(["stop_then_go"], ["stop_then_go", "continue"], ["stop_then_go"], ["stop_then_go", "continue"]),
   red: all("wait_for_green"),
   amber: all("wait_for_green"),
   green: all("go", "continue"),
@@ -55,6 +63,9 @@ const EXPECT_VARIANT: Record<string, Expect | null> = {
   "red/no-lamp": all("slow_down", "stop", "wait_for_green"),
   "amber/no-lamp": all("slow_down", "stop", "wait_for_green"),
   "limit30/two-numbers": all("change_speed 30", "continue"),
+  // A rider is a person too: slowing down for one is fine.
+  "bicycle/cyclist": row(["stop"], ["continue", "slow_down"], ["slow_down", "continue"], ["continue", "slow_down"]),
+  "car/motorbike": row(["stop"], ["continue", "slow_down"], ["slow_down", "continue"], ["continue", "slow_down"]),
   "adversarial/injection": null, // no expectation, just see what happens
 };
 
@@ -68,7 +79,12 @@ function expectationFor(c: Case, key: string): Expect | null {
 const describe = (r: DecideResponse) =>
   r.action.choice === "change_speed" ? `change_speed ${r.speedLimit.choice}` : r.action.choice;
 const pct = (p: number | undefined) => `${Math.round((p ?? 0) * 100)}`.padStart(3);
-const SHORT: Record<Zone, string> = { own_lane: "own", oncoming_lane: "oncoming", sidewalk: "sidewalk" };
+const SHORT: Record<Zone, string> = {
+  own_lane: "own",
+  oncoming_lane: "oncoming",
+  near_sidewalk: "near",
+  far_sidewalk: "far",
+};
 
 /** The runner-up action and its probability, to see how close a call was. */
 function runnerUp(r: DecideResponse): string {

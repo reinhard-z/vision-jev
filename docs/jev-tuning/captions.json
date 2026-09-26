@@ -159,6 +159,31 @@
       "id": "car",
       "variant": "driving",
       "caption": "A car driving down a street"
+    },
+    {
+      "id": "car",
+      "variant": "truck",
+      "caption": "A large white truck driving down a highway"
+    },
+    {
+      "id": "car",
+      "variant": "bus",
+      "caption": "A red double decker bus driving down a street"
+    },
+    {
+      "id": "car",
+      "variant": "van",
+      "caption": "A white van parked on the street"
+    },
+    {
+      "id": "car",
+      "variant": "motorbike",
+      "caption": "A man riding a motorcycle down a road"
+    },
+    {
+      "id": "bicycle",
+      "variant": "cyclist",
+      "caption": "A man riding a bicycle down a street"
     }
   ]
 }

@@ -93,7 +93,8 @@ export class Game {
   }
 
   zoneAt(x: number): Zone {
-    if (x < ROAD_LEFT || x > ROAD_RIGHT) return "sidewalk";
+    if (x < ROAD_LEFT) return "far_sidewalk";
+    if (x > ROAD_RIGHT) return "near_sidewalk";
     return x < ROAD_MID ? "oncoming_lane" : "own_lane";
   }
 

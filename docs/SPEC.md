@@ -9,7 +9,7 @@ This is a toy, not a model of real autonomous driving.
 ## Gameplay
 
 - Top-down view, road scrolls vertically, car stays near the bottom of the screen.
-- Three drop zones: **your lane** (the right lane, where the car drives), the **oncoming lane** (left of the centre line) and the **sidewalk** (either side). An object's zone is where its centre is.
+- Four drop zones: **your lane** (the right lane, where the car drives), the **oncoming lane** (left of the centre line), the **near sidewalk** (right of your lane) and the **far sidewalk** (left of the oncoming lane). An object's zone is where its centre is.
 - The user drags an image file (or picks from a tray of sample images) onto a zone. The image appears at that spot, some distance ahead of the car, and scrolls towards it.
 - The drop position decides the location. The vision model only has to say _what_ the thing is; Jev gets the caption and the zone.
 - Captioning starts when a tray image is picked up, so the vision model works while the user picks a spot. Files dragged in from outside the browser can only be read on drop.
@@ -36,7 +36,7 @@ Jev decides; the game carries out its `action` (`src/game/behaviors.ts`) and han
 | `go`             | Continue, and release any light the car is waiting at                                                   |
 | `change_speed`   | Set target speed to Jev's `speed_limit` answer when passing it; keep speed if Jev read no number (`none`) |
 
-Only when there is no answer at all (no caption, or the request failed) does the game decide: stop in your lane, slow down in the oncoming lane, continue on the sidewalk. Moving the object asks Jev again.
+Only when there is no answer at all (no caption, or the request failed) does the game decide: stop in your lane, slow down in the oncoming lane, continue on either sidewalk. Moving the object asks Jev again.
 
 ## Perception (browser)
 
@@ -54,13 +54,13 @@ Request (validated; anything else is rejected):
 ```json
 {
   "caption": "a small child in a red jacket standing",
-  "zone": "sidewalk",
+  "zone": "near_sidewalk",
   "turnstileToken": "..."
 }
 ```
 
 - `caption`: string, 1–300 chars
-- `zone`: `own_lane`, `oncoming_lane` or `sidewalk`
+- `zone`: `own_lane`, `oncoming_lane`, `near_sidewalk` or `far_sidewalk`
 - `turnstileToken`: added in stage 5
 
 Response:
@@ -79,7 +79,7 @@ Response:
 The caption and the zone in words, nothing else, because irrelevant context hurts and Jev reads literally:
 
 ```json
-{ "object_seen": "<caption>", "location": "on the sidewalk beside the road, not on the road" }
+{ "object_seen": "<caption>", "location": "on the sidewalk right beside the car's lane, not on the road" }
 ```
 
 ### Jev questions (all in one call)
@@ -94,7 +94,7 @@ Tune the wording by testing with the sample images, not by guessing.
 
 Built with React + TypeScript. The road is a single `<canvas>` component that owns the game loop; everything around it is regular React components. The game loop reports events (object perceived, decision received, reacted too late) to React through a small event emitter or callback, not by setting state every frame.
 
-- Thoughts panel beside the road, per object: thumbnail, zone, Jev's category with confidence, bars for Jev's three likeliest actions, what the car does (e.g. "Person on the sidewalk: slow down until passed"), "asking again…" while Jev decides after a move, latency (vision ms + Jev ms).
+- Thoughts panel beside the road, per object: thumbnail, zone, Jev's category with confidence, bars for Jev's three likeliest actions, what the car does (e.g. "Person on the near sidewalk: slow down until passed"), "asking again…" while Jev decides after a move, latency (vision ms + Jev ms).
 - Tray of sample images for quick testing, plus drag-and-drop of your own files.
 - First-load progress bar for the vision model.
 
@@ -212,6 +212,13 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **Moving an object** asks Jev again, within its zone too: it's Jev's call every time, and a move is how to see it decide again. The old decision keeps driving the car until the answer arrives, and reaching the object in your lane first counts as too late. A click under 4 px isn't a move, so it costs no call.
 - **Captioning starts at drag start** for tray images, cached by image URL (a failure is forgotten, so it's retried). Files dragged in from outside the browser can't be read before the drop.
 - **Tuning:** 35 captions × 3 zones, 105 Jev calls per run. First wording 91/102; after naming what blocks the lane in `stop` and what can be driven over in `continue`, 98/102 against a reference of reasonable answers. The four disagreements are left to Jev: empty cardboard boxes in your lane (continue 56, stop 35), a small teddy bear in your lane (continue 45 vs stop 45), an amber light in the oncoming lane (slow down) and on the sidewalk (continue). Signs and lights outside your lane often get `continue`, which is defensible. Jev in the Worker: median 295 ms, p95 385 ms (n=105).
+
+### Stage 4c: oncoming traffic and two sidewalks
+
+- **Why:** a vehicle in the oncoming lane made the car slow down. The `slow_down` criterion ("not in the car's lane, but could move into it") fitted any vehicle there, and parked ones most of all ("A red car is parked on the side of the road": slow down 75 vs continue 22).
+- **`slow_down` now names who it is for:** "a person or animal that is not in the car's lane, but could move into it". Two other wordings were tried and dropped. Naming "a vehicle in the oncoming lane" in `continue` pulled lights in the oncoming lane toward `continue` and weakened `stop` for a car in your lane (43 vs 42). "Such as oncoming traffic" also pulled people in the oncoming lane toward `continue`.
+- **Two sidewalks:** `sidewalk` is split into `near_sidewalk` (right of your lane) and `far_sidewalk` (beyond the oncoming lane), each described to Jev in words. Jev now slows down for adults on the near side (slow down 74–91) and drives past them on the far side (continue 66–71). Children and animals still get slow down on the far side, less sure (45–63). A stop sign on the near sidewalk is obeyed (46 vs continue 40); on the far one it's taken as meant for oncoming traffic. With no answer, the game continues on both sidewalks.
+- **Tuning:** 5 vehicle captions added (truck, bus, parked van, motorbike, cyclist); 40 captions × 4 zones, 160 Jev calls per run. The reference now wants `continue` for vehicles in the oncoming lane (riders may get slow down) and per sidewalk: adults slow down near, continue far. Before: 11/117 misses with three zones; after: 5/156. The misses are the known ones (teddy bear and boxes in your lane, amber light in the oncoming lane) plus "A person standing in the middle of a road" on the far sidewalk (slow down, defensible). Thin margin: the parked red car in the oncoming lane (continue 34, slow down 39; it went the other way in one run). Jev in the Worker: median 330 ms, p95 421 ms (n=160).
 
 ## Edge cases to try
 
