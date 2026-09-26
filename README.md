@@ -86,7 +86,7 @@ worker/src/
   jev.ts         the only code that calls the AI binding
 shared/types.ts  request/response types shared by client and Worker
 public/samples/  sample images (credits in CREDITS.md)
-docs/            spec, Jev reference, vision model comparison, tuning data, demo GIF
+docs/            spec, Jev reference, vision model comparison, tuning data
 ```
 
 ## Status
