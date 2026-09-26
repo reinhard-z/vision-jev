@@ -8,13 +8,13 @@ import {
   ZONES,
 } from "../../shared/types";
 
+// C0 and C1 control characters, newlines and NUL included.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]+/g;
+
 /** Captions are untrusted: one line, no control characters. */
 export function cleanCaption(caption: string): string {
-  // eslint-disable-next-line no-control-regex
-  return caption
-    .replace(/[\u0000-\u001f\u007f-\u009f]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return caption.replace(CONTROL_CHARS, " ").replace(/\s+/g, " ").trim();
 }
 
 /** A /api/decide body. Unknown fields are rejected, not stripped. */
