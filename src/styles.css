@@ -253,6 +253,12 @@ h2 {
   color: var(--text);
 }
 
+.tray-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
 .credits {
   max-width: min(560px, calc(100vw - 32px));
   padding: 16px 20px;

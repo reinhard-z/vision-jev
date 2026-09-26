@@ -94,7 +94,15 @@ export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
           </div>
         ))}
       </div>
-      <CreditsDialog />
+      <div className="tray-links">
+        <a className="link-button" href="https://github.com/reinhard-z/vision-jev" target="_blank" rel="noreferrer">
+          Source on GitHub
+        </a>
+        <a className="link-button" href="https://docs.typesafe.ai" target="_blank" rel="noreferrer">
+          About Jev
+        </a>
+        <CreditsDialog />
+      </div>
     </aside>
   );
 }
