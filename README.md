@@ -2,9 +2,23 @@
 
 **Live: [drive.mrza.ch](https://drive.mrza.ch)**
 
-A browser toy: a car drives along a top-down scrolling road, and you drop images into its lane, the oncoming lane or onto either sidewalk. A small vision model in the browser describes each image, [Jev](docs/jev.md) (TypeSafe's decision model, on Cloudflare Workers AI) decides what the car should do given that caption and where the object is, and the game carries it out. The thoughts panel shows why the car did what it did, especially when it gets it wrong.
+**Can Jev drive a car?** This demo puts it behind the wheel: drop images of pedestrians, obstacles and traffic signs along the road and let Jev decide whether to stop, slow down or keep going.
+
+[Jev](https://developers.cloudflare.com/ai/models/typesafe/jev/) is TypeSafe's model for fast, low-cost classification and structured decisions. You give it a situation and questions with defined choices; it returns answers with probabilities and confidence. In this project, a Jev call takes around 330 ms at the median in our tuning run and costs roughly $0.00004 per decision—about 25,000 decisions for a dollar. See the [measurements](docs/SPEC.md) and [Jev reference](docs/jev.md) for details.
+
+A vision model running in the browser describes each image. Jev receives the caption and the object's location through Cloudflare Workers AI, and its chosen action drives the car. The Thoughts panel shows the action probabilities and resulting behavior, including the wrong decisions.
+
+![Jev Driver demo showing images placed along the road and Jev's action probabilities in the Thoughts panel](docs/assets/jev-driver-demo.gif)
 
 This is a demo of a "System One" split, not a model of real autonomous driving.
+
+## Try it
+
+Open [drive.mrza.ch](https://drive.mrza.ch) and wait for the vision model to load. The first visit downloads about 357 MB with WebGPU or 228 MB with Wasm; the browser caches the weights for later visits. WebGPU is recommended: the CPU fallback is much slower, so decisions can arrive too late for the car to react.
+
+Drag a sample image or your own image file into the car's lane, the oncoming lane or onto either sidewalk. Move a placed object to ask Jev again, and drag it off the road or click its × to remove it. Use the speed slider to adjust the target speed.
+
+Add `?debug` to the URL to inspect each caption and the browser round-trip time.
 
 ## How it works
 
@@ -16,7 +30,9 @@ action ─▶ game: brake, slow down, wait, change speed…
 
 - **Vision:** Florence-2 base via Transformers.js, off the main thread, WebGPU with a Wasm fallback. Weights load from Hugging Face at a pinned revision and are cached by the browser (~357 MB on WebGPU, ~228 MB on Wasm, first load only).
 - **Decision:** the Worker sends Jev the caption and the zone in words and asks for an action (`continue`, `slow_down`, `stop`, `stop_then_go`, `wait_for_green`, `go`, `change_speed`), a category and a speed limit. Jev's answer drives the car; there's no rule table overriding it.
-- **Game:** distances, braking, speeds and timers are plain code in a `requestAnimationFrame` loop drawn on a canvas. Only when there's no answer (no caption, or the request failed) does the game decide on its own.
+- **Game:** distances, braking, speeds and timers are plain code in a `requestAnimationFrame` loop drawn on a canvas. If captioning or the decision request fails, the fallback is to stop for objects in the car's lane, slow down for those in the oncoming lane and continue past those on the sidewalks.
+
+Images are captioned locally. The decision request sends the caption and zone to the Worker, which passes them to Jev; it does not send the image.
 
 The full spec, stage plan and decisions log are in [docs/SPEC.md](docs/SPEC.md).
 
@@ -24,9 +40,9 @@ The full spec, stage plan and decisions log are in [docs/SPEC.md](docs/SPEC.md).
 
 Requirements:
 
-- Node 22 (see `.nvmrc`) and pnpm 11
+- Node 22.18 or newer in the Node 22 release line (see `.nvmrc`) and pnpm 11 (the exact version is pinned in `package.json`)
 - A Cloudflare account with Workers AI. Jev is billed from prepaid AI Gateway credits, so the account needs some; without them calls fail with `2021: Insufficient AI Gateway credits`. One decision costs about $0.00004.
-- A browser with WebGPU for fast captions (Wasm works, but a caption takes ~15 s instead of ~0.4 s)
+- A browser with WebGPU for fast captions. Local M1 measurements were about 0.4 s per caption at the current 384 px resolution; the Wasm benchmark was about 15 s at 768 px. See [the vision model comparison](docs/vision-models.md) for test conditions.
 
 ```sh
 pnpm install
@@ -38,21 +54,22 @@ pnpm dev              # http://localhost:5173
 
 `pnpm dev` runs Vite and the Worker (in workerd, via `@cloudflare/vite-plugin`) together.
 
-Drag an image from the sample tray, or your own file, onto the road. Drag a placed object to move it (Jev is asked again), and drag it off the road or click its × to remove it. Add `?debug` to the URL to see each caption and the browser round-trip time.
-
 ## Commands
 
-| Command             | What it does                                                        |
-| ------------------- | ------------------------------------------------------------------- |
-| `pnpm dev`          | Dev server with the Worker                                          |
-| `pnpm build`        | Type check, then build client and Worker                            |
-| `pnpm test`         | Vitest: game engine, pipeline and Worker tests                      |
-| `pnpm typecheck`    | `tsc -b`                                                            |
-| `pnpm lint`         | ESLint                                                              |
-| `pnpm format:check` | Prettier                                                            |
-| `pnpm tune`         | Run the tuning captions through a running `/api/decide` (real Jev calls) |
-| `pnpm cf-typegen`   | Regenerate `worker-configuration.d.ts` after changing `wrangler.jsonc` |
-| `pnpm deploy`       | Build and deploy with Wrangler to drive.mrza.ch                     |
+| Command               | What it does                                                             |
+| --------------------- | ------------------------------------------------------------------------ |
+| `pnpm dev`            | Dev server with the Worker                                               |
+| `pnpm build`          | Type check, then build client and Worker                                 |
+| `pnpm preview`        | Build and preview locally                                                |
+| `pnpm preview:remote` | Build and upload a remote preview (see limitations below)                |
+| `pnpm test`           | Vitest: game engine, pipeline and Worker tests                           |
+| `pnpm typecheck`      | `tsc -b`                                                                 |
+| `pnpm lint`           | ESLint                                                                   |
+| `pnpm format:check`   | Prettier                                                                 |
+| `pnpm tune`           | Run the tuning captions through a running `/api/decide` (real Jev calls) |
+| `pnpm cf-typegen`     | Regenerate `worker-configuration.d.ts` after changing `wrangler.jsonc`   |
+| `pnpm deploy`         | Build and deploy with Wrangler to drive.mrza.ch                          |
+| `pnpm smoke [url]`    | Check health and session enforcement; defaults to the live site          |
 
 ## Project layout
 
@@ -71,7 +88,7 @@ worker/src/
   jev.ts         the only code that calls the AI binding
 shared/types.ts  request/response types shared by client and Worker
 public/samples/  sample images (credits in CREDITS.md)
-docs/            spec, Jev reference, vision model comparison, tuning data
+docs/            spec, Jev reference, vision model comparison, tuning data, demo GIF
 ```
 
 ## Status
