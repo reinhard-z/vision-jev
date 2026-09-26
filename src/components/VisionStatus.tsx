@@ -17,7 +17,7 @@ export function VisionStatus() {
 
   if (status.state === "ready") {
     return (
-      <div className="vision-status" title={`Loaded in ${(status.loadMs / 1000).toFixed(1)} s`}>
+      <div className="vision-status" title={`${status.model} · loaded in ${(status.loadMs / 1000).toFixed(1)} s`}>
         Vision model ready · {status.backend === "webgpu" ? "WebGPU" : "Wasm (CPU, slower)"}
       </div>
     );
