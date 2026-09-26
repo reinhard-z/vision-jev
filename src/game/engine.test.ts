@@ -137,7 +137,7 @@ describe("Game", () => {
     expect(game.speedMs).toBe(0);
     const obj = game.get(id)!;
     expect(game.distanceAhead(obj)).toBeGreaterThan(0);
-    expect(obj.status).toBe("decided");
+    expect(obj.phase.kind).toBe("decided");
     game.removeObject(id);
     run(game, 3);
     expect(kmh(game)).toBeGreaterThan(20);
@@ -152,7 +152,7 @@ describe("Game", () => {
     });
     expect(stoppedFor).toBeGreaterThanOrEqual(2 - 1e-9); // summed frame times drift slightly
     expect(stoppedFor).toBeLessThan(2.3);
-    expect(game.get(id)?.passed ?? true).toBe(true);
+    expect(game.get(id)?.phase.kind ?? "scrolled off").toMatch(/passed|scrolled off/);
   });
 
   it("holds at a red light until a green light is dropped", () => {
@@ -161,7 +161,7 @@ describe("Game", () => {
     run(game, 15);
     expect(game.speedMs).toBe(0);
     addDecided(game, "sidewalk", 30, "green");
-    expect(game.get(red)!.released).toBe(true);
+    expect(game.get(red)!.decision!.released).toBe(true);
     run(game, 5);
     expect(kmh(game)).toBeGreaterThan(20);
   });
@@ -197,7 +197,7 @@ describe("Game", () => {
     game.events.on("tooLate", (e) => tooLate.push(e));
     const id = add(game, "road", 10);
     run(game, 2);
-    expect(game.get(id)!.status).toBe("too_late");
+    expect(game.get(id)!.phase.kind).toBe("too_late");
     expect(game.speedMs).toBe(0);
     expect(tooLate).toHaveLength(1);
 
@@ -205,7 +205,8 @@ describe("Game", () => {
     game.setCaption(id, "caption of leaves", 0);
     const t = game.beginDecision(id)!;
     game.applyDecision(id, t.seq, answer("leaves", t.zone));
-    expect(game.get(id)!.status).toBe("too_late");
+    expect(game.get(id)!.phase.kind).toBe("too_late");
+    expect(game.get(id)!.decision?.resolved.behavior.kind).toBe("continue");
 
     game.removeObject(id);
     expect(tooLate.at(-1)).toBeNull();
@@ -221,8 +222,8 @@ describe("Game", () => {
     const side = add(game, "sidewalk", 30);
     game.setCaption(side, "anything", 0);
     game.failDecision(side, game.beginDecision(side)!.seq);
-    expect(game.get(road)!.resolved!.behavior.kind).toBe("stop");
-    expect(game.get(side)!.resolved!.behavior.kind).toBe("continue");
+    expect(game.get(road)!.decision!.resolved.behavior.kind).toBe("stop");
+    expect(game.get(side)!.decision!.resolved.behavior.kind).toBe("continue");
     run(game, 10);
     expect(game.speedMs).toBe(0);
     game.removeObject(road);
@@ -234,7 +235,7 @@ describe("Game", () => {
     const game = new Game();
     const id = add(game, "sidewalk", 10);
     run(game, 2);
-    expect(game.get(id)!.status).toBe("perceiving");
+    expect(game.get(id)!.phase.kind).toBe("passed"); // not "too_late"
     expect(kmh(game)).toBeCloseTo(50, 0);
   });
 
@@ -250,7 +251,7 @@ describe("Game", () => {
     game.endDrag(id, 40, y, true);
     expect(needs).toEqual([id]);
     expect(game.get(id)!.zone).toBe("sidewalk");
-    expect(game.get(id)!.status).toBe("perceiving");
+    expect(game.get(id)!.phase.kind).toBe("deciding");
     run(game, 3);
     expect(game.speedMs).toBeGreaterThan(0);
   });
@@ -264,6 +265,72 @@ describe("Game", () => {
     game.startDrag(id, 200, y);
     game.endDrag(id, 40, y, true);
     game.applyDecision(id, t.seq, answer("child", t.zone));
-    expect(game.get(id)!.response).toBeUndefined();
+    expect(game.get(id)!.decision).toBeUndefined();
+  });
+
+  it("obeys a passed object that is dragged back onto the road ahead", () => {
+    // Regression: `passed` used to survive the move, so the car ignored it.
+    const game = new Game();
+    const needs: string[] = [];
+    game.events.on("needsDecision", ({ id }) => needs.push(id));
+    const id = addDecided(game, "sidewalk", 20, "child");
+    while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
+
+    const obj = game.get(id)!;
+    game.startDrag(id, obj.x, game.sToScreenY(obj.s));
+    game.endDrag(id, (ROAD_LEFT + ROAD_RIGHT) / 2, game.carFrontY - 40 * PX_PER_M, true);
+    expect(needs).toEqual([id]);
+    expect(obj.phase.kind).toBe("deciding");
+    const t = game.beginDecision(id)!;
+    game.applyDecision(id, t.seq, answer("child", t.zone));
+    run(game, 10);
+    expect(game.speedMs).toBe(0);
+    expect(obj.phase.kind).toBe("decided");
+  });
+
+  it("re-decides a passed object moved ahead within the same zone", () => {
+    const game = new Game();
+    const id = addDecided(game, "sidewalk", 20, "stop");
+    while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
+    const obj = game.get(id)!;
+    game.startDrag(id, obj.x, game.sToScreenY(obj.s));
+    game.endDrag(id, 40, game.carFrontY - 40 * PX_PER_M, true);
+    expect(obj.phase.kind).toBe("deciding");
+    expect(obj.decision).toBeUndefined();
+  });
+
+  it("stops for a road object the vision model couldn't caption, until it is removed", () => {
+    const game = new Game();
+    const road = add(game, "road", 50);
+    const side = add(game, "sidewalk", 30);
+    game.failPerception(road);
+    game.failPerception(side);
+    expect(game.get(road)!.phase.kind).toBe("decided");
+    expect(game.get(road)!.decision).toMatchObject({
+      resolved: { behavior: { kind: "stop" } },
+      outcome: { kind: "failed", stage: "perception" },
+    });
+    expect(game.get(side)!.decision!.resolved.behavior.kind).toBe("continue");
+    run(game, 10);
+    expect(game.speedMs).toBe(0);
+    expect(game.get(road)!.phase.kind).toBe("decided"); // not "too late": it wasn't slow, it failed
+
+    // Moved to the sidewalk it no longer blocks; there's no caption to re-ask with.
+    const obj = game.get(road)!;
+    game.startDrag(road, obj.x, game.sToScreenY(obj.s));
+    game.endDrag(road, 40, game.sToScreenY(obj.s), true);
+    expect(obj.decision!.resolved.behavior.kind).toBe("continue");
+    run(game, 3);
+    expect(game.speedMs).toBeGreaterThan(0);
+  });
+
+  it("keeps a removed card in place and forgets the object", () => {
+    const game = new Game();
+    const snaps: { phase: string; addedAt: number }[] = [];
+    game.events.on("object", (o) => snaps.push({ phase: o.phase.kind, addedAt: o.addedAt }));
+    const id = add(game, "road", 40);
+    game.removeObject(id);
+    expect(snaps.at(-1)).toEqual({ phase: "removed", addedAt: snaps[0]!.addedAt });
+    expect(game.get(id)).toBeUndefined();
   });
 });

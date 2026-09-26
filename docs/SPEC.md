@@ -194,6 +194,8 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **Zod at the Worker boundary.** `/api/decide` bodies are parsed with a strict Zod schema (`worker/src/validate.ts`); a type test pins its output to `DecideRequest` in `shared/types.ts`, so the contract can't drift. Jev's response is parsed with a schema built from `QUESTIONS`, which also types each answer by question key and label; `policy.ts` no longer re-checks answers. Zod stays out of the browser bundle (the client imports only types and constants).
 - **Body limit 8 KiB** via Hono's `bodyLimit` (checks `Content-Length` first). The old 2048-char limit couldn't fit a 2048-char Turnstile token plus a caption.
 - **`confidence` and `probabilities` are always present** in every choice answer (every label, 0 when Jev gave none).
+- **Object lifecycle is one `phase`** (perceiving → deciding → decided → passed, plus too_late and removed) instead of separate flags; stop-sign/red-light progress lives in a `Decision` that is replaced whole on re-decide. Fixes a passed object dragged back ahead of the car being ignored (it's now re-decided, even within the same zone).
+- **Vision failures stop the car on the road** like decision failures ("Couldn't see what it is, stop until cleared"; continue on the sidewalk). Before, the object stayed "perceiving…" and the car reported "too late".
 
 ## Edge cases to try
 

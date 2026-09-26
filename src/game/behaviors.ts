@@ -1,5 +1,6 @@
 import type { DecideResponse, Zone } from "../../shared/types";
-import type { ResolvedBehavior } from "./types";
+import { STOP_SIGN_WAIT_S } from "./constants";
+import type { FailedStage, ResolvedBehavior } from "./types";
 
 export const SAFETY_PERSON_THRESHOLD = 0.2;
 
@@ -20,18 +21,22 @@ export function resolveBehavior(res: DecideResponse, zone: Zone): ResolvedBehavi
   return base;
 }
 
-/** When no decision arrives: stop on the road (the old `unclear` default), ignore on the sidewalk. */
-export function failedBehavior(zone: Zone): ResolvedBehavior {
+/**
+ * When there is no caption or no decision: stop on the road (the old
+ * `unclear` default), ignore on the sidewalk.
+ */
+export function failedBehavior(zone: Zone, stage: FailedStage): ResolvedBehavior {
+  const what = stage === "perception" ? "Couldn't see what it is" : "No decision";
   return zone === "road"
-    ? { behavior: { kind: "stop" }, safetyOverride: false, label: "No decision, stop until cleared" }
-    : { behavior: { kind: "continue" }, safetyOverride: false, label: "No decision, continue" };
+    ? { behavior: { kind: "stop" }, safetyOverride: false, label: `${what}, stop until cleared` }
+    : { behavior: { kind: "continue" }, safetyOverride: false, label: `${what}, continue` };
 }
 
 /** Signs and lights by category first, otherwise the chosen action. */
 function resolveFromAnswers(res: DecideResponse): ResolvedBehavior {
   const category = res.category.choice;
   if (category === "stop_sign") {
-    return { behavior: { kind: "stop_sign" }, safetyOverride: false, label: "Stop at sign, wait 2 s" };
+    return { behavior: { kind: "stop_sign" }, safetyOverride: false, label: `Stop at sign, wait ${STOP_SIGN_WAIT_S} s` };
   }
   if (category === "traffic_light") {
     const light = res.lightState.choice;

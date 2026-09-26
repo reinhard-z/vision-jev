@@ -24,6 +24,7 @@ export class Pipeline {
       await this.runDecision(id);
     } catch (err) {
       console.error("perception failed", err);
+      this.game.failPerception(id);
     }
   }
 

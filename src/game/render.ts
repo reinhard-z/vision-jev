@@ -105,11 +105,10 @@ function drawDropHint(ctx: CanvasRenderingContext2D, game: Game): void {
 
 function drawStopLines(ctx: CanvasRenderingContext2D, game: Game): void {
   for (const obj of game.objects) {
-    const b = obj.resolved?.behavior;
-    if (obj.status !== "decided" || !b || obj.passed || obj.dragging) continue;
-    const holds =
-      b.kind === "stop" ||
-      ((b.kind === "stop_sign" || b.kind === "red_light") && !obj.released);
+    const d = obj.decision;
+    if (obj.phase.kind !== "decided" || !d || obj.dragging) continue;
+    const b = d.resolved.behavior;
+    const holds = b.kind === "stop" || ((b.kind === "stop_sign" || b.kind === "red_light") && !d.released);
     if (!holds) continue;
     const y = game.sToScreenY(obj.s - OBJECT_HALF_LENGTH_M - STOP_GAP_M);
     ctx.fillStyle = b.kind === "stop" ? COLORS.stop : COLORS.line;
@@ -125,7 +124,7 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
   const y = cy - size / 2;
 
   ctx.save();
-  if (obj.passed) ctx.globalAlpha = 0.6;
+  if (obj.phase.kind === "passed") ctx.globalAlpha = 0.6;
   ctx.shadowColor = "rgba(0,0,0,0.35)";
   ctx.shadowBlur = obj.dragging ? 14 : 6;
   ctx.shadowOffsetY = 2;
@@ -136,7 +135,7 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
   drawImageContain(ctx, obj.image, x, y, size, size);
   ctx.restore();
 
-  if (obj.status === "perceiving") {
+  if (obj.phase.kind === "perceiving" || obj.phase.kind === "deciding") {
     const phase = (game.time * 40) % 16;
     ctx.save();
     ctx.strokeStyle = "#fff";
@@ -147,8 +146,8 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
     ctx.stroke();
     ctx.restore();
     const dots = ".".repeat(1 + (Math.floor(game.time * 3) % 3));
-    label(ctx, obj.caption === undefined ? `perceiving${dots}` : `deciding${dots}`, cx, y - 16, "rgba(20,20,30,0.85)");
-  } else if (obj.status === "too_late") {
+    label(ctx, `${obj.phase.kind}${dots}`, cx, y - 16, "rgba(20,20,30,0.85)");
+  } else if (obj.phase.kind === "too_late") {
     const on = Math.floor(game.time * 4) % 2 === 0;
     ctx.save();
     ctx.strokeStyle = on ? COLORS.stop : "#fff";
@@ -160,7 +159,7 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
   } else {
     const badge = badgeFor(obj);
     if (badge) label(ctx, badge.text, cx + size / 2 - 4, y + size + 4, badge.color);
-    if (obj.resolved?.safetyOverride) label(ctx, "⚠ override", cx, y - 16, COLORS.stop);
+    if (obj.decision?.resolved.safetyOverride) label(ctx, "⚠ override", cx, y - 16, COLORS.stop);
   }
 
   if (!obj.dragging) drawRemoveButton(ctx, game.removeButtonCenter(obj));
@@ -189,8 +188,9 @@ function drawRemoveButton(ctx: CanvasRenderingContext2D, c: { x: number; y: numb
 }
 
 function badgeFor(obj: GameObject): { text: string; color: string } | null {
-  const b = obj.resolved?.behavior;
-  if (!b) return null;
+  const d = obj.decision;
+  if (!d) return null;
+  const b = d.resolved.behavior;
   switch (b.kind) {
     case "continue":
       return { text: "GO", color: COLORS.go };
@@ -199,9 +199,9 @@ function badgeFor(obj: GameObject): { text: string; color: string } | null {
     case "stop":
       return { text: "STOP", color: COLORS.stop };
     case "stop_sign":
-      return obj.released ? { text: "GO", color: COLORS.go } : { text: "STOP", color: COLORS.stop };
+      return d.released ? { text: "GO", color: COLORS.go } : { text: "STOP", color: COLORS.stop };
     case "red_light":
-      return obj.released
+      return d.released
         ? { text: "GREEN", color: COLORS.go }
         : { text: b.light.toUpperCase(), color: b.light === "red" ? COLORS.stop : COLORS.slow };
     case "green_light":

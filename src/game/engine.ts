@@ -22,7 +22,7 @@ import {
 } from "./constants";
 import { Emitter } from "./emitter";
 import { distanceBand, kmhToMs, maxSpeedToStopWithin, msToKmh } from "./physics";
-import type { GameObject, ObjectSnapshot } from "./types";
+import type { Decision, FailedStage, GameObject, ObjectSnapshot } from "./types";
 
 export interface GameEvents extends Record<string, unknown> {
   /** An object was added or its status changed. Upsert by id. */
@@ -119,12 +119,8 @@ export class Game {
       zone: this.zoneAt(pos.x),
       x: pos.x,
       s: pos.s,
-      status: "perceiving",
+      phase: { kind: "perceiving" },
       requestSeq: 0,
-      released: false,
-      speedLimitApplied: false,
-      passed: false,
-      removed: false,
       dragging: false,
     };
     this.objects.push(obj);
@@ -139,16 +135,24 @@ export class Game {
 
   setCaption(id: string, caption: string, visionMs: number): void {
     const obj = this.get(id);
-    if (!obj || obj.removed) return;
+    if (!obj) return;
     obj.caption = caption;
     obj.visionMs = visionMs;
+    if (obj.phase.kind === "perceiving") obj.phase = { kind: "deciding" };
     this.emitObject(obj);
+  }
+
+  /** The vision model couldn't caption the image: be cautious on the road. */
+  failPerception(id: string): void {
+    const obj = this.get(id);
+    if (!obj || obj.caption !== undefined) return;
+    this.setDecision(obj, failedDecision(obj, "perception"));
   }
 
   /** Snapshot the inputs for a decision request. Distance is measured now. */
   beginDecision(id: string): DecisionTicket | null {
     const obj = this.get(id);
-    if (!obj || obj.removed || obj.caption === undefined) return null;
+    if (!obj || obj.caption === undefined) return null;
     obj.distanceBand = distanceBand(this.distanceAhead(obj), this.speedMs);
     this.emitObject(obj);
     return {
@@ -162,58 +166,62 @@ export class Game {
 
   applyDecision(id: string, seq: number, response: DecideResponse, roundTripMs?: number): void {
     const obj = this.get(id);
-    if (!obj || obj.removed || seq !== obj.requestSeq) return; // stale
-    obj.response = response;
-    obj.roundTripMs = roundTripMs;
-    obj.decisionFailed = false;
-    obj.resolved = resolveBehavior(response, obj.zone);
-    // A decision that arrives after the car got there is still shown, but
-    // the object stays "too late" until the user clears it.
-    if (obj.status !== "too_late") obj.status = "decided";
-
-    if (obj.resolved.behavior.kind === "green_light" && obj.status === "decided") {
-      this.releaseLights();
-    }
-    if (obj.resolved.behavior.kind === "speed_limit" && obj.passed) {
-      this.applySpeedLimit(obj);
-    }
-    this.emitObject(obj);
+    if (!obj || seq !== obj.requestSeq) return; // stale
+    this.setDecision(obj, {
+      resolved: resolveBehavior(response, obj.zone),
+      outcome: { kind: "answered", response, roundTripMs },
+    });
   }
 
   /** No decision could be had (network or server error): be cautious on the road. */
   failDecision(id: string, seq: number): void {
     const obj = this.get(id);
-    if (!obj || obj.removed || seq !== obj.requestSeq) return; // stale
-    obj.decisionFailed = true;
-    obj.resolved = failedBehavior(obj.zone);
-    if (obj.status !== "too_late") obj.status = "decided";
+    if (!obj || seq !== obj.requestSeq) return; // stale
+    this.setDecision(obj, failedDecision(obj, "decision"));
+  }
+
+  /**
+   * Record a decision. It drives the car only while the object is ahead and
+   * in time; a decision for a "too late" or passed object is still shown.
+   */
+  private setDecision(obj: GameObject, d: Pick<Decision, "resolved" | "outcome">): void {
+    obj.decision = { ...d, released: false, speedLimitApplied: false };
+    if (obj.phase.kind === "perceiving" || obj.phase.kind === "deciding") obj.phase = { kind: "decided" };
+
+    const kind = d.resolved.behavior.kind;
+    if (kind === "green_light" && obj.phase.kind === "decided") this.releaseLights();
+    if (kind === "speed_limit" && obj.phase.kind === "passed") this.applySpeedLimit(obj);
     this.emitObject(obj);
   }
 
   removeObject(id: string): void {
     const obj = this.get(id);
     if (!obj) return;
-    obj.removed = true;
+    const wasTooLate = obj.phase.kind === "too_late";
+    obj.phase = { kind: "removed" };
     obj.requestSeq++;
     this.objects = this.objects.filter((o) => o !== obj);
     this.dragPos.delete(id);
     this.emitObject(obj);
-    if (obj.status === "too_late") this.emitTooLate();
+    this.addedAt.delete(id);
+    if (wasTooLate) this.emitTooLate();
   }
 
   private releaseLights(): void {
     for (const o of this.objects) {
-      if (o.resolved?.behavior.kind === "red_light" && !o.released && !o.passed) {
-        o.released = true;
+      const d = o.decision;
+      if (d?.resolved.behavior.kind === "red_light" && !d.released && o.phase.kind === "decided") {
+        d.released = true;
         this.emitObject(o);
       }
     }
   }
 
   private applySpeedLimit(obj: GameObject): void {
-    if (obj.resolved?.behavior.kind !== "speed_limit" || obj.speedLimitApplied) return;
-    obj.speedLimitApplied = true;
-    this.setBaseTarget(obj.resolved.behavior.kmh);
+    const d = obj.decision;
+    if (d?.resolved.behavior.kind !== "speed_limit" || d.speedLimitApplied) return;
+    d.speedLimitApplied = true;
+    this.setBaseTarget(d.resolved.behavior.kmh);
     this.emitObject(obj);
   }
 
@@ -280,26 +288,31 @@ export class Game {
     }
     const pos = this.clampDrop(x, y);
     const newZone = this.zoneAt(pos.x);
-    const wasTooLate = obj.status === "too_late";
+    const { phase } = obj;
     obj.x = pos.x;
     obj.s = pos.s;
-    if (newZone === obj.zone && !wasTooLate) return;
+    // Within a zone an active decision still holds. A passed or too-late
+    // object is back ahead of the car (drops are clamped ahead), so it
+    // needs a fresh decision like one that changed zones.
+    if (newZone === obj.zone && phase.kind !== "passed" && phase.kind !== "too_late") return;
 
-    // Location changed meaningfully: the old decision no longer applies.
+    const visionFailed = obj.decision?.outcome.kind === "failed" && obj.decision.outcome.stage === "perception";
     obj.zone = newZone;
-    obj.status = "perceiving";
     obj.requestSeq++;
-    obj.response = undefined;
-    obj.resolved = undefined;
-    obj.roundTripMs = undefined;
-    obj.decisionFailed = false;
+    obj.decision = undefined;
     obj.distanceBand = undefined;
-    obj.released = false;
-    obj.waitStartedAt = undefined;
-    obj.tooLateReason = undefined;
-    this.emitObject(obj);
-    if (wasTooLate) this.emitTooLate();
-    if (obj.caption !== undefined) this.events.emit("needsDecision", { id });
+    if (obj.caption !== undefined) {
+      obj.phase = { kind: "deciding" };
+      this.emitObject(obj);
+      this.events.emit("needsDecision", { id });
+    } else if (visionFailed) {
+      obj.phase = { kind: "deciding" };
+      this.setDecision(obj, failedDecision(obj, "perception"));
+    } else {
+      obj.phase = { kind: "perceiving" }; // the caption is still on its way
+      this.emitObject(obj);
+    }
+    if (phase.kind === "too_late") this.emitTooLate();
   }
 
   // --- simulation ----------------------------------------------------------
@@ -321,23 +334,23 @@ export class Game {
 
       const ahead = this.distanceAhead(obj);
       const toStopLine = ahead - STOP_GAP_M;
-      const b = obj.resolved?.behavior;
+      const d = obj.phase.kind === "decided" ? obj.decision : undefined;
+      const b = d?.resolved.behavior;
       const blocking =
-        obj.status === "decided" &&
-        b !== undefined &&
-        (b.kind === "stop" ||
-          ((b.kind === "red_light" || b.kind === "stop_sign") && !obj.released));
+        d !== undefined &&
+        (d.resolved.behavior.kind === "stop" ||
+          ((d.resolved.behavior.kind === "red_light" || d.resolved.behavior.kind === "stop_sign") && !d.released));
 
       // Reaching a road object before deciding, or too late to stop for it.
-      if (obj.zone === "road" && !obj.passed && ahead <= 0 && obj.status !== "too_late") {
-        if (obj.status === "perceiving") {
+      if (obj.zone === "road" && ahead <= 0) {
+        if (obj.phase.kind === "perceiving" || obj.phase.kind === "deciding") {
           this.markTooLate(obj, "The car reached it before a decision arrived.");
         } else if (blocking) {
           this.markTooLate(obj, "The decision came too late to stop in time.");
         }
       }
 
-      if (obj.status === "too_late") {
+      if (obj.phase.kind === "too_late") {
         tooLate = true;
         continue;
       }
@@ -346,7 +359,7 @@ export class Game {
       // doesn't block the lane, so it no longer constrains speed.
       const pastSidewalkLine = obj.zone === "sidewalk" && toStopLine < -0.5;
 
-      if (obj.status === "decided" && b && !obj.passed && !pastSidewalkLine) {
+      if (d && b && !pastSidewalkLine) {
         switch (b.kind) {
           case "slow_down":
             desired = Math.min(desired, baseMs * SLOW_DOWN_FACTOR);
@@ -357,20 +370,20 @@ export class Game {
             status ??= "Stopping for an object";
             break;
           case "red_light":
-            if (!obj.released) {
+            if (!d.released) {
               desired = Math.min(desired, this.stopProfile(toStopLine));
               status ??= `Waiting at ${b.light} light for green`;
             }
             break;
           case "stop_sign":
-            if (!obj.released) {
+            if (!d.released) {
               desired = Math.min(desired, this.stopProfile(toStopLine));
               if (this.speedMs < 0.1 && toStopLine < 1) {
-                obj.waitStartedAt ??= this.time;
-                const waited = this.time - obj.waitStartedAt;
+                d.waitStartedAt ??= this.time;
+                const waited = this.time - d.waitStartedAt;
                 status ??= `Waiting at stop sign (${Math.max(0, STOP_SIGN_WAIT_S - waited).toFixed(1)} s)`;
                 if (waited >= STOP_SIGN_WAIT_S) {
-                  obj.released = true;
+                  d.released = true;
                   this.emitObject(obj);
                 }
               } else {
@@ -388,15 +401,16 @@ export class Game {
       }
 
       // Passed once the object is fully behind the car's rear.
-      if (!obj.passed && obj.s + OBJECT_HALF_LENGTH_M < this.carS - CAR_LENGTH_M) {
-        obj.passed = true;
+      if (obj.phase.kind !== "passed" && obj.s + OBJECT_HALF_LENGTH_M < this.carS - CAR_LENGTH_M) {
+        obj.phase = { kind: "passed" };
         this.applySpeedLimit(obj);
         this.emitObject(obj);
       }
 
       // Drop objects once they have scrolled off the bottom.
-      if (obj.passed && this.sToScreenY(obj.s) > this.viewHeight + OBJECT_SIZE_PX) {
+      if (obj.phase.kind === "passed" && this.sToScreenY(obj.s) > this.viewHeight + OBJECT_SIZE_PX) {
         this.objects = this.objects.filter((o) => o !== obj);
+        this.addedAt.delete(obj.id);
       }
     }
 
@@ -418,16 +432,17 @@ export class Game {
   }
 
   private markTooLate(obj: GameObject, reason: string): void {
-    obj.status = "too_late";
-    obj.tooLateReason = reason;
+    obj.phase = { kind: "too_late", reason };
     this.speedMs = 0;
     this.emitObject(obj);
     this.emitTooLate();
   }
 
   private emitTooLate(): void {
-    const first = this.objects.find((o) => o.status === "too_late");
-    this.events.emit("tooLate", first ? { id: first.id, reason: first.tooLateReason ?? "" } : null);
+    for (const o of this.objects) {
+      if (o.phase.kind === "too_late") return this.events.emit("tooLate", { id: o.id, reason: o.phase.reason });
+    }
+    this.events.emit("tooLate", null);
   }
 
   private emitObject(obj: GameObject): void {
@@ -435,19 +450,17 @@ export class Game {
       id: obj.id,
       imageUrl: obj.imageUrl,
       zone: obj.zone,
-      status: obj.status,
+      phase: obj.phase,
       caption: obj.caption,
       visionMs: obj.visionMs,
       distanceBand: obj.distanceBand,
-      response: obj.response,
-      resolved: obj.resolved,
-      roundTripMs: obj.roundTripMs,
-      decisionFailed: obj.decisionFailed,
-      released: obj.released,
-      passed: obj.passed,
-      removed: obj.removed,
-      tooLateReason: obj.tooLateReason,
+      // Decisions are mutated in place (released, wait timer); snapshot a copy.
+      decision: obj.decision && { ...obj.decision },
       addedAt: this.addedAt.get(obj.id) ?? 0,
     });
   }
+}
+
+function failedDecision(obj: GameObject, stage: FailedStage): Pick<Decision, "resolved" | "outcome"> {
+  return { resolved: failedBehavior(obj.zone, stage), outcome: { kind: "failed", stage } };
 }

@@ -3,7 +3,8 @@ import { ACTIONS } from "../../shared/types";
 import { DEBUG } from "../debug";
 import { SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
 import type { Game } from "../game/engine";
-import type { ObjectSnapshot } from "../game/types";
+import { STOP_SIGN_WAIT_S } from "../game/constants";
+import type { Decision, ObjectSnapshot } from "../game/types";
 import { getVisionStatus, subscribeVision } from "../perception/perceive";
 
 const MAX_CARDS = 30;
@@ -37,30 +38,49 @@ const pct = (p: number | undefined) => `${Math.round((p ?? 0) * 100)}%`;
 const human = (s: string) => s.replace(/_/g, " ");
 
 function statusText(o: ObjectSnapshot): { text: string; tone: string } {
-  if (o.removed) return { text: "removed", tone: "muted" };
-  if (o.status === "too_late") return { text: "too late", tone: "stop" };
-  if (o.passed) return { text: "passed", tone: "muted" };
-  if (o.decisionFailed) return { text: "decision failed", tone: "stop" };
-  if (o.status === "perceiving") return { text: o.caption === undefined ? "perceiving…" : "deciding…", tone: "busy" };
-  return { text: "decided", tone: "go" };
+  switch (o.phase.kind) {
+    case "removed":
+      return { text: "removed", tone: "muted" };
+    case "too_late":
+      return { text: "too late", tone: "stop" };
+    case "passed":
+      return { text: "passed", tone: "muted" };
+    case "perceiving":
+    case "deciding":
+      return { text: `${o.phase.kind}…`, tone: "busy" };
+    case "decided":
+      if (o.decision?.outcome.kind === "failed") {
+        return { text: o.decision.outcome.stage === "perception" ? "vision failed" : "decision failed", tone: "stop" };
+      }
+      return { text: "decided", tone: "go" };
+  }
+}
+
+function releaseNote(d: Decision | undefined): string | null {
+  if (!d?.released) return null;
+  const kind = d.resolved.behavior.kind;
+  if (kind === "stop_sign") return `Waited ${STOP_SIGN_WAIT_S} s, continued`;
+  if (kind === "red_light") return "Light turned green";
+  return null;
 }
 
 function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
-  const r = o.response;
+  const d = o.decision;
+  const answered = d?.outcome.kind === "answered" ? d.outcome : undefined;
+  const r = answered?.response;
   const status = statusText(o);
-  const kind = o.resolved?.behavior.kind;
-  const releaseNote =
-    o.released && kind === "stop_sign" ? "Waited 2 s, continued" : o.released && kind === "red_light" ? "Light turned green" : null;
+  const note = releaseNote(d);
+  const done = o.phase.kind === "removed" || o.phase.kind === "passed";
 
   return (
-    <article className={`card ${o.removed || o.passed ? "card-done" : ""}`}>
+    <article className={`card ${done ? "card-done" : ""}`}>
       <header>
         <img src={o.imageUrl} alt="" />
         <div>
           <p className="meta">
             {o.zone}
             {o.distanceBand && ` · ${o.distanceBand}`}
-            {r && ` · ${r.category.choice.replace(/_/g, " ")} ${pct(r.category.confidence)}`}
+            {r && ` · ${human(r.category.choice)} ${pct(r.category.confidence)}`}
             <span className={`chip chip-${status.tone}`}>{status.text}</span>
           </p>
         </div>
@@ -92,14 +112,14 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
         </>
       )}
 
-      {o.resolved && (
-        <p className={`behavior ${o.resolved.safetyOverride ? "override" : ""}`}>
-          {o.resolved.safetyOverride && <strong>Safety override: </strong>}
-          {o.resolved.label}
-          {releaseNote && <span className="release"> · {releaseNote}</span>}
+      {d && (
+        <p className={`behavior ${d.resolved.safetyOverride ? "override" : ""}`}>
+          {d.resolved.safetyOverride && <strong>Safety override: </strong>}
+          {d.resolved.label}
+          {note && <span className="release"> · {note}</span>}
         </p>
       )}
-      {o.status === "too_late" && <p className="behavior too-late-note">{o.tooLateReason}</p>}
+      {o.phase.kind === "too_late" && <p className="behavior too-late-note">{o.phase.reason}</p>}
 
       {(o.visionMs !== undefined || r) && (
         <p className="latency">
@@ -110,7 +130,7 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
             </>
           )}
           {r && ` · Jev ${r.latencyMs} ms`}
-          {DEBUG && o.roundTripMs !== undefined && ` (round trip ${o.roundTripMs} ms)`}
+          {DEBUG && answered?.roundTripMs !== undefined && ` (round trip ${answered.roundTripMs} ms)`}
         </p>
       )}
     </article>
