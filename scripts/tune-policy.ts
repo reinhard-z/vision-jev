@@ -32,7 +32,7 @@ const EXPECT: Record<string, Record<Zone, string[]>> = {
   red: both("red_light red"),
   amber: both("red_light amber"),
   green: both("green_light"),
-  limit30: both("continue"), // the caption names no number: keep speed
+  limit30: both("speed_limit 30"),
   limit80: both("speed_limit 80"),
   box: { road: ["slow_down", "stop"], sidewalk: ["continue"] },
   bag: both("continue"),

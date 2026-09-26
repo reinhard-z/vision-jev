@@ -1,6 +1,6 @@
 # Sample image credits
 
-All sample photos come from Wikimedia Commons and were downscaled to at most 512 px on the long edge. No other changes were made.
+All sample photos except limit30.jpg come from Wikimedia Commons and were downscaled to at most 512 px on the long edge. No other changes were made.
 
 | File | Source | Author | License |
 | --- | --- | --- | --- |
@@ -15,7 +15,7 @@ All sample photos come from Wikimedia Commons and were downscaled to at most 512
 | red.jpg | [Red traffic signal, Stamford Road, Singapore - 20111210-01.jpg](https://commons.wikimedia.org/wiki/File:Red_traffic_signal,_Stamford_Road,_Singapore_-_20111210-01.jpg) | Jacklee. | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
 | amber.jpg | [Amber traffic signal, Stamford Road, Singapore - 20111210-02.jpg](https://commons.wikimedia.org/wiki/File:Amber_traffic_signal,_Stamford_Road,_Singapore_-_20111210-02.jpg) | Jacklee. | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
 | green.jpg | [Green traffic signal, Stamford Road, Singapore - 20111210-03.jpg](https://commons.wikimedia.org/wiki/File:Green_traffic_signal,_Stamford_Road,_Singapore_-_20111210-03.jpg) | Jacklee. | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
-| limit30.jpg | [Korean Sign - Maximum Speed Limit 30kph 1.jpg](https://commons.wikimedia.org/wiki/File:Korean_Sign_-_Maximum_Speed_Limit_30kph_1.jpg) | P.Ctnt | Public domain |
+| limit30.jpg | Provided by the project owner (downscaled to 512 px); source to be confirmed | | |
 | limit80.jpg | [Korean Sign - Maximum Speed Limit 80kph 1.jpg](https://commons.wikimedia.org/wiki/File:Korean_Sign_-_Maximum_Speed_Limit_80kph_1.jpg) | P.Ctnt | Public domain |
 | box.jpg | [Cardboard box.jpg](https://commons.wikimedia.org/wiki/File:Cardboard_box.jpg) | MrBeastRapper | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
 | bag.jpg | [Discarded Meijer plastic bag.jpg](https://commons.wikimedia.org/wiki/File:Discarded_Meijer_plastic_bag.jpg) | Visviva | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) |
