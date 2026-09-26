@@ -29,7 +29,7 @@ export function App() {
     <div className="app">
       <header className="topbar">
         <h1>
-          Jev Driver <span>a toy, not a self-driving car</span>
+          Jev Driver <span>can Jev drive a car?</span>
         </h1>
         <SpeedControl game={game} />
       </header>
