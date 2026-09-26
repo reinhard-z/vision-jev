@@ -16,6 +16,8 @@
     // A session lasts an hour; a few per minute covers reloads.
     { "name": "SESSION_LIMITER", "namespace_id": "4102", "simple": { "limit": 5, "period": 60 } }
   ],
-  // Secrets (wrangler secret put; .dev.vars locally): TURNSTILE_SECRET_KEY, SESSION_SECRET.
+  // Set with wrangler secret put (.dev.vars locally). Listing them here drives
+  // `wrangler types` without .dev.vars and makes deploys fail if one is missing.
+  "secrets": { "required": ["TURNSTILE_SECRET_KEY", "SESSION_SECRET"] },
   "observability": { "enabled": true }
 }
