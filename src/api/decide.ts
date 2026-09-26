@@ -13,19 +13,17 @@ const TIMEOUT_MS = 10_000;
 /**
  * Ask the Worker for a driving decision. Opens a session first if needed, and
  * once more if the Worker no longer accepts it. Throws on network or server
- * errors, after TIMEOUT_MS (waiting for the session included, e.g. for an
- * unsolved Turnstile checkbox), or when `signal` aborts.
+ * errors, after TIMEOUT_MS per request, or when `signal` aborts. Verification
+ * has its own deadline so startup cannot consume the decision's time budget.
  */
 export async function decide(req: DecideRequest, signal?: AbortSignal): Promise<Decision> {
   const started = performance.now();
-  const timeout = AbortSignal.timeout(TIMEOUT_MS);
-  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-  await Promise.race([ensureSession(), rejectOnAbort(combined)]);
-  let res = await post(req, combined);
+  await waitForSession(signal);
+  let res = await post(req, signal);
   if (res.status === 401) {
     dropSession();
-    await Promise.race([ensureSession(), rejectOnAbort(combined)]);
-    res = await post(req, combined);
+    await waitForSession(signal);
+    res = await post(req, signal);
   }
   if (!res.ok) throw new Error(`/api/decide returned ${res.status}`);
   // Same-origin API that validates Jev's output; the shared type is the contract.
@@ -33,19 +31,29 @@ export async function decide(req: DecideRequest, signal?: AbortSignal): Promise<
   return { response, roundTripMs: Math.round(performance.now() - started) };
 }
 
-function post(req: DecideRequest, signal: AbortSignal): Promise<Response> {
+/** Each API attempt gets its own timeout after verification has finished. */
+function post(req: DecideRequest, signal?: AbortSignal): Promise<Response> {
+  const timeout = AbortSignal.timeout(TIMEOUT_MS);
   return fetch("/api/decide", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(req),
-    signal,
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
 }
 
-function rejectOnAbort(signal: AbortSignal): Promise<never> {
-  return new Promise((_, reject) => {
-    const abort = () => reject(signal.reason instanceof Error ? signal.reason : new Error("aborted"));
-    if (signal.aborted) abort();
-    else signal.addEventListener("abort", abort, { once: true });
+/** Cancel this caller's wait without cancelling verification shared by others. */
+async function waitForSession(signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
+  if (!signal) return ensureSession();
+  let abort: () => void = () => {};
+  const aborted = new Promise<never>((_, reject) => {
+    abort = () => reject(signal.reason instanceof Error ? signal.reason : new Error("aborted"));
+    signal.addEventListener("abort", abort, { once: true });
   });
+  try {
+    await Promise.race([ensureSession(), aborted]);
+  } finally {
+    signal.removeEventListener("abort", abort);
+  }
 }

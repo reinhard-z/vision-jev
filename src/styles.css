@@ -590,10 +590,70 @@ h2 {
   }
 }
 
-/* Turnstile; stays empty unless Cloudflare asks the visitor to click. */
+/* Keep verification out of document flow so readiness never resizes the road. */
 .human-check {
   position: fixed;
   right: 16px;
   bottom: 16px;
-  z-index: 10;
+  z-index: 20;
+  width: min(388px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px #0008;
+  font-size: 13px;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 0s;
+}
+
+/* Delay visibility until the exit completes; inert disables hidden controls. */
+.human-check[data-ready="true"] {
+  opacity: 0;
+  transform: translateY(8px);
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 0s, 180ms;
+}
+
+@starting-style {
+  .human-check {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .human-check {
+    transition: none;
+    transform: none;
+  }
+}
+
+.human-check p {
+  margin: 0 0 8px;
+}
+
+#human-check-widget {
+  width: 100%;
+  max-width: 360px;
+  /* Keep the panel steady while the widget loads or is removed before fading. */
+  min-height: 65px;
+}
+
+/* Turnstile needs at least 300px; preserve that room on narrow phones. */
+@media (max-width: 360px) {
+  .human-check {
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 8px;
+  }
 }
