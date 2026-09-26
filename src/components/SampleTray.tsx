@@ -56,6 +56,7 @@ export function SampleTray() {
         }}
       />
       <p className="hint">Or drop image files here.</p>
+      <p className="hint privacy">Images never leave your device.</p>
       <p className="hint">Drag onto the road or the sidewalk.</p>
       <div className="tray-grid">
         {[...SAMPLES, ...own].map((s) => (
@@ -87,8 +88,6 @@ export function SampleTray() {
           </div>
         ))}
       </div>
-      <p className="hint">Click an object's × (or drag it off the canvas) to remove it.</p>
-      <p className="hint privacy">Images never leave your device. Only the caption is sent.</p>
     </aside>
   );
 }
