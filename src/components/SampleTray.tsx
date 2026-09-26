@@ -5,7 +5,7 @@ import { VisionStatus } from "./VisionStatus";
 
 /**
  * Sample images plus the user's own. Placing is drag-only: where you drop
- * decides road vs sidewalk. Own images are added to the tray first.
+ * decides the lane or the sidewalk. Own images are added to the tray first.
  */
 export function SampleTray() {
   const [own, setOwn] = useState<Sample[]>([]);
@@ -58,7 +58,7 @@ export function SampleTray() {
       />
       <p className="hint">Or drop image files here.</p>
       <p className="hint privacy">Images never leave your device. Only a short text description is sent.</p>
-      <p className="hint">Drag onto the road or the sidewalk.</p>
+      <p className="hint">Drag into a lane or onto the sidewalk.</p>
       <div className="tray-grid">
         {[...own, ...SAMPLES].map((s) => (
           <div

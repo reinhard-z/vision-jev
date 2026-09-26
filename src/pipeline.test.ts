@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DecideResponse } from "../shared/types";
 import { decide } from "./api/decide";
-import { ROAD_LEFT, ROAD_RIGHT } from "./game/constants";
+import { ROAD_MID, ROAD_RIGHT } from "./game/constants";
 import { Game } from "./game/engine";
 import { perceive } from "./perception/perceive";
 import { Pipeline } from "./pipeline";
@@ -19,16 +19,16 @@ class FakeImage {
 }
 
 const pick = <T extends string>(choice: T) => ({ choice, confidence: 0.9, probabilities: { [choice]: 0.9 } });
-const stop = {
+const child = {
   category: pick("person"),
-  action: pick("stop"),
   lightState: pick("not_a_light"),
   speedLimit: pick("none"),
   couldBePerson: 0.9,
+  mentionsChild: 0.95,
   latencyMs: 1,
 } as unknown as DecideResponse;
 
-const roadX = (ROAD_LEFT + ROAD_RIGHT) / 2;
+const roadX = (ROAD_MID + ROAD_RIGHT) / 2; // the car's lane
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
 describe("Pipeline", () => {
@@ -53,10 +53,12 @@ describe("Pipeline", () => {
 
   it("captions, decides and applies the decision", async () => {
     vi.mocked(perceive).mockResolvedValue({ caption: "a child", visionMs: 5 });
-    vi.mocked(decide).mockResolvedValue({ response: stop, roundTripMs: 7 });
+    vi.mocked(decide).mockResolvedValue({ response: child, roundTripMs: 7 });
     await pipeline.spawn("/samples/child.jpg", roadX, 100);
     expect(cards().map((c) => c.phase.kind)).toEqual(["decided"]);
-    expect(vi.mocked(decide).mock.calls[0]![0]).toMatchObject({ caption: "a child", zone: "road" });
+    expect(game.objects[0]!.decision?.resolved.behavior.kind).toBe("stop");
+    // Only the caption leaves the browser; where the object is stays in the game.
+    expect(vi.mocked(decide).mock.calls[0]![0]).toEqual({ caption: "a child" });
   });
 
   it("adds nothing for an image that won't load, and doesn't reject", async () => {

@@ -1,5 +1,5 @@
-import type { DecideResponse, DistanceBand, Zone } from "../../shared/types";
-import { failedBehavior, resolveBehavior } from "./behaviors";
+import type { DecideResponse } from "../../shared/types";
+import { failedBehavior, resolveBehavior, resolveOutcome } from "./behaviors";
 import {
   ACCEL,
   CANVAS_WIDTH,
@@ -15,6 +15,7 @@ import {
   PX_PER_M,
   REMOVE_BUTTON_R,
   ROAD_LEFT,
+  ROAD_MID,
   ROAD_RIGHT,
   SLOW_DOWN_FACTOR,
   STOP_GAP_M,
@@ -22,12 +23,12 @@ import {
 } from "./constants";
 import { Emitter } from "./emitter";
 import { createUiStore, upsertCard } from "./uiStore";
-import { distanceBand, kmhToMs, maxSpeedToStopWithin, msToKmh } from "./physics";
-import type { Decision, FailedStage, GameObject, ObjectSnapshot } from "./types";
+import { kmhToMs, maxSpeedToStopWithin } from "./physics";
+import type { Decision, FailedStage, GameObject, ObjectSnapshot, Zone } from "./types";
 
 /** Commands for the pipeline. UI state goes through `ui` instead. */
 export interface GameEvents extends Record<string, unknown> {
-  /** An object needs a (new) decision, e.g. after being moved to another zone. */
+  /** An object needs a new decision: its request failed and it was moved. */
   needsDecision: { id: string };
   /** An object was removed; any pending work for it is stale. */
   removed: { id: string };
@@ -36,9 +37,6 @@ export interface GameEvents extends Record<string, unknown> {
 export interface DecisionTicket {
   seq: number;
   caption: string;
-  zone: Zone;
-  distance: DistanceBand;
-  speedKmh: number;
 }
 
 let nextId = 1;
@@ -89,7 +87,8 @@ export class Game {
   }
 
   zoneAt(x: number): Zone {
-    return x >= ROAD_LEFT && x <= ROAD_RIGHT ? "road" : "sidewalk";
+    if (x < ROAD_LEFT || x > ROAD_RIGHT) return "sidewalk";
+    return x < ROAD_MID ? "oncoming_lane" : "own_lane";
   }
 
   /** Metres from the car's front to the object's near edge. */
@@ -149,19 +148,15 @@ export class Game {
     this.setDecision(obj, failedDecision(obj, "perception"));
   }
 
-  /** Snapshot the inputs for a decision request. Distance is measured now. */
+  /**
+   * Snapshot the inputs for a decision request: only the caption. Jev's answer
+   * doesn't depend on where the object is, so it applies wherever the object
+   * is when it arrives.
+   */
   beginDecision(id: string): DecisionTicket | null {
     const obj = this.get(id);
     if (!obj || obj.caption === undefined) return null;
-    obj.distanceBand = distanceBand(this.distanceAhead(obj), this.speedMs);
-    this.emitObject(obj);
-    return {
-      seq: obj.requestSeq,
-      caption: obj.caption,
-      zone: obj.zone,
-      distance: obj.distanceBand,
-      speedKmh: Math.round(msToKmh(this.speedMs)),
-    };
+    return { seq: obj.requestSeq, caption: obj.caption };
   }
 
   applyDecision(id: string, seq: number, response: DecideResponse, roundTripMs?: number): void {
@@ -294,23 +289,25 @@ export class Game {
     obj.s = pos.s;
     // Within a zone an active decision still holds. A passed or too-late
     // object is back ahead of the car (drops are clamped ahead), so it
-    // needs a fresh decision like one that changed zones.
+    // starts over like one that changed zones.
     if (newZone === obj.zone && phase.kind !== "passed" && phase.kind !== "too_late") return;
 
-    const visionFailed = obj.decision?.outcome.kind === "failed" && obj.decision.outcome.stage === "perception";
     obj.zone = newZone;
-    obj.requestSeq++;
-    obj.decision = undefined;
-    obj.distanceBand = undefined;
-    if (obj.caption !== undefined) {
+    const outcome = obj.decision?.outcome;
+    if (outcome?.kind === "failed" && outcome.stage === "decision") {
+      // Moving a failed object is how to retry its request.
+      obj.requestSeq++;
+      obj.decision = undefined;
       obj.phase = { kind: "deciding" };
       this.emitObject(obj);
       this.events.emit("needsDecision", { id });
-    } else if (visionFailed) {
-      obj.phase = { kind: "deciding" };
-      this.setDecision(obj, failedDecision(obj, "perception"));
+    } else if (outcome) {
+      // Same answer, new place: resolve it again without asking Jev.
+      obj.phase = { kind: "decided" };
+      this.setDecision(obj, { resolved: resolveOutcome(outcome, newZone), outcome });
     } else {
-      obj.phase = { kind: "perceiving" }; // the caption is still on its way
+      // The caption or Jev's answer is still on its way; it applies here.
+      obj.phase = { kind: obj.caption === undefined ? "perceiving" : "deciding" };
       this.emitObject(obj);
     }
     if (phase.kind === "too_late") this.emitTooLate();
@@ -342,8 +339,9 @@ export class Game {
         (d.resolved.behavior.kind === "stop" ||
           ((d.resolved.behavior.kind === "red_light" || d.resolved.behavior.kind === "stop_sign") && !d.released));
 
-      // Reaching a road object before deciding, or too late to stop for it.
-      if (obj.zone === "road" && ahead <= 0) {
+      // Reaching an object in the car's lane before deciding, or too late to
+      // stop for it. Nothing outside the lane can be hit.
+      if (obj.zone === "own_lane" && ahead <= 0) {
         if (obj.phase.kind === "perceiving" || obj.phase.kind === "deciding") {
           this.markTooLate(obj, "The car reached it before a decision arrived.");
         } else if (blocking) {
@@ -356,28 +354,30 @@ export class Game {
         continue;
       }
 
-      // A sidewalk object the car has already passed the stop line for
-      // doesn't block the lane, so it no longer constrains speed.
-      const pastSidewalkLine = obj.zone === "sidewalk" && toStopLine < -0.5;
+      // Outside the car's lane, a stop the car has already driven past can't
+      // be made any more, and the object doesn't block the lane: drive on.
+      // Slowing down still lasts until the object is passed.
+      const pastStopLine = obj.zone !== "own_lane" && toStopLine < -0.5;
 
-      if (d && b && !pastSidewalkLine) {
+      if (d && b) {
         switch (b.kind) {
           case "slow_down":
             desired = Math.min(desired, baseMs * SLOW_DOWN_FACTOR);
             status ??= "Slowing down";
             break;
           case "stop":
+            if (pastStopLine) break;
             desired = Math.min(desired, this.stopProfile(toStopLine));
             status ??= "Stopping for an object";
             break;
           case "red_light":
-            if (!d.released) {
+            if (!d.released && !pastStopLine) {
               desired = Math.min(desired, this.stopProfile(toStopLine));
               status ??= `Waiting at ${b.light} light for green`;
             }
             break;
           case "stop_sign":
-            if (!d.released) {
+            if (!d.released && !pastStopLine) {
               desired = Math.min(desired, this.stopProfile(toStopLine));
               if (this.speedMs < 0.1 && toStopLine < 1) {
                 d.waitStartedAt ??= this.time;
@@ -453,7 +453,6 @@ export class Game {
       phase: obj.phase,
       caption: obj.caption,
       visionMs: obj.visionMs,
-      distanceBand: obj.distanceBand,
       // Decisions are mutated in place (released, wait timer); snapshot a copy.
       decision: obj.decision && { ...obj.decision },
       addedAt: this.addedAt.get(obj.id) ?? 0,

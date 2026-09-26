@@ -1,37 +1,17 @@
-// The driving policy: what Jev sees and what it's asked. Server-only.
-// Wording is tuned against real captions (docs/jev-tuning/).
-import type {
-  Action,
-  Category,
-  ChoiceAnswer,
-  DecideRequest,
-  DecideResponse,
-  DistanceBand,
-  LightState,
-  SpeedLimit,
-  Zone,
-} from "../../shared/types";
+// What Jev sees and what it's asked. Server-only. Jev only classifies the
+// caption; what the car does about it is decided in the game
+// (src/game/behaviors.ts). Wording is tuned against real captions
+// (docs/jev-tuning/).
+import type { Category, ChoiceAnswer, DecideRequest, DecideResponse, LightState, SpeedLimit } from "../../shared/types";
 import type { ChoiceAnswer as JevChoiceAnswer, JevResult, Questions } from "./jev";
 
-const LOCATION: Record<Zone, string> = {
-  road: "on the road, in the car's lane",
-  sidewalk: "on the sidewalk next to the road, not on the road",
-};
-
-const DISTANCE: Record<DistanceBand, string> = {
-  far: "far ahead, plenty of room to stop",
-  medium: "ahead, room to stop with firm braking",
-  near: "close ahead, braking now is barely enough",
-};
-
-/** Small, readable state. Numbers are turned into words in code. */
+/**
+ * Only the caption. Where the object is doesn't change what it is, and
+ * describing the zone made Jev less sure about the category (docs/SPEC.md,
+ * stage 4 log).
+ */
 export function buildState(req: DecideRequest): Record<string, string> {
-  return {
-    object_seen: req.caption,
-    location: LOCATION[req.zone],
-    distance: DISTANCE[req.distance],
-    car_speed: req.speedKmh === 0 ? "stopped" : `${req.speedKmh} km/h`,
-  };
+  return { object_seen: req.caption };
 }
 
 export const QUESTIONS = {
@@ -51,16 +31,6 @@ export const QUESTIONS = {
         "Something light the car can safely drive over, such as a plastic or paper bag, leaves or litter",
       unclear: "`object_seen` is too vague to tell what it is",
     } satisfies Record<Category, string>,
-  },
-  action: {
-    type: "choice",
-    instructions: "What should the car do about `object_seen`, which is `location`?",
-    criteria: {
-      continue:
-        "Nothing on the road needs a reaction: signs, lights, light debris the car can drive over such as a bag, leaves or litter, and things on the sidewalk that are not entering the road",
-      slow_down: "Something could enter the road soon, or a small solid obstacle is ahead",
-      stop: "A person, animal, vehicle, or obstacle is on the road. If it is unclear whether something is a person, treat it as a person",
-    } satisfies Record<Action, string>,
   },
   light_state: {
     type: "choice",
@@ -92,6 +62,16 @@ export const QUESTIONS = {
       false: "Clearly not a person",
     },
   },
+  // Literal on purpose: "Could `object_seen` include a child?" also said yes
+  // to "a group of people" (88%) and "a person" (83%).
+  mentions_child: {
+    type: "noul",
+    instructions: "Does `object_seen` mention a child?",
+    criteria: {
+      true: "It names a child, kid, baby, toddler, boy or girl, alone or with adults",
+      false: "It names only adults, or no people at all",
+    },
+  },
 } satisfies Questions;
 
 /** Map Jev's answers to the API response. */
@@ -99,10 +79,10 @@ export function toDecideResponse(result: JevResult<typeof QUESTIONS>): DecideRes
   const a = result.answers;
   return {
     category: choice(a.category),
-    action: choice(a.action),
     lightState: choice(a.light_state),
     speedLimit: choice(a.speed_limit),
     couldBePerson: a.could_be_person.noul,
+    mentionsChild: a.mentions_child.noul,
     latencyMs: result.latencyMs,
   };
 }

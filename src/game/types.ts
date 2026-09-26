@@ -1,10 +1,24 @@
-import type { DecideResponse, DistanceBand, Zone } from "../../shared/types";
+import type { DecideResponse } from "../../shared/types";
+
+/**
+ * Where an object is, by its centre: the car's lane, the oncoming lane, or
+ * either sidewalk. Only the game uses it; Jev never sees it.
+ */
+export const ZONES = ["own_lane", "oncoming_lane", "sidewalk"] as const;
+export type Zone = (typeof ZONES)[number];
+
+/** Short names for the UI. */
+export const ZONE_LABEL: Record<Zone, string> = {
+  own_lane: "your lane",
+  oncoming_lane: "oncoming lane",
+  sidewalk: "sidewalk",
+};
 
 /** What the game does about an object, derived from Jev's answers. */
 export type Behavior =
   | { kind: "continue" }
   | { kind: "slow_down" } // 50% of target speed until passed
-  | { kind: "stop" } // hold until removed or moved off the road
+  | { kind: "stop" } // hold until removed or moved somewhere that needs no stop
   | { kind: "stop_sign" } // stop, wait 2 s, continue
   | { kind: "red_light"; light: "red" | "amber" } // hold until green or removed
   | { kind: "green_light" }
@@ -33,7 +47,10 @@ export type PhaseKind = Phase["kind"];
 /** Why there is no answer from Jev: no caption, or no decision. */
 export type FailedStage = "perception" | "decision";
 
-/** The behavior an object currently asks for. Replaced whole when the object is re-decided. */
+/**
+ * The behavior an object currently asks for. Jev's answer doesn't depend on
+ * where the object is, so a move keeps `outcome` and replaces the rest.
+ */
 export interface Decision {
   resolved: ResolvedBehavior;
   outcome:
@@ -55,10 +72,8 @@ export interface GameObject {
   phase: Phase;
   caption?: string;
   visionMs?: number;
-  /** Distance band sent with the latest decision request. */
-  distanceBand?: DistanceBand;
   decision?: Decision;
-  /** Bumped whenever a pending decision becomes stale (moved, removed). */
+  /** Bumped whenever a pending decision becomes stale (removed, or asked again). */
   requestSeq: number;
   dragging: boolean;
 }
@@ -71,7 +86,6 @@ export interface ObjectSnapshot {
   phase: Phase;
   caption?: string;
   visionMs?: number;
-  distanceBand?: DistanceBand;
   decision?: Decision;
   addedAt: number; // wall clock ms, for ordering
 }

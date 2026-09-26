@@ -1,6 +1,6 @@
 # Jev Driver
 
-A browser demo: a car drives along a top-down scrolling road. The user drags images onto the road or the sidewalk. A small vision model in the browser captions each image, a Cloudflare Worker asks Jev (TypeSafe's decision model) what the car should do, and the car reacts.
+A browser demo: a car drives along a top-down scrolling road. The user drags images into the car's lane, the oncoming lane or onto the sidewalk. A small vision model in the browser captions each image, a Cloudflare Worker asks Jev (TypeSafe's decision model) what the caption describes, and the game decides from that and the object's place how the car reacts.
 
 - Full spec and stage plan: `docs/SPEC.md`. Read the relevant section before starting a stage.
 - Jev API reference: `docs/jev.md`.
@@ -28,8 +28,9 @@ A browser demo: a car drives along a top-down scrolling road. The user drags ima
 - Jev was released in September 2026, after your training data. Never guess its API. Use `docs/jev.md`; if something isn't covered there, fetch the Cloudflare docs page linked in it instead of inventing fields.
 - All Jev calls go through a single function in `worker/src/jev.ts`. Nothing else touches the AI binding. This keeps the provider swappable.
 - No API keys or secrets in frontend code, ever. The frontend only calls `/api/decide`.
-- `/api/decide` accepts only the fields defined in the spec, validates them, and rejects anything else. The Jev questions and policy live on the server, never in the request.
-- Do arithmetic in code, not in Jev: distances, stopping, speeds, timers. Jev gets pre-computed descriptions like "far ahead".
+- `/api/decide` accepts only the fields defined in the spec, validates them, and rejects anything else. The Jev questions live on the server, never in the request.
+- Jev classifies the caption; the game decides what the car does. The driving rules are a table in `src/game/behaviors.ts`, and where an object is never reaches Jev.
+- Do arithmetic in code, not in Jev: distances, stopping, speeds, timers.
 - Keep the vision model off the main thread so the game loop never freezes.
 - The game loop runs in `requestAnimationFrame` with its state in a plain class (`Game`), not in React state. React reads Zustand vanilla stores (`game.ui`, `visionStore`) that change only on events (new decisions, loading progress), never once per frame. Don't put per-frame values (position, speed) in a store.
 - Share request/response types between frontend and Worker from one file (e.g. `shared/types.ts`) so the API contract can't drift.

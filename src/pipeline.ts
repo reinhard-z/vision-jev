@@ -12,7 +12,7 @@ export class Pipeline {
 
   constructor(private game: Game) {}
 
-  /** Re-decide objects the game flags (e.g. moved to another zone). Returns unsubscribe. */
+  /** Ask again for objects the game flags (a failed request, moved). Returns unsubscribe. */
   attach(): () => void {
     const offNeeds = this.game.events.on("needsDecision", ({ id }) => void this.runDecision(id));
     const offRemoved = this.game.events.on("removed", ({ id }) => this.cancel(id));
@@ -51,10 +51,7 @@ export class Pipeline {
     const controller = new AbortController();
     this.inFlight.set(id, controller);
     try {
-      const { response, roundTripMs } = await decide(
-        { caption: ticket.caption, zone: ticket.zone, distance: ticket.distance, speedKmh: ticket.speedKmh },
-        controller.signal,
-      );
+      const { response, roundTripMs } = await decide({ caption: ticket.caption }, controller.signal);
       this.game.applyDecision(id, ticket.seq, response, roundTripMs);
     } catch (err) {
       if (controller.signal.aborted) return; // cancelled on purpose; the game already moved on

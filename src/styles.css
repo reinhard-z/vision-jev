@@ -411,17 +411,14 @@ h2 {
   border-radius: 4px;
 }
 
-.fill-continue {
-  background: var(--go);
-}
-.fill-slow_down {
-  background: var(--slow);
-}
-.fill-stop {
-  background: var(--stop);
+.fill-category {
+  background: var(--accent);
 }
 .fill-person {
   background: #a57be0;
+}
+.fill-child {
+  background: #e07bb5;
 }
 
 .bar-threshold {

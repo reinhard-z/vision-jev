@@ -131,7 +131,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label="Top-down road with the car. Drop images on the road or the sidewalk; the Thoughts panel describes what the car decides."
+        aria-label="Top-down road with the car in the right lane. Drop images in its lane, the oncoming lane or on a sidewalk; the Thoughts panel describes what the car decides."
         onDragOver={onDragOver}
         onDragLeave={() => game.setDropHint(null)}
         onDrop={onDrop}

@@ -6,12 +6,7 @@ import { evaluate, JevError } from "./jev";
 import { buildState, QUESTIONS, toDecideResponse } from "./policy";
 import { DecideRequestSchema, parseDecideRequest } from "./validate";
 
-const valid: DecideRequest = {
-  caption: "A red stop sign against a blue sky",
-  zone: "road",
-  distance: "far",
-  speedKmh: 50,
-};
+const valid: DecideRequest = { caption: "A red stop sign against a blue sky" };
 
 describe("parseDecideRequest", () => {
   it("produces exactly the shared DecideRequest type", () => {
@@ -29,14 +24,12 @@ describe("parseDecideRequest", () => {
 
   it.each([
     ["unknown fields", { ...valid, questions: {} }],
+    // Where the object is stays in the game; Jev only classifies the caption.
+    ["the old zone, distance and speed fields", { ...valid, zone: "road", distance: "far", speedKmh: 50 }],
     ["an empty caption", { ...valid, caption: "  \n " }],
     ["a caption over 300 chars", { ...valid, caption: "a".repeat(301) }],
-    ["a bad zone", { ...valid, zone: "grass" }],
-    ["a bad distance", { ...valid, distance: "10 m" }],
-    ["a non-integer speed", { ...valid, speedKmh: 50.5 }],
-    ["a speed over 130", { ...valid, speedKmh: 131 }],
-    ["a string speed", { ...valid, speedKmh: "50" }],
-    ["a missing field", { caption: "x", zone: "road", distance: "far" }],
+    ["a non-string caption", { caption: 42 }],
+    ["a missing caption", { turnstileToken: "t" }],
     ["an array", [valid]],
     ["null", null],
     ["a turnstileToken over 2048 chars", { ...valid, turnstileToken: "t".repeat(2049) }],
@@ -62,24 +55,19 @@ describe("parseDecideRequest", () => {
 });
 
 describe("buildState", () => {
-  it("describes location, distance and speed in words", () => {
-    expect(buildState({ caption: "a dog", zone: "sidewalk", distance: "near", speedKmh: 0 })).toEqual({
-      object_seen: "a dog",
-      location: "on the sidewalk next to the road, not on the road",
-      distance: "close ahead, braking now is barely enough",
-      car_speed: "stopped",
-    });
+  it("gives Jev only the caption", () => {
+    expect(buildState({ caption: "a dog", turnstileToken: "t" })).toEqual({ object_seen: "a dog" });
   });
 });
 
 const jevBody = {
   model: "jev-1.13.0",
   answers: {
-    category: { type: "choice", choice: "person", confidence: 1, probabilities: { person: 1 } },
-    action: { type: "choice", choice: "stop", confidence: 0.7, probabilities: { stop: 0.8, slow_down: 0.2 } },
+    category: { type: "choice", choice: "person", confidence: 0.7, probabilities: { person: 0.8, obstacle: 0.2 } },
     light_state: { type: "choice", choice: "not_a_light", confidence: 0.99, probabilities: { not_a_light: 1 } },
     speed_limit: { type: "choice", choice: "none", confidence: 0.99, probabilities: { none: 0.99 } },
     could_be_person: { type: "noul", noul: 0.92 },
+    mentions_child: { type: "noul", noul: 0.97 },
   },
   usage: { input_tokens: 1044, output_tokens: 264 },
 };
@@ -95,10 +83,11 @@ describe("evaluate + toDecideResponse", () => {
     );
     expect(result.inputTokens).toBe(1044);
     const res = toDecideResponse(result);
-    expect(res.category.choice).toBe("person");
-    expect(res.action).toMatchObject({ choice: "stop", confidence: 0.7 });
-    expect(res.action.probabilities).toEqual({ continue: 0, slow_down: 0.2, stop: 0.8 });
+    expect(res.category).toMatchObject({ choice: "person", confidence: 0.7 });
+    expect(res.category.probabilities).toMatchObject({ person: 0.8, obstacle: 0.2, animal: 0, unclear: 0 });
     expect(res.couldBePerson).toBe(0.92);
+    expect(res.mentionsChild).toBe(0.97);
+    expect(res).not.toHaveProperty("action");
   });
 
   it("accepts the documented unwrapped body", async () => {
@@ -108,13 +97,13 @@ describe("evaluate + toDecideResponse", () => {
 
   it("rejects a choice outside the criteria", async () => {
     const bad = structuredClone(jevBody);
-    bad.answers.action.choice = "accelerate";
+    bad.answers.category.choice = "ghost";
     await expect(evaluate(fakeAi(bad), {}, QUESTIONS)).rejects.toThrow(JevError);
   });
 
   it("rejects a missing answer", async () => {
     const bad = structuredClone(jevBody) as { answers: Record<string, unknown> };
-    delete bad.answers.could_be_person;
+    delete bad.answers.mentions_child;
     await expect(evaluate(fakeAi(bad), {}, QUESTIONS)).rejects.toThrow(JevError);
   });
 
@@ -131,7 +120,11 @@ describe("POST /api/decide", () => {
     const res = await post(JSON.stringify(valid));
     expect(res.status).toBe(200);
     expect(res.headers.get("server-timing")).toMatch(/^jev;dur=\d+/);
-    expect(await res.json()).toMatchObject({ action: { choice: "stop" }, couldBePerson: 0.92 });
+    expect(await res.json()).toMatchObject({
+      category: { choice: "person" },
+      couldBePerson: 0.92,
+      mentionsChild: 0.97,
+    });
   });
 
   it("accepts the largest valid request", async () => {

@@ -1,10 +1,10 @@
 import { useStore } from "zustand";
-import { ACTIONS } from "../../shared/types";
+import type { Category, DecideResponse } from "../../shared/types";
 import { DEBUG } from "../debug";
-import { SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
+import { CHILD_THRESHOLD, SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
 import type { Game } from "../game/engine";
 import { STOP_SIGN_WAIT_S } from "../game/constants";
-import type { Decision, ObjectSnapshot } from "../game/types";
+import { ZONE_LABEL, type Decision, type ObjectSnapshot } from "../game/types";
 import { visionStore } from "../perception/perceive";
 
 export function ThoughtsPanel({ game }: { game: Game }) {
@@ -25,7 +25,7 @@ export function ThoughtsPanel({ game }: { game: Game }) {
 /** Announces each new decision to screen readers; the cards themselves update too often. */
 function LatestDecision({ cards }: { cards: ObjectSnapshot[] }) {
   const latest = cards.find((c) => c.phase.kind === "decided" && c.decision);
-  const text = latest?.decision ? `${latest.zone}: ${latest.decision.resolved.label}` : "";
+  const text = latest?.decision?.resolved.label ?? "";
   return (
     <p className="sr-only" aria-live="polite">
       {text}
@@ -35,6 +35,25 @@ function LatestDecision({ cards }: { cards: ObjectSnapshot[] }) {
 
 const pct = (p: number | undefined) => `${Math.round((p ?? 0) * 100)}%`;
 const human = (s: string) => s.replace(/_/g, " ");
+
+/** Category names short enough for the bar labels. */
+const SHORT: Record<Category, string> = {
+  person: "person",
+  animal: "animal",
+  vehicle: "vehicle",
+  traffic_light: "light",
+  stop_sign: "stop sign",
+  speed_limit_sign: "limit sign",
+  other_sign: "sign",
+  obstacle: "obstacle",
+  harmless_debris: "debris",
+  unclear: "unclear",
+};
+
+/** Jev's three most likely categories, most likely first. */
+function topCategories(r: DecideResponse): [Category, number][] {
+  return (Object.entries(r.category.probabilities) as [Category, number][]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+}
 
 function statusText(o: ObjectSnapshot): { text: string; tone: string } {
   switch (o.phase.kind) {
@@ -77,8 +96,7 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
         <img src={o.imageUrl} alt="" />
         <div>
           <p className="meta">
-            {o.zone}
-            {o.distanceBand && ` · ${o.distanceBand}`}
+            {ZONE_LABEL[o.zone]}
             {r && ` · ${human(r.category.choice)} ${pct(r.category.confidence)}`}
             <span className={`chip chip-${status.tone}`}>{status.text}</span>
           </p>
@@ -88,23 +106,11 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
       {r && (
         <>
           <div className="bars">
-            {ACTIONS.map((a) => (
-              <div key={a} className={`bar ${a === r.action.choice ? "bar-chosen" : ""}`}>
-                <span className="bar-label">{human(a)}</span>
-                <span className="bar-track">
-                  <span className={`bar-fill fill-${a}`} style={{ width: pct(r.action.probabilities[a]) }} />
-                </span>
-                <span className="bar-value">{pct(r.action.probabilities[a])}</span>
-              </div>
+            {topCategories(r).map(([c, p]) => (
+              <Bar key={c} label={SHORT[c]} value={p} fill="category" chosen={c === r.category.choice} />
             ))}
-            <div className="bar">
-              <span className="bar-label">person?</span>
-              <span className="bar-track">
-                <span className="bar-fill fill-person" style={{ width: pct(r.couldBePerson) }} />
-                <span className="bar-threshold" style={{ left: pct(SAFETY_PERSON_THRESHOLD) }} />
-              </span>
-              <span className="bar-value">{pct(r.couldBePerson)}</span>
-            </div>
+            <Bar label="person?" value={r.couldBePerson} fill="person" threshold={SAFETY_PERSON_THRESHOLD} />
+            <Bar label="child?" value={r.mentionsChild} fill="child" threshold={CHILD_THRESHOLD} />
           </div>
           {r.category.choice === "traffic_light" && <p className="detail">Light: {human(r.lightState.choice)}</p>}
           {r.category.choice === "speed_limit_sign" && <p className="detail">Limit: {r.speedLimit.choice}</p>}
@@ -133,6 +139,28 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
         </p>
       )}
     </article>
+  );
+}
+
+interface BarProps {
+  label: string;
+  value: number;
+  fill: "category" | "person" | "child";
+  chosen?: boolean;
+  /** Marks where the game starts to act on the value. */
+  threshold?: number;
+}
+
+function Bar({ label, value, fill, chosen, threshold }: BarProps) {
+  return (
+    <div className={`bar ${chosen ? "bar-chosen" : ""}`}>
+      <span className="bar-label">{label}</span>
+      <span className="bar-track">
+        <span className={`bar-fill fill-${fill}`} style={{ width: pct(value) }} />
+        {threshold !== undefined && <span className="bar-threshold" style={{ left: pct(threshold) }} />}
+      </span>
+      <span className="bar-value">{pct(value)}</span>
+    </div>
   );
 }
 

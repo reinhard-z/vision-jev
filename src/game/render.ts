@@ -6,6 +6,7 @@ import {
   PX_PER_M,
   REMOVE_BUTTON_R,
   ROAD_LEFT,
+  ROAD_MID,
   ROAD_RIGHT,
   ROAD_W,
   SIDEWALK_W,
@@ -14,7 +15,7 @@ import {
 } from "./constants";
 import type { Game } from "./engine";
 import { msToKmh } from "./physics";
-import type { GameObject } from "./types";
+import { ZONE_LABEL, type GameObject } from "./types";
 
 export const CAR_X = ROAD_LEFT + (ROAD_W * 3) / 4; // centre of the right lane
 const CAR_W = 44;
@@ -80,7 +81,7 @@ function drawGround(ctx: CanvasRenderingContext2D, h: number, scroll: number): v
   ctx.fillRect(ROAD_LEFT + 6, 0, 2, h);
   ctx.fillRect(ROAD_RIGHT - 8, 0, 2, h);
   const dash = 48;
-  const cx = ROAD_LEFT + ROAD_W / 2 - 1.5;
+  const cx = ROAD_MID - 1.5;
   for (let y = (scroll % dash) - dash; y < h; y += dash) ctx.fillRect(cx, y, 3, dash / 2);
 }
 
@@ -89,8 +90,9 @@ function drawDropHint(ctx: CanvasRenderingContext2D, game: Game): void {
   const { x, y } = game.dropHint;
   const zone = game.zoneAt(x);
   ctx.save();
-  ctx.fillStyle = zone === "road" ? "rgba(255,255,255,0.12)" : "rgba(255,230,120,0.22)";
-  if (zone === "road") ctx.fillRect(ROAD_LEFT, 0, ROAD_W, game.viewHeight);
+  ctx.fillStyle = zone === "sidewalk" ? "rgba(255,230,120,0.22)" : "rgba(255,255,255,0.12)";
+  if (zone === "own_lane") ctx.fillRect(ROAD_MID, 0, ROAD_RIGHT - ROAD_MID, game.viewHeight);
+  else if (zone === "oncoming_lane") ctx.fillRect(ROAD_LEFT, 0, ROAD_MID - ROAD_LEFT, game.viewHeight);
   else if (x < ROAD_LEFT) ctx.fillRect(0, 0, ROAD_LEFT, game.viewHeight);
   else ctx.fillRect(ROAD_RIGHT, 0, CANVAS_WIDTH - ROAD_RIGHT, game.viewHeight);
   ctx.strokeStyle = "#fff";
@@ -100,7 +102,7 @@ function drawDropHint(ctx: CanvasRenderingContext2D, game: Game): void {
   roundRect(ctx, x - half, y - half, OBJECT_SIZE_PX, OBJECT_SIZE_PX, 6);
   ctx.stroke();
   ctx.restore();
-  label(ctx, zone === "road" ? "road" : "sidewalk", x, y - half - 12, "rgba(20,20,30,0.85)");
+  label(ctx, ZONE_LABEL[zone], x, y - half - 12, "rgba(20,20,30,0.85)");
 }
 
 function drawStopLines(ctx: CanvasRenderingContext2D, game: Game): void {
@@ -110,9 +112,10 @@ function drawStopLines(ctx: CanvasRenderingContext2D, game: Game): void {
     const b = d.resolved.behavior;
     const holds = b.kind === "stop" || ((b.kind === "stop_sign" || b.kind === "red_light") && !d.released);
     if (!holds) continue;
+    // Across the car's lane, where it will stop.
     const y = game.sToScreenY(obj.s - OBJECT_HALF_LENGTH_M - STOP_GAP_M);
     ctx.fillStyle = b.kind === "stop" ? COLORS.stop : COLORS.line;
-    ctx.fillRect(ROAD_LEFT + 8, y - 2, ROAD_W - 16, 4);
+    ctx.fillRect(ROAD_MID + 4, y - 2, ROAD_RIGHT - ROAD_MID - 12, 4);
   }
 }
 
