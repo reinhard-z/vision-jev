@@ -60,10 +60,8 @@ function statusText(o: ObjectSnapshot): { text: string; tone: string } {
     case "passed":
       return { text: "passed", tone: "muted" };
     case "perceiving":
-      return { text: "perceiving…", tone: "busy" };
     case "deciding":
-      // After a move, what Jev decided before holds until it answers again.
-      return { text: o.decision ? "asking again…" : "deciding…", tone: "busy" };
+      return { text: `${o.phase.kind}…`, tone: "busy" };
     case "decided":
       if (o.decision?.outcome.kind === "failed") {
         return { text: o.decision.outcome.stage === "perception" ? "vision failed" : "decision failed", tone: "stop" };
@@ -87,6 +85,8 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
   const status = statusText(o);
   const note = releaseNote(d);
   const done = o.phase.kind === "removed" || o.phase.kind === "passed";
+  // Moved: Jev is deciding again, and its previous answer holds until then.
+  const stale = o.phase.kind === "deciding" && d !== undefined;
 
   return (
     <article className={`card ${done ? "card-done" : ""}`}>
@@ -103,7 +103,7 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
 
       {r && (
         <>
-          <div className="bars">
+          <div className={`bars ${stale ? "stale" : ""}`}>
             {topActions(r).map(([a, p]) => (
               <Bar key={a} label={SHORT[a]} value={p} chosen={a === r.action.choice} />
             ))}
@@ -113,7 +113,8 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
       )}
 
       {d && (
-        <p className="behavior">
+        <p className={`behavior ${stale ? "stale" : ""}`}>
+          {stale && "Until Jev answers: "}
           {d.resolved.label}
           {note && <span className="release"> · {note}</span>}
         </p>
