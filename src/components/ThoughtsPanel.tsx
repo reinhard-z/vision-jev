@@ -1,7 +1,6 @@
 import { useStore } from "zustand";
-import type { Category, DecideResponse } from "../../shared/types";
+import type { Action, DecideResponse } from "../../shared/types";
 import { DEBUG } from "../debug";
-import { CHILD_THRESHOLD, SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
 import type { Game } from "../game/engine";
 import { STOP_SIGN_WAIT_S } from "../game/constants";
 import { ZONE_LABEL, type Decision, type ObjectSnapshot } from "../game/types";
@@ -36,23 +35,20 @@ function LatestDecision({ cards }: { cards: ObjectSnapshot[] }) {
 const pct = (p: number | undefined) => `${Math.round((p ?? 0) * 100)}%`;
 const human = (s: string) => s.replace(/_/g, " ");
 
-/** Category names short enough for the bar labels. */
-const SHORT: Record<Category, string> = {
-  person: "person",
-  animal: "animal",
-  vehicle: "vehicle",
-  traffic_light: "light",
-  stop_sign: "stop sign",
-  speed_limit_sign: "limit sign",
-  other_sign: "sign",
-  obstacle: "obstacle",
-  harmless_debris: "debris",
-  unclear: "unclear",
+/** Action names short enough for the bar labels. */
+const SHORT: Record<Action, string> = {
+  continue: "continue",
+  slow_down: "slow down",
+  stop: "stop",
+  stop_then_go: "stop, go",
+  wait_for_green: "wait green",
+  go: "go",
+  change_speed: "new speed",
 };
 
-/** Jev's three most likely categories, most likely first. */
-function topCategories(r: DecideResponse): [Category, number][] {
-  return (Object.entries(r.category.probabilities) as [Category, number][]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+/** Jev's three most likely actions, most likely first. */
+function topActions(r: DecideResponse): [Action, number][] {
+  return (Object.entries(r.action.probabilities) as [Action, number][]).sort((a, b) => b[1] - a[1]).slice(0, 3);
 }
 
 function statusText(o: ObjectSnapshot): { text: string; tone: string } {
@@ -64,8 +60,10 @@ function statusText(o: ObjectSnapshot): { text: string; tone: string } {
     case "passed":
       return { text: "passed", tone: "muted" };
     case "perceiving":
+      return { text: "perceiving…", tone: "busy" };
     case "deciding":
-      return { text: `${o.phase.kind}…`, tone: "busy" };
+      // After a move, what Jev decided before holds until it answers again.
+      return { text: o.decision ? "asking again…" : "deciding…", tone: "busy" };
     case "decided":
       if (o.decision?.outcome.kind === "failed") {
         return { text: o.decision.outcome.stage === "perception" ? "vision failed" : "decision failed", tone: "stop" };
@@ -106,20 +104,16 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
       {r && (
         <>
           <div className="bars">
-            {topCategories(r).map(([c, p]) => (
-              <Bar key={c} label={SHORT[c]} value={p} fill="category" chosen={c === r.category.choice} />
+            {topActions(r).map(([a, p]) => (
+              <Bar key={a} label={SHORT[a]} value={p} chosen={a === r.action.choice} />
             ))}
-            <Bar label="person?" value={r.couldBePerson} fill="person" threshold={SAFETY_PERSON_THRESHOLD} />
-            <Bar label="child?" value={r.mentionsChild} fill="child" threshold={CHILD_THRESHOLD} />
           </div>
-          {r.category.choice === "traffic_light" && <p className="detail">Light: {human(r.lightState.choice)}</p>}
-          {r.category.choice === "speed_limit_sign" && <p className="detail">Limit: {r.speedLimit.choice}</p>}
+          {r.action.choice === "change_speed" && <p className="detail">Limit read: {r.speedLimit.choice}</p>}
         </>
       )}
 
       {d && (
-        <p className={`behavior ${d.resolved.safetyOverride ? "override" : ""}`}>
-          {d.resolved.safetyOverride && <strong>Safety override: </strong>}
+        <p className="behavior">
           {d.resolved.label}
           {note && <span className="release"> · {note}</span>}
         </p>
@@ -145,19 +139,15 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
 interface BarProps {
   label: string;
   value: number;
-  fill: "category" | "person" | "child";
   chosen?: boolean;
-  /** Marks where the game starts to act on the value. */
-  threshold?: number;
 }
 
-function Bar({ label, value, fill, chosen, threshold }: BarProps) {
+function Bar({ label, value, chosen }: BarProps) {
   return (
     <div className={`bar ${chosen ? "bar-chosen" : ""}`}>
       <span className="bar-label">{label}</span>
       <span className="bar-track">
-        <span className={`bar-fill fill-${fill}`} style={{ width: pct(value) }} />
-        {threshold !== undefined && <span className="bar-threshold" style={{ left: pct(threshold) }} />}
+        <span className="bar-fill" style={{ width: pct(value) }} />
       </span>
       <span className="bar-value">{pct(value)}</span>
     </div>

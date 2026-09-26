@@ -1,4 +1,5 @@
 import { useRef, useState, type DragEvent } from "react";
+import type { Pipeline } from "../pipeline";
 import { SAMPLES, samplesFromFiles, setSampleDragData, type Sample } from "../samples";
 import { CreditsDialog } from "./CreditsDialog";
 import { VisionStatus } from "./VisionStatus";
@@ -6,8 +7,9 @@ import { VisionStatus } from "./VisionStatus";
 /**
  * Sample images plus the user's own. Placing is drag-only: where you drop
  * decides the lane or the sidewalk. Own images are added to the tray first.
+ * Captioning starts as soon as a drag begins.
  */
-export function SampleTray() {
+export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
   const [own, setOwn] = useState<Sample[]>([]);
   const [fileOver, setFileOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -67,6 +69,7 @@ export function SampleTray() {
             title={s.label}
             onDragStart={(e) => {
               setSampleDragData(e.dataTransfer, s);
+              pipeline.prefetch(s.url);
               e.dataTransfer.effectAllowed = "copy";
               // Drag preview: just the picture, centred on the cursor.
               const img = e.currentTarget.querySelector("img");

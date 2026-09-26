@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Category, ChoiceAnswer, DecideResponse, LightState, SpeedLimit } from "../../shared/types";
-import { resolveBehavior } from "./behaviors";
+import type { Action, Category, ChoiceAnswer, DecideResponse, SpeedLimit } from "../../shared/types";
+import { failedBehavior, resolveBehavior } from "./behaviors";
 import { OBJECT_HALF_LENGTH_M, PX_PER_M, ROAD_LEFT, ROAD_MID, ROAD_RIGHT } from "./constants";
 import { Game } from "./engine";
 import { msToKmh } from "./physics";
@@ -9,30 +9,21 @@ import { ZONES, type Zone } from "./types";
 const fakeImage = {} as HTMLImageElement;
 
 interface Fake {
+  action: Action;
   category: Category;
-  light?: LightState;
   limit?: SpeedLimit;
-  couldBePerson?: number;
-  mentionsChild?: number;
 }
 
 // Hand-written answers for the engine tests (Jev itself is never called here).
-// Jev only sees the caption, so an answer is the same in every zone.
+// Jev decides per zone; each fake is one answer the game has to carry out.
 const FAKES: Record<string, Fake> = {
-  child: { category: "person", couldBePerson: 0.95, mentionsChild: 0.99 },
-  adult: { category: "person", couldBePerson: 0.9 },
-  teddy: { category: "obstacle", couldBePerson: 0.7 },
-  doll: { category: "obstacle", couldBePerson: 0.7, mentionsChild: 0.6 }, // "a child's doll"
-  dog: { category: "animal" },
-  car: { category: "vehicle" },
-  box: { category: "obstacle" },
-  leaves: { category: "harmless_debris" },
-  vague: { category: "unclear" },
-  stop: { category: "stop_sign" },
-  red: { category: "traffic_light", light: "red" },
-  green: { category: "traffic_light", light: "green" },
-  unlit: { category: "traffic_light", light: "unknown" },
-  limit30: { category: "speed_limit_sign", limit: "30" },
+  stop: { action: "stop", category: "person" },
+  slow: { action: "slow_down", category: "person" },
+  ignore: { action: "continue", category: "harmless_debris" },
+  stop_sign: { action: "stop_then_go", category: "stop_sign" },
+  red: { action: "wait_for_green", category: "traffic_light" },
+  green: { action: "go", category: "traffic_light" },
+  limit30: { action: "change_speed", category: "speed_limit_sign", limit: "30" },
 };
 
 const pick = <T extends string>(choice: T): ChoiceAnswer<T> =>
@@ -41,11 +32,9 @@ const pick = <T extends string>(choice: T): ChoiceAnswer<T> =>
 function answer(name: string): DecideResponse {
   const f = FAKES[name]!;
   return {
+    action: pick(f.action),
     category: pick(f.category),
-    lightState: pick(f.light ?? "not_a_light"),
     speedLimit: pick(f.limit ?? "none"),
-    couldBePerson: f.couldBePerson ?? 0.01,
-    mentionsChild: f.mentionsChild ?? 0.01,
     latencyMs: 0,
   };
 }
@@ -103,70 +92,40 @@ describe("zoneAt", () => {
 });
 
 describe("resolveBehavior", () => {
-  const kinds = (res: DecideResponse) => ZONES.map((zone) => resolveBehavior(res, zone).behavior.kind);
-
-  // The behavior table in docs/SPEC.md, one row per case: own lane, oncoming lane, sidewalk.
   it.each([
-    ["child", ["stop", "stop", "slow_down"]],
-    ["adult", ["stop", "slow_down", "continue"]],
-    ["dog", ["stop", "slow_down", "continue"]],
-    ["car", ["stop", "continue", "continue"]],
-    ["box", ["stop", "continue", "continue"]],
-    ["leaves", ["continue", "continue", "continue"]],
-    ["vague", ["stop", "slow_down", "continue"]],
-  ])("follows the table for %s", (name, expected) => {
-    expect(kinds(answer(name))).toEqual(expected);
+    ["stop", { kind: "stop" }],
+    ["slow", { kind: "slow_down" }],
+    ["ignore", { kind: "continue" }],
+    ["stop_sign", { kind: "stop_sign" }],
+    ["red", { kind: "red_light" }],
+    ["green", { kind: "green_light" }],
+    ["limit30", { kind: "speed_limit", kmh: 30 }],
+  ])("carries out Jev's action for %s, whatever the zone", (name, behavior) => {
+    for (const zone of ZONES) expect(resolveBehavior(answer(name), zone).behavior).toEqual(behavior);
   });
 
-  it("names what it is, where, and what the car does", () => {
-    expect(resolveBehavior(answer("child"), "sidewalk").label).toBe("Child on the sidewalk, slow down until passed");
-    expect(resolveBehavior(answer("car"), "oncoming_lane").label).toBe("Vehicle in the oncoming lane, continue");
-    expect(resolveBehavior(answer("adult"), "own_lane").label).toBe("Person in your lane, stop until cleared");
+  it("names what Jev thinks it is, where, and what the car does", () => {
+    expect(resolveBehavior(answer("stop"), "own_lane").label).toBe("Person in your lane: stop until cleared");
+    expect(resolveBehavior(answer("slow"), "sidewalk").label).toBe("Person on the sidewalk: slow down until passed");
+    expect(resolveBehavior(answer("limit30"), "sidewalk").label).toBe(
+      "Speed limit sign on the sidewalk: change speed to 30 km/h",
+    );
   });
 
-  it("counts people as children once the caption mentions a child", () => {
-    expect(kinds({ ...answer("adult"), mentionsChild: 0.3 })).toEqual(["stop", "stop", "slow_down"]);
-    expect(kinds({ ...answer("adult"), mentionsChild: 0.1 })).toEqual(["stop", "slow_down", "continue"]);
-    expect(resolveBehavior(answer("child"), "sidewalk").safetyOverride).toBe(false);
-  });
-
-  it("treats anything that could be a person as one, flagged only when that changes the outcome", () => {
-    expect(resolveBehavior(answer("teddy"), "own_lane")).toMatchObject({
-      behavior: { kind: "stop" },
-      safetyOverride: false, // an obstacle in the lane stops the car anyway
-    });
-    expect(resolveBehavior(answer("teddy"), "oncoming_lane")).toMatchObject({
-      behavior: { kind: "slow_down" },
-      safetyOverride: true,
-      label: "Slow down until passed: it could be a person (instead of: obstacle in the oncoming lane, continue)",
-    });
-    expect(resolveBehavior(answer("teddy"), "sidewalk").safetyOverride).toBe(false);
-  });
-
-  it("treats a look-alike whose caption mentions a child as a child", () => {
-    expect(kinds(answer("doll"))).toEqual(["stop", "stop", "slow_down"]);
-    expect(resolveBehavior(answer("doll"), "sidewalk")).toMatchObject({
-      safetyOverride: true,
-      label: expect.stringContaining("it could be a child") as unknown,
-    });
-  });
-
-  it("maps signs and lights by category, in every zone", () => {
-    for (const zone of ZONES) {
-      expect(resolveBehavior(answer("stop"), zone).behavior.kind).toBe("stop_sign");
-      expect(resolveBehavior(answer("red"), zone).behavior).toEqual({ kind: "red_light", light: "red" });
-      expect(resolveBehavior(answer("green"), zone).behavior.kind).toBe("green_light");
-      expect(resolveBehavior(answer("limit30"), zone).behavior).toEqual({ kind: "speed_limit", kmh: 30 });
-    }
-  });
-
-  it("keeps speed for a speed limit sign without a readable number", () => {
+  it("keeps speed when Jev says change speed but read no number", () => {
     const res = { ...answer("limit30"), speedLimit: pick<SpeedLimit>("none") };
-    expect(resolveBehavior(res, "own_lane").behavior.kind).toBe("continue");
+    expect(resolveBehavior(res, "own_lane")).toEqual({
+      behavior: { kind: "continue" },
+      label: "Speed limit sign in your lane: change speed, no number read: keep speed",
+    });
   });
 
-  it("slows down for a traffic light whose colour is unknown", () => {
-    expect(resolveBehavior(answer("unlit"), "own_lane").behavior.kind).toBe("slow_down");
+  it("without an answer, stops in the lane, slows beside it and ignores the sidewalk", () => {
+    expect(ZONES.map((zone) => failedBehavior(zone, "decision").behavior.kind)).toEqual([
+      "stop",
+      "slow_down",
+      "continue",
+    ]);
   });
 });
 
@@ -180,9 +139,9 @@ describe("Game", () => {
     expect(game.hitTestRemove(obj.x, game.sToScreenY(obj.s))).toBeNull();
   });
 
-  it("stops for a person in its lane and stays stopped until removed", () => {
+  it("stops when Jev says stop and stays stopped until removed", () => {
     const game = new Game();
-    const id = addDecided(game, "own_lane", 50, "adult");
+    const id = addDecided(game, "own_lane", 50, "stop");
     run(game, 10);
     expect(game.speedMs).toBe(0);
     const obj = game.get(id)!;
@@ -193,9 +152,9 @@ describe("Game", () => {
     expect(kmh(game)).toBeGreaterThan(20);
   });
 
-  it("stops for a child in the oncoming lane and waits until it is removed", () => {
+  it("stops for an object in the oncoming lane when Jev says so", () => {
     const game = new Game();
-    const id = addDecided(game, "oncoming_lane", 50, "child");
+    const id = addDecided(game, "oncoming_lane", 50, "stop");
     run(game, 10);
     expect(game.speedMs).toBe(0);
     expect(game.distanceAhead(game.get(id)!)).toBeGreaterThan(0);
@@ -204,9 +163,9 @@ describe("Game", () => {
     expect(kmh(game)).toBeGreaterThan(20);
   });
 
-  it("slows to half the target for an adult in the oncoming lane until passed, then recovers", () => {
+  it("slows to half the target until passed, then recovers", () => {
     const game = new Game();
-    const id = addDecided(game, "oncoming_lane", 60, "adult");
+    const id = addDecided(game, "oncoming_lane", 60, "slow");
     run(game, 3);
     expect(kmh(game)).toBeCloseTo(25, 0);
     // Still slow while alongside it, not only up to its front edge.
@@ -216,27 +175,18 @@ describe("Game", () => {
     expect(kmh(game)).toBeCloseTo(50, 0);
   });
 
-  it("slows down for a child on the sidewalk but not for an adult", () => {
+  it("drives on when Jev says continue, even in its lane", () => {
     const game = new Game();
-    addDecided(game, "sidewalk", 40, "adult");
-    run(game, 3);
-    expect(kmh(game)).toBeCloseTo(50, 0);
-    addDecided(game, "sidewalk", 40, "child");
-    run(game, 3);
-    expect(kmh(game)).toBeCloseTo(25, 0);
-  });
-
-  it("ignores a car and an obstacle in the oncoming lane", () => {
-    const game = new Game();
-    addDecided(game, "oncoming_lane", 30, "car");
-    addDecided(game, "oncoming_lane", 50, "box");
+    addDecided(game, "own_lane", 30, "ignore");
+    addDecided(game, "oncoming_lane", 50, "ignore");
     run(game, 8);
     expect(kmh(game)).toBeCloseTo(50, 0);
+    expect(game.ui.getState().tooLate).toBeNull();
   });
 
   it("waits 2 s at a stop sign, then continues", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 50, "stop");
+    const id = addDecided(game, "sidewalk", 50, "stop_sign");
     let stoppedFor = 0;
     run(game, 15, () => {
       if (game.speedMs === 0) stoppedFor += 1 / 120;
@@ -277,7 +227,7 @@ describe("Game", () => {
     // A late decision is recorded but doesn't clear the state.
     game.setCaption(id, "caption of leaves", 0);
     const t = game.beginDecision(id)!;
-    game.applyDecision(id, t.seq, answer("leaves"));
+    game.applyDecision(id, t.seq, answer("ignore"));
     expect(game.get(id)!.phase.kind).toBe("too_late");
     expect(kind(game, id)).toBe("continue");
 
@@ -295,7 +245,7 @@ describe("Game", () => {
     expect(kmh(game)).toBeCloseTo(50, 0);
   });
 
-  it("treats a failed decision like an unclear object: stop in the lane until removed", () => {
+  it("without an answer from Jev, stops in the lane until removed", () => {
     const game = new Game();
     const ids = ZONES.map((zone, i) => {
       const id = add(game, zone, 50 - i * 10);
@@ -311,35 +261,64 @@ describe("Game", () => {
     expect(game.speedMs).toBeGreaterThan(0);
   });
 
-  it("resolves a moved object again without asking Jev", () => {
+  it("asks Jev again when an object moves to another zone; the old decision holds until it answers", () => {
     const game = new Game();
     const needs: string[] = [];
     game.events.on("needsDecision", ({ id }) => needs.push(id));
-    const id = addDecided(game, "own_lane", 50, "child");
+    const id = addDecided(game, "own_lane", 50, "stop");
     run(game, 10);
     expect(game.speedMs).toBe(0);
 
     move(game, id, "sidewalk");
-    expect(game.get(id)!.zone).toBe("sidewalk");
+    expect(needs).toEqual([id]);
+    const obj = game.get(id)!;
+    expect(obj.zone).toBe("sidewalk");
+    expect(obj.phase.kind).toBe("deciding");
+    run(game, 3);
+    expect(game.speedMs).toBe(0); // still Jev's stop
+
+    const t = game.beginDecision(id)!;
+    expect(t.zone).toBe("sidewalk");
+    game.applyDecision(id, t.seq, answer("ignore"));
     expect(game.get(id)!.phase.kind).toBe("decided");
-    expect(kind(game, id)).toBe("slow_down");
     run(game, 3);
     expect(kmh(game)).toBeGreaterThan(20);
-
-    move(game, id, "oncoming_lane");
-    expect(kind(game, id)).toBe("stop");
-    expect(needs).toEqual([]);
   });
 
-  it("applies an answer to wherever the object is when it arrives", () => {
+  it("keeps the decision when an object moves within its zone", () => {
     const game = new Game();
+    const needs: string[] = [];
+    game.events.on("needsDecision", ({ id }) => needs.push(id));
+    const id = addDecided(game, "own_lane", 50, "stop");
+    move(game, id, "own_lane", 60);
+    expect(needs).toEqual([]);
+    expect(game.get(id)!.phase.kind).toBe("decided");
+    expect(kind(game, id)).toBe("stop");
+  });
+
+  it("reacts too late when the car reaches a moved object before Jev answers again", () => {
+    const game = new Game();
+    const id = addDecided(game, "sidewalk", 10, "ignore");
+    move(game, id, "own_lane");
+    run(game, 2);
+    expect(game.get(id)!.phase.kind).toBe("too_late");
+  });
+
+  it("drops an answer for the zone an object has left and asks for the new one", () => {
+    const game = new Game();
+    const needs: string[] = [];
+    game.events.on("needsDecision", ({ id }) => needs.push(id));
     const id = add(game, "own_lane", 60);
     game.setCaption(id, "caption of child", 0);
-    const t = game.beginDecision(id)!;
+    const first = game.beginDecision(id)!;
     move(game, id, "sidewalk");
+    expect(needs).toEqual([id]);
+    game.applyDecision(id, first.seq, answer("stop"));
     expect(game.get(id)!.phase.kind).toBe("deciding");
-    game.applyDecision(id, t.seq, answer("child"));
-    expect(game.get(id)!.phase.kind).toBe("decided");
+
+    const second = game.beginDecision(id)!;
+    expect(second).toMatchObject({ zone: "sidewalk" });
+    game.applyDecision(id, second.seq, answer("slow"));
     expect(kind(game, id)).toBe("slow_down");
   });
 
@@ -349,11 +328,11 @@ describe("Game", () => {
     game.setCaption(id, "caption of child", 0);
     const t = game.beginDecision(id)!;
     game.removeObject(id);
-    game.applyDecision(id, t.seq, answer("child"));
+    game.applyDecision(id, t.seq, answer("stop"));
     expect(game.get(id)).toBeUndefined();
   });
 
-  it("retries a failed request when the object is moved to another zone", () => {
+  it("retries a failed request when the object is moved, even within its zone", () => {
     const game = new Game();
     const needs: string[] = [];
     game.events.on("needsDecision", ({ id }) => needs.push(id));
@@ -361,33 +340,31 @@ describe("Game", () => {
     game.setCaption(id, "caption of child", 0);
     const first = game.beginDecision(id)!;
     game.failDecision(id, first.seq);
-    move(game, id, "oncoming_lane");
+    move(game, id, "own_lane", 70);
     expect(needs).toEqual([id]);
     expect(game.get(id)!.phase.kind).toBe("deciding");
-    expect(game.get(id)!.decision).toBeUndefined();
     const retry = game.beginDecision(id)!;
     expect(retry.seq).not.toBe(first.seq);
-    game.applyDecision(id, retry.seq, answer("child"));
-    expect(kind(game, id)).toBe("stop");
+    game.applyDecision(id, retry.seq, answer("stop"));
+    expect(game.get(id)!.decision?.outcome.kind).toBe("answered");
   });
 
-  it("obeys a passed object that is dragged back into the lane ahead", () => {
-    // Regression: `passed` used to survive the move, so the car ignored it.
+  it("asks again for a passed object that is dragged back into the lane ahead", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 20, "child");
+    const id = addDecided(game, "sidewalk", 20, "ignore");
     while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
 
     move(game, id, "own_lane", 40);
-    const obj = game.get(id)!;
-    expect(obj.phase.kind).toBe("decided");
-    expect(kind(game, id)).toBe("stop");
+    expect(game.get(id)!.phase.kind).toBe("deciding");
+    const t = game.beginDecision(id)!;
+    game.applyDecision(id, t.seq, answer("stop"));
     run(game, 10);
     expect(game.speedMs).toBe(0);
   });
 
   it("starts over for a passed stop sign moved ahead within the same zone", () => {
     const game = new Game();
-    const id = addDecided(game, "sidewalk", 20, "stop");
+    const id = addDecided(game, "sidewalk", 20, "stop_sign");
     while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
     expect(game.get(id)!.decision!.released).toBe(true);
     move(game, id, "sidewalk", 40);

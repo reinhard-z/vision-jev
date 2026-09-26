@@ -6,7 +6,7 @@ import { evaluate, JevError } from "./jev";
 import { buildState, QUESTIONS, toDecideResponse } from "./policy";
 import { DecideRequestSchema, parseDecideRequest } from "./validate";
 
-const valid: DecideRequest = { caption: "A red stop sign against a blue sky" };
+const valid: DecideRequest = { caption: "A red stop sign against a blue sky", zone: "sidewalk" };
 
 describe("parseDecideRequest", () => {
   it("produces exactly the shared DecideRequest type", () => {
@@ -24,12 +24,14 @@ describe("parseDecideRequest", () => {
 
   it.each([
     ["unknown fields", { ...valid, questions: {} }],
-    // Where the object is stays in the game; Jev only classifies the caption.
-    ["the old zone, distance and speed fields", { ...valid, zone: "road", distance: "far", speedKmh: 50 }],
+    // Distance and speed stay in the game; Jev only gets the zone.
+    ["the old distance and speed fields", { ...valid, distance: "far", speedKmh: 50 }],
+    ["an unknown zone", { ...valid, zone: "road" }],
+    ["a missing zone", { caption: valid.caption }],
     ["an empty caption", { ...valid, caption: "  \n " }],
     ["a caption over 300 chars", { ...valid, caption: "a".repeat(301) }],
     ["a non-string caption", { caption: 42 }],
-    ["a missing caption", { turnstileToken: "t" }],
+    ["a missing caption", { zone: "own_lane", turnstileToken: "t" }],
     ["an array", [valid]],
     ["null", null],
     ["a turnstileToken over 2048 chars", { ...valid, turnstileToken: "t".repeat(2049) }],
@@ -55,19 +57,20 @@ describe("parseDecideRequest", () => {
 });
 
 describe("buildState", () => {
-  it("gives Jev only the caption", () => {
-    expect(buildState({ caption: "a dog", turnstileToken: "t" })).toEqual({ object_seen: "a dog" });
+  it("gives Jev the caption and the zone in words", () => {
+    expect(buildState({ caption: "a dog", zone: "sidewalk", turnstileToken: "t" })).toEqual({
+      object_seen: "a dog",
+      location: "on the sidewalk beside the road, not on the road",
+    });
   });
 });
 
 const jevBody = {
   model: "jev-1.13.0",
   answers: {
+    action: { type: "choice", choice: "slow_down", confidence: 0.6, probabilities: { slow_down: 0.6, stop: 0.3 } },
     category: { type: "choice", choice: "person", confidence: 0.7, probabilities: { person: 0.8, obstacle: 0.2 } },
-    light_state: { type: "choice", choice: "not_a_light", confidence: 0.99, probabilities: { not_a_light: 1 } },
     speed_limit: { type: "choice", choice: "none", confidence: 0.99, probabilities: { none: 0.99 } },
-    could_be_person: { type: "noul", noul: 0.92 },
-    mentions_child: { type: "noul", noul: 0.97 },
   },
   usage: { input_tokens: 1044, output_tokens: 264 },
 };
@@ -85,9 +88,8 @@ describe("evaluate + toDecideResponse", () => {
     const res = toDecideResponse(result);
     expect(res.category).toMatchObject({ choice: "person", confidence: 0.7 });
     expect(res.category.probabilities).toMatchObject({ person: 0.8, obstacle: 0.2, animal: 0, unclear: 0 });
-    expect(res.couldBePerson).toBe(0.92);
-    expect(res.mentionsChild).toBe(0.97);
-    expect(res).not.toHaveProperty("action");
+    expect(res.action).toMatchObject({ choice: "slow_down", confidence: 0.6 });
+    expect(res.action.probabilities).toMatchObject({ slow_down: 0.6, stop: 0.3, continue: 0, go: 0 });
   });
 
   it("accepts the documented unwrapped body", async () => {
@@ -103,7 +105,7 @@ describe("evaluate + toDecideResponse", () => {
 
   it("rejects a missing answer", async () => {
     const bad = structuredClone(jevBody) as { answers: Record<string, unknown> };
-    delete bad.answers.mentions_child;
+    delete bad.answers.action;
     await expect(evaluate(fakeAi(bad), {}, QUESTIONS)).rejects.toThrow(JevError);
   });
 
@@ -121,9 +123,8 @@ describe("POST /api/decide", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("server-timing")).toMatch(/^jev;dur=\d+/);
     expect(await res.json()).toMatchObject({
+      action: { choice: "slow_down" },
       category: { choice: "person" },
-      couldBePerson: 0.92,
-      mentionsChild: 0.97,
     });
   });
 

@@ -1,20 +1,44 @@
-// What Jev sees and what it's asked. Server-only. Jev only classifies the
-// caption; what the car does about it is decided in the game
-// (src/game/behaviors.ts). Wording is tuned against real captions
+// What Jev sees and what it's asked. Server-only. Jev decides what the car
+// does about an object from what it is and where it is; the game carries that
+// out (src/game/behaviors.ts). Wording is tuned against real captions
 // (docs/jev-tuning/).
-import type { Category, ChoiceAnswer, DecideRequest, DecideResponse, LightState, SpeedLimit } from "../../shared/types";
+import type {
+  Action,
+  Category,
+  ChoiceAnswer,
+  DecideRequest,
+  DecideResponse,
+  SpeedLimit,
+  Zone,
+} from "../../shared/types";
 import type { ChoiceAnswer as JevChoiceAnswer, JevResult, Questions } from "./jev";
 
-/**
- * Only the caption. Where the object is doesn't change what it is, and
- * describing the zone made Jev less sure about the category (docs/SPEC.md,
- * stage 4 log).
- */
+const LOCATION: Record<Zone, string> = {
+  own_lane: "on the road, in the car's lane, ahead of the car",
+  oncoming_lane: "on the road, in the oncoming lane next to the car's lane",
+  sidewalk: "on the sidewalk beside the road, not on the road",
+};
+
+/** The caption and where the object is, in words. */
 export function buildState(req: DecideRequest): Record<string, string> {
-  return { object_seen: req.caption };
+  return { object_seen: req.caption, location: LOCATION[req.zone] };
 }
 
 export const QUESTIONS = {
+  action: {
+    type: "choice",
+    instructions: "What should the car do about `object_seen`, which is `location`?",
+    criteria: {
+      continue:
+        "Drive on at the current speed: it can't get into the car's way, or it is light enough to drive over, such as a bag, paper or leaves",
+      slow_down: "Drive on at half speed until past it: it is not in the car's lane, but could move into it",
+      stop: "Stop before it and wait until it is gone: a person, animal, vehicle or solid object blocks the car's lane",
+      stop_then_go: "Stop at it, wait two seconds, then drive on: a stop sign",
+      wait_for_green: "Stop at it and wait until a light turns green: a red or amber traffic light",
+      go: "Drive on, and go again if waiting at a light: a green traffic light",
+      change_speed: "Change the car's speed to the number on it: a speed limit sign",
+    } satisfies Record<Action, string>,
+  },
   category: {
     type: "choice",
     instructions: "What kind of thing is described in `object_seen`?",
@@ -32,17 +56,6 @@ export const QUESTIONS = {
       unclear: "`object_seen` is too vague to tell what it is",
     } satisfies Record<Category, string>,
   },
-  light_state: {
-    type: "choice",
-    instructions: "If `object_seen` is a traffic light, which lamp does `object_seen` say is lit?",
-    criteria: {
-      red: "The red lamp is lit",
-      amber: "The amber or yellow lamp is lit",
-      green: "The green lamp is lit",
-      unknown: "A traffic light, but `object_seen` does not say which colour is lit",
-      not_a_light: "`object_seen` is not a traffic light",
-    } satisfies Record<LightState, string>,
-  },
   speed_limit: {
     type: "choice",
     instructions: "Which speed limit number is written in `object_seen`?",
@@ -54,35 +67,15 @@ export const QUESTIONS = {
       none: "No speed limit number is written in `object_seen`",
     } satisfies Record<SpeedLimit, string>,
   },
-  could_be_person: {
-    type: "noul",
-    instructions: "Could `object_seen` be a person, or easily be mistaken for one?",
-    criteria: {
-      true: "A person, a child, or a human-like figure such as a doll, stuffed toy or mannequin",
-      false: "Clearly not a person",
-    },
-  },
-  // Literal on purpose: "Could `object_seen` include a child?" also said yes
-  // to "a group of people" (88%) and "a person" (83%).
-  mentions_child: {
-    type: "noul",
-    instructions: "Does `object_seen` mention a child?",
-    criteria: {
-      true: "It names a child, kid, baby, toddler, boy or girl, alone or with adults",
-      false: "It names only adults, or no people at all",
-    },
-  },
 } satisfies Questions;
 
 /** Map Jev's answers to the API response. */
 export function toDecideResponse(result: JevResult<typeof QUESTIONS>): DecideResponse {
   const a = result.answers;
   return {
+    action: choice(a.action),
     category: choice(a.category),
-    lightState: choice(a.light_state),
     speedLimit: choice(a.speed_limit),
-    couldBePerson: a.could_be_person.noul,
-    mentionsChild: a.mentions_child.noul,
     latencyMs: result.latencyMs,
   };
 }

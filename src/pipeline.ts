@@ -1,14 +1,20 @@
 import { decide } from "./api/decide";
 import type { Game } from "./game/engine";
-import { perceive } from "./perception/perceive";
+import { perceive, type Perception } from "./perception/perceive";
 
 /**
  * Connects the game to perception and decisions:
- * drop -> caption (vision) -> decision (Jev) -> behavior (game).
+ * drag -> caption (vision) -> drop -> decision (Jev, with the zone) -> behavior (game).
  */
 export class Pipeline {
   /** In-flight decision requests, so a stale one can be cancelled (each call is billed). */
   private inFlight = new Map<string, AbortController>();
+  /**
+   * Captions by image URL, started when a drag begins so the vision model
+   * works while the user picks a spot. An image always gets the same caption,
+   * so dropping it again reuses it. Failures are dropped so they can be retried.
+   */
+  private captions = new Map<string, Promise<Perception>>();
 
   constructor(private game: Game) {}
 
@@ -23,7 +29,22 @@ export class Pipeline {
     };
   }
 
-  /** Add an image at a canvas position and start perceiving it. Never rejects. */
+  /** Start captioning an image before it is dropped. */
+  prefetch(imageUrl: string): void {
+    this.caption(imageUrl).catch(() => {}); // reported when it is dropped
+  }
+
+  private caption(imageUrl: string): Promise<Perception> {
+    let p = this.captions.get(imageUrl);
+    if (!p) {
+      p = perceive(imageUrl);
+      this.captions.set(imageUrl, p);
+      p.catch(() => this.captions.delete(imageUrl));
+    }
+    return p;
+  }
+
+  /** Add an image at a canvas position and caption it, unless that has started already. Never rejects. */
   async spawn(imageUrl: string, x: number, y: number): Promise<void> {
     let image: HTMLImageElement;
     try {
@@ -34,7 +55,7 @@ export class Pipeline {
     }
     const id = this.game.addObject(image, imageUrl, x, y);
     try {
-      const { caption, visionMs } = await perceive(imageUrl);
+      const { caption, visionMs } = await this.caption(imageUrl);
       this.game.setCaption(id, caption, visionMs);
     } catch (err) {
       console.error("perception failed", err);
@@ -51,7 +72,7 @@ export class Pipeline {
     const controller = new AbortController();
     this.inFlight.set(id, controller);
     try {
-      const { response, roundTripMs } = await decide({ caption: ticket.caption }, controller.signal);
+      const { response, roundTripMs } = await decide({ caption: ticket.caption, zone: ticket.zone }, controller.signal);
       this.game.applyDecision(id, ticket.seq, response, roundTripMs);
     } catch (err) {
       if (controller.signal.aborted) return; // cancelled on purpose; the game already moved on

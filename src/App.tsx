@@ -29,7 +29,7 @@ export function App() {
         <SpeedControl game={game} />
       </header>
       <main className="layout">
-        <SampleTray />
+        <SampleTray pipeline={pipeline} />
         <RoadCanvas game={game} pipeline={pipeline} />
         <ThoughtsPanel game={game} />
       </main>

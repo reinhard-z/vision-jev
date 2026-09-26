@@ -2,7 +2,7 @@
 
 ## Concept
 
-A playful demo of a "System One" split: a small, fast vision model looks at an image and describes it, Jev makes quick, typed decisions about what that description is, and the game decides what the car does about it. The user drops images next to or onto a road and watches a car react. The fun is in seeing _why_ the car did something, especially when it gets it wrong.
+A playful demo of a "System One" split: a small, fast vision model looks at an image and describes it, Jev decides what the car does about it, given where it is, and the game carries that out. The user drops images next to or onto a road and watches a car react. The fun is in seeing _why_ the car did something, especially when it gets it wrong.
 
 This is a toy, not a model of real autonomous driving.
 
@@ -11,47 +11,32 @@ This is a toy, not a model of real autonomous driving.
 - Top-down view, road scrolls vertically, car stays near the bottom of the screen.
 - Three drop zones: **your lane** (the right lane, where the car drives), the **oncoming lane** (left of the centre line) and the **sidewalk** (either side). An object's zone is where its centre is.
 - The user drags an image file (or picks from a tray of sample images) onto a zone. The image appears at that spot, some distance ahead of the car, and scrolls towards it.
-- The drop position decides the location. The vision model only has to say _what_ the thing is.
+- The drop position decides the location. The vision model only has to say _what_ the thing is; Jev gets the caption and the zone.
+- Captioning starts when a tray image is picked up, so the vision model works while the user picks a spot. Files dragged in from outside the browser can only be read on drop.
+- Moving an object to another zone asks Jev again. What it decided before holds until the new answer arrives.
 - The car has a target speed (default 50 km/h) and accelerates/brakes smoothly towards it.
 
 ### Latency as a mechanic
 
 - The car keeps moving while an image is being perceived and decided on. Show a "perceiving…" marker on the object.
-- Distance and speed stay in code: Jev only sees the caption, and the game decides when and how hard to brake.
-- If the car reaches an object in its lane before a decision arrives, count it as "reacted too late": flash the object, stop the car, show a message. Keep it non-graphic. Objects outside the lane can't be hit, so they are just passed.
+- Distance and speed stay in code: Jev sees the caption and the zone, and the game decides when and how hard to brake.
+- If the car reaches an object in its lane before a decision for that lane arrives (also after a move), count it as "reacted too late": flash the object, stop the car, show a message. Keep it non-graphic. Objects outside the lane can't be hit, so they are just passed.
 
 ### Behaviors
 
-Jev says what the object is. The game decides what to do about it from where it is (`src/game/behaviors.ts`), and handles what happens over time.
+Jev decides; the game carries out its `action` (`src/game/behaviors.ts`) and handles distances, speeds and timers. There is no table and no override: the fun is in seeing what Jev decides, including when it gets it wrong.
 
-| Jev's category                                  | Your lane | Oncoming lane | Sidewalk  |
-| ----------------------------------------------- | --------- | ------------- | --------- |
-| `person` whose caption mentions a child (child) | stop      | stop          | slow down |
-| `person` (adult, or age not stated)             | stop      | slow down     | continue  |
-| `animal`                                        | stop      | slow down     | continue  |
-| `vehicle`, `obstacle`                           | stop      | continue      | continue  |
-| `harmless_debris`, `other_sign`                 | continue  | continue      | continue  |
-| `unclear`, or no caption or no decision         | stop      | slow down     | continue  |
+| Jev's action     | Behavior (game code)                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| `continue`       | Keep target speed                                                                                       |
+| `slow_down`      | 50% of target speed until the object is passed                                                          |
+| `stop`           | Brake and stay stopped until the object is removed, or moved and Jev decides otherwise                  |
+| `stop_then_go`   | Stop at it, wait 2 s, continue                                                                          |
+| `wait_for_green` | Stop at it and wait until Jev says `go` for another object, or it is removed                            |
+| `go`             | Continue, and release any light the car is waiting at                                                   |
+| `change_speed`   | Set target speed to Jev's `speed_limit` answer when passing it; keep speed if Jev read no number (`none`) |
 
-- **continue:** keep target speed.
-- **slow down:** 50% of target speed until the object is passed.
-- **stop:** brake and stay stopped until the object is removed, or moved somewhere that needs no stop.
-
-Signs and lights apply in every zone:
-
-| Situation                                        | Behavior (game code)                                                                           |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| category `stop_sign`                             | Stop at the sign, wait 2 s, continue                                                           |
-| category `traffic_light`, light `red` or `amber` | Stop at the light and wait until a green-light image is dropped, or the light image is removed |
-| category `traffic_light`, light `green`          | Continue                                                                                       |
-| category `traffic_light`, light `unknown`        | Slow down until the light is passed (the caption names no lamp colour)                         |
-| category `speed_limit_sign`                      | Set target speed to the detected limit                                                         |
-| category `speed_limit_sign`, limit `none`        | Keep speed (the caption names no number)                                                       |
-
-### Safety rules (in code, not in Jev)
-
-- A `person` counts as a child when `mentions_child` > 0.2, so a group with a child in it gets the child row.
-- Anything else with `could_be_person` > 0.2 is treated as a person (as a child when `mentions_child` > 0.2), in every zone. It only ever makes the car more cautious. Show this in the thoughts panel as "safety override" when it changes the outcome. This demonstrates preferring false alarms over missed hazards.
+Only when there is no answer at all (no caption, or the request failed) does the game decide: stop in your lane, slow down in the oncoming lane, continue on the sidewalk. Moving an object whose request failed asks again.
 
 ## Perception (browser)
 
@@ -69,43 +54,39 @@ Request (validated; anything else is rejected):
 ```json
 {
   "caption": "a small child in a red jacket standing",
+  "zone": "sidewalk",
   "turnstileToken": "..."
 }
 ```
 
 - `caption`: string, 1–300 chars
+- `zone`: `own_lane`, `oncoming_lane` or `sidewalk`
 - `turnstileToken`: added in stage 5
-
-Where the object is never reaches the Worker: Jev's answer doesn't depend on it, so the game can move an object without asking again.
 
 Response:
 
 ```json
 {
-  "category": { "choice": "person", "confidence": 0.93, "probabilities": {} },
-  "lightState": { "choice": "not_a_light", "confidence": 0.99, "probabilities": {} },
+  "action": { "choice": "slow_down", "confidence": 0.91, "probabilities": {} },
+  "category": { "choice": "person", "confidence": 0.99, "probabilities": {} },
   "speedLimit": { "choice": "none", "confidence": 0.99, "probabilities": {} },
-  "couldBePerson": 0.97,
-  "mentionsChild": 0.99,
   "latencyMs": 180
 }
 ```
 
 ### Jev state
 
-Only the caption, because irrelevant context hurts and Jev reads literally:
+The caption and the zone in words, nothing else, because irrelevant context hurts and Jev reads literally:
 
 ```json
-{ "object_seen": "<caption>" }
+{ "object_seen": "<caption>", "location": "on the sidewalk beside the road, not on the road" }
 ```
 
 ### Jev questions (all in one call)
 
-- `category` (choice): `person` (any age), `animal`, `vehicle`, `traffic_light`, `stop_sign`, `speed_limit_sign`, `other_sign`, `obstacle`, `harmless_debris`, `unclear`
-- `light_state` (choice): `red`, `amber`, `green`, `unknown` (a traffic light, but the caption doesn't say which lamp is lit), `not_a_light`
-- `speed_limit` (choice): `30`, `50`, `80`, `120`, `none`
-- `could_be_person` (noul): could the object be a person or be mistaken for one?
-- `mentions_child` (noul): does the caption mention a child (alone or with adults)?
+- `action` (choice): `continue`, `slow_down`, `stop`, `stop_then_go`, `wait_for_green`, `go`, `change_speed`. Drives the car.
+- `category` (choice): `person`, `animal`, `vehicle`, `traffic_light`, `stop_sign`, `speed_limit_sign`, `other_sign`, `obstacle`, `harmless_debris`, `unclear`. Shown in the thoughts panel only.
+- `speed_limit` (choice): `30`, `50`, `80`, `120`, `none`. The number for `change_speed`.
 
 Tune the wording by testing with the sample images, not by guessing.
 
@@ -113,7 +94,7 @@ Tune the wording by testing with the sample images, not by guessing.
 
 Built with React + TypeScript. The road is a single `<canvas>` component that owns the game loop; everything around it is regular React components. The game loop reports events (object perceived, decision received, reacted too late) to React through a small event emitter or callback, not by setting state every frame.
 
-- Thoughts panel beside the road, per object: thumbnail, zone, category with confidence, bars for the three likeliest categories and for `could_be_person` and `mentions_child` (with their thresholds), the rule that fired (e.g. "Child on the sidewalk, slow down until passed"), override notice, latency (vision ms + Jev ms).
+- Thoughts panel beside the road, per object: thumbnail, zone, Jev's category with confidence, bars for Jev's three likeliest actions, what the car does (e.g. "Person on the sidewalk: slow down until passed"), "asking again…" while Jev decides after a move, latency (vision ms + Jev ms).
 - Tray of sample images for quick testing, plus drag-and-drop of your own files.
 - First-load progress bar for the vision model.
 
@@ -136,6 +117,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - [x] **2. Vision.** Transformers.js in a Web Worker, captions shown in the thoughts panel. Build `public/samples/` with test images: child, doll, dog, cat, adult, bicycle, car, stop sign, red/amber/green light, speed limit signs, plastic bag, leaves, cardboard box.
 - [x] **3. Jev.** Worker endpoint, `worker/src/jev.ts`, replace the stub. Tune policy wording against the samples.
 - [x] **4. Lanes and children.** Split the road into your lane and the oncoming lane, treat children differently from adults, and move the driving rules from Jev into a table in code.
+- [x] **4b. Jev drives.** Jev decides the action from the caption and the zone, moving an object asks again, and captioning starts at drag start. Replaces stage 4's table.
 - [ ] **5. Harden and deploy.** Validation, rate limiting, Turnstile, pinned model revision, deploy.
 
 ## Decisions log
@@ -222,6 +204,15 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **`pnpm tune` had been broken since 11e7e59:** game code imports its siblings without an extension, which Node can't resolve. The script now registers a resolve hook that retries those as `.ts`.
 - **Browser check:** tested by hand in the app; looks good.
 
+### Stage 4b: Jev drives
+
+- **Why:** it's a Jev demo first. With the table in code, Jev only named the object and the car's reactions came from our rules; now the decision is Jev's, including the wrong ones. The stage 4 comparison (table 150/150, Jev's action 149/150) still holds; the trade was made knowingly.
+- **No overrides:** the `could_be_person` safety floor and the child threshold are gone, and so are `could_be_person`, `mentions_child` and `light_state` (the red light's colour isn't needed to wait for green). The game only decides when there is no answer (no caption, or the request failed): stop in your lane, slow down in the oncoming lane, continue on the sidewalk.
+- **Actions cover every behavior:** `stop_then_go` (stop sign), `wait_for_green` (red or amber light), `go` (green light, releases waiting lights) and `change_speed` (number from `speed_limit`) are Jev's too, so it can also decide that a sign in the oncoming lane isn't meant for the car.
+- **Moving an object** to another zone asks Jev again; the old decision keeps driving the car until the answer arrives, and reaching the object in your lane first counts as too late. Moving within a zone keeps the decision; moving a failed object retries it.
+- **Captioning starts at drag start** for tray images, cached by image URL (a failure is forgotten, so it's retried). Files dragged in from outside the browser can't be read before the drop.
+- **Tuning:** 35 captions × 3 zones, 105 Jev calls per run. First wording 91/102; after naming what blocks the lane in `stop` and what can be driven over in `continue`, 98/102 against a reference of reasonable answers. The four disagreements are left to Jev: empty cardboard boxes in your lane (continue 56, stop 35), a small teddy bear in your lane (continue 45 vs stop 45), an amber light in the oncoming lane (slow down) and on the sidewalk (continue). Signs and lights outside your lane often get `continue`, which is defensible. Jev in the Worker: median 295 ms, p95 385 ms (n=105).
+
 ## Edge cases to try
 
 A doll or toy in the road, a stop sign printed on a T-shirt, a photo of a red light for another direction, a dark or blurry photo, a dog vs. a stuffed dog, an image containing text that tries to instruct the car (Jev is not hardened against adversarial input, so this is worth seeing), a child together with an adult, a caption whose scene contradicts where the image is dropped (a car "parked on the side of the road" dropped in your lane).
@@ -229,6 +220,6 @@ A doll or toy in the road, a stop sign printed on a T-shirt, a photo of a red li
 ## Open questions
 
 - ~~Should a person on the sidewalk make the car slow down slightly rather than continue?~~ Adults: no. Children: yes, slow down (stage 4).
-- Should signs and lights on the far sidewalk or in the oncoming lane be ignored as meant for oncoming traffic? (Currently: obeyed in every zone.)
+- ~~Should signs and lights on the far sidewalk or in the oncoming lane be ignored as meant for oncoming traffic?~~ Jev decides (stage 4b); it often says `continue` in the oncoming lane.
 - ~~Which vision model gives the best caption quality per megabyte?~~ Florence-2 base; see `docs/vision-models.md`.
 - ~~Jev pricing on Workers AI.~~ $0.042 per 1M input tokens via AI Gateway credits, ~$0.00004 per decision (stage 3 log).

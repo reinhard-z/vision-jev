@@ -20,11 +20,9 @@ class FakeImage {
 
 const pick = <T extends string>(choice: T) => ({ choice, confidence: 0.9, probabilities: { [choice]: 0.9 } });
 const child = {
+  action: pick("stop"),
   category: pick("person"),
-  lightState: pick("not_a_light"),
   speedLimit: pick("none"),
-  couldBePerson: 0.9,
-  mentionsChild: 0.95,
   latencyMs: 1,
 } as unknown as DecideResponse;
 
@@ -57,8 +55,44 @@ describe("Pipeline", () => {
     await pipeline.spawn("/samples/child.jpg", roadX, 100);
     expect(cards().map((c) => c.phase.kind)).toEqual(["decided"]);
     expect(game.objects[0]!.decision?.resolved.behavior.kind).toBe("stop");
-    // Only the caption leaves the browser; where the object is stays in the game.
-    expect(vi.mocked(decide).mock.calls[0]![0]).toEqual({ caption: "a child" });
+    // The caption and the zone leave the browser; distance and speed stay in the game.
+    expect(vi.mocked(decide).mock.calls[0]![0]).toEqual({ caption: "a child", zone: "own_lane" });
+  });
+
+  it("starts captioning at drag start and reuses it on the drop", async () => {
+    let finish: (p: { caption: string; visionMs: number }) => void = () => {};
+    vi.mocked(perceive).mockReturnValue(new Promise((r) => (finish = r)));
+    vi.mocked(decide).mockResolvedValue({ response: child, roundTripMs: 7 });
+    pipeline.prefetch("/samples/child.jpg");
+    expect(perceive).toHaveBeenCalledTimes(1);
+    const done = pipeline.spawn("/samples/child.jpg", roadX, 100);
+    finish({ caption: "a child", visionMs: 5 });
+    await done;
+    expect(perceive).toHaveBeenCalledTimes(1);
+    expect(game.objects[0]!.caption).toBe("a child");
+  });
+
+  it("captions an image again after a failed caption", async () => {
+    vi.mocked(perceive).mockRejectedValueOnce(new Error("busy"));
+    pipeline.prefetch("/samples/box.jpg");
+    await settle();
+    vi.mocked(perceive).mockResolvedValue({ caption: "a box", visionMs: 5 });
+    vi.mocked(decide).mockResolvedValue({ response: child, roundTripMs: 7 });
+    await pipeline.spawn("/samples/box.jpg", roadX, 100);
+    expect(perceive).toHaveBeenCalledTimes(2);
+    expect(game.objects[0]!.caption).toBe("a box");
+  });
+
+  it("asks Jev again with the new zone when an object is moved", async () => {
+    vi.mocked(perceive).mockResolvedValue({ caption: "a child", visionMs: 5 });
+    vi.mocked(decide).mockResolvedValue({ response: child, roundTripMs: 7 });
+    await pipeline.spawn("/samples/child.jpg", roadX, 100);
+    const obj = game.objects[0]!;
+    game.startDrag(obj.id, obj.x, 100);
+    game.endDrag(obj.id, 20, 100, true);
+    await settle();
+    expect(vi.mocked(decide).mock.calls.map((c) => c[0].zone)).toEqual(["own_lane", "sidewalk"]);
+    expect(obj.phase.kind).toBe("decided");
   });
 
   it("adds nothing for an image that won't load, and doesn't reject", async () => {

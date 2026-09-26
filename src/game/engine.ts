@@ -1,5 +1,5 @@
 import type { DecideResponse } from "../../shared/types";
-import { failedBehavior, resolveBehavior, resolveOutcome } from "./behaviors";
+import { failedBehavior, resolveBehavior } from "./behaviors";
 import {
   ACCEL,
   CANVAS_WIDTH,
@@ -28,7 +28,7 @@ import type { Decision, FailedStage, GameObject, ObjectSnapshot, Zone } from "./
 
 /** Commands for the pipeline. UI state goes through `ui` instead. */
 export interface GameEvents extends Record<string, unknown> {
-  /** An object needs a new decision: its request failed and it was moved. */
+  /** An object needs a new decision: it was moved to another zone, or its request failed and it was moved. */
   needsDecision: { id: string };
   /** An object was removed; any pending work for it is stale. */
   removed: { id: string };
@@ -37,6 +37,7 @@ export interface GameEvents extends Record<string, unknown> {
 export interface DecisionTicket {
   seq: number;
   caption: string;
+  zone: Zone;
 }
 
 let nextId = 1;
@@ -149,14 +150,13 @@ export class Game {
   }
 
   /**
-   * Snapshot the inputs for a decision request: only the caption. Jev's answer
-   * doesn't depend on where the object is, so it applies wherever the object
-   * is when it arrives.
+   * Snapshot the inputs for a decision request: the caption and the zone.
+   * Moving the object to another zone makes the request stale and asks again.
    */
   beginDecision(id: string): DecisionTicket | null {
     const obj = this.get(id);
     if (!obj || obj.caption === undefined) return null;
-    return { seq: obj.requestSeq, caption: obj.caption };
+    return { seq: obj.requestSeq, caption: obj.caption, zone: obj.zone };
   }
 
   applyDecision(id: string, seq: number, response: DecideResponse, roundTripMs?: number): void {
@@ -205,8 +205,8 @@ export class Game {
 
   private releaseLights(): void {
     for (const o of this.objects) {
-      const d = o.decision;
-      if (d?.resolved.behavior.kind === "red_light" && !d.released && o.phase.kind === "decided") {
+      const d = activeDecision(o);
+      if (d?.resolved.behavior.kind === "red_light" && !d.released) {
         d.released = true;
         this.emitObject(o);
       }
@@ -287,27 +287,38 @@ export class Game {
     const { phase } = obj;
     obj.x = pos.x;
     obj.s = pos.s;
-    // Within a zone an active decision still holds. A passed or too-late
-    // object is back ahead of the car (drops are clamped ahead), so it
-    // starts over like one that changed zones.
-    if (newZone === obj.zone && phase.kind !== "passed" && phase.kind !== "too_late") return;
-
-    obj.zone = newZone;
+    // Within a zone an active decision still holds, unless its request
+    // failed. A passed or too-late object is back ahead of the car (drops are
+    // clamped ahead), so it starts over.
     const outcome = obj.decision?.outcome;
-    if (outcome?.kind === "failed" && outcome.stage === "decision") {
-      // Moving a failed object is how to retry its request.
+    const failedRequest = outcome?.kind === "failed" && outcome.stage === "decision";
+    const zoneChanged = newZone !== obj.zone;
+    if (!zoneChanged && !failedRequest && phase.kind !== "passed" && phase.kind !== "too_late") return;
+    obj.zone = newZone;
+
+    if (obj.caption === undefined) {
+      // No caption, so nothing to ask Jev: still perceiving, or it failed.
+      if (obj.decision) {
+        obj.phase = { kind: "decided" };
+        this.setDecision(obj, failedDecision(obj, "perception"));
+      } else {
+        obj.phase = { kind: "perceiving" };
+        this.emitObject(obj);
+      }
+    } else if (zoneChanged || failedRequest) {
+      // Jev decides for the new place (moving a failed object also retries
+      // it). What it decided before holds until the answer arrives.
       obj.requestSeq++;
-      obj.decision = undefined;
       obj.phase = { kind: "deciding" };
       this.emitObject(obj);
       this.events.emit("needsDecision", { id });
-    } else if (outcome) {
-      // Same answer, new place: resolve it again without asking Jev.
+    } else if (obj.decision) {
+      // Same zone, same answer: it applies again from the start.
       obj.phase = { kind: "decided" };
-      this.setDecision(obj, { resolved: resolveOutcome(outcome, newZone), outcome });
+      this.setDecision(obj, obj.decision);
     } else {
-      // The caption or Jev's answer is still on its way; it applies here.
-      obj.phase = { kind: obj.caption === undefined ? "perceiving" : "deciding" };
+      // Jev's answer is still on its way; it applies here.
+      obj.phase = { kind: "deciding" };
       this.emitObject(obj);
     }
     if (phase.kind === "too_late") this.emitTooLate();
@@ -332,15 +343,15 @@ export class Game {
 
       const ahead = this.distanceAhead(obj);
       const toStopLine = ahead - STOP_GAP_M;
-      const d = obj.phase.kind === "decided" ? obj.decision : undefined;
+      const d = activeDecision(obj);
       const b = d?.resolved.behavior;
       const blocking =
         d !== undefined &&
         (d.resolved.behavior.kind === "stop" ||
           ((d.resolved.behavior.kind === "red_light" || d.resolved.behavior.kind === "stop_sign") && !d.released));
 
-      // Reaching an object in the car's lane before deciding, or too late to
-      // stop for it. Nothing outside the lane can be hit.
+      // Reaching an object in the car's lane before Jev decided for it there,
+      // or too late to stop for it. Nothing outside the lane can be hit.
       if (obj.zone === "own_lane" && ahead <= 0) {
         if (obj.phase.kind === "perceiving" || obj.phase.kind === "deciding") {
           this.markTooLate(obj, "The car reached it before a decision arrived.");
@@ -373,7 +384,7 @@ export class Game {
           case "red_light":
             if (!d.released && !pastStopLine) {
               desired = Math.min(desired, this.stopProfile(toStopLine));
-              status ??= `Waiting at ${b.light} light for green`;
+              status ??= "Waiting at the light for green";
             }
             break;
           case "stop_sign":
@@ -459,6 +470,14 @@ export class Game {
     };
     this.ui.setState((s) => ({ cards: upsertCard(s.cards, snap) }), false, `object/${obj.phase.kind}`);
   }
+}
+
+/**
+ * The decision driving the car for an object: the current one, or while Jev
+ * is asked again after a move, the previous one.
+ */
+export function activeDecision(obj: GameObject): Decision | undefined {
+  return obj.phase.kind === "decided" || obj.phase.kind === "deciding" ? obj.decision : undefined;
 }
 
 function failedDecision(obj: GameObject, stage: FailedStage): Pick<Decision, "resolved" | "outcome"> {

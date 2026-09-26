@@ -1,11 +1,6 @@
-import type { DecideResponse } from "../../shared/types";
+import type { DecideResponse, Zone } from "../../shared/types";
 
-/**
- * Where an object is, by its centre: the car's lane, the oncoming lane, or
- * either sidewalk. Only the game uses it; Jev never sees it.
- */
-export const ZONES = ["own_lane", "oncoming_lane", "sidewalk"] as const;
-export type Zone = (typeof ZONES)[number];
+export { ZONES, type Zone } from "../../shared/types";
 
 /** Short names for the UI. */
 export const ZONE_LABEL: Record<Zone, string> = {
@@ -14,19 +9,18 @@ export const ZONE_LABEL: Record<Zone, string> = {
   sidewalk: "sidewalk",
 };
 
-/** What the game does about an object, derived from Jev's answers. */
+/** What the game does about an object: Jev's action, carried out. */
 export type Behavior =
   | { kind: "continue" }
   | { kind: "slow_down" } // 50% of target speed until passed
-  | { kind: "stop" } // hold until removed or moved somewhere that needs no stop
+  | { kind: "stop" } // hold until removed, or Jev says otherwise after a move
   | { kind: "stop_sign" } // stop, wait 2 s, continue
-  | { kind: "red_light"; light: "red" | "amber" } // hold until green or removed
+  | { kind: "red_light" } // hold until green or removed
   | { kind: "green_light" }
   | { kind: "speed_limit"; kmh: number };
 
 export interface ResolvedBehavior {
   behavior: Behavior;
-  safetyOverride: boolean;
   label: string; // human-readable, shown in the thoughts panel
 }
 
@@ -36,7 +30,7 @@ export interface ResolvedBehavior {
  */
 export type Phase =
   | { kind: "perceiving" } // waiting for the vision model
-  | { kind: "deciding" } // caption known, waiting for Jev
+  | { kind: "deciding" } // caption known, waiting for Jev; a previous `decision` still drives the car
   | { kind: "decided" } // `decision` drives the car
   | { kind: "too_late"; reason: string } // reached without a usable decision; holds until cleared
   | { kind: "passed" } // behind the car
@@ -47,10 +41,7 @@ export type PhaseKind = Phase["kind"];
 /** Why there is no answer from Jev: no caption, or no decision. */
 export type FailedStage = "perception" | "decision";
 
-/**
- * The behavior an object currently asks for. Jev's answer doesn't depend on
- * where the object is, so a move keeps `outcome` and replaces the rest.
- */
+/** The behavior an object currently asks for, decided for the zone it was in when asked. */
 export interface Decision {
   resolved: ResolvedBehavior;
   outcome:

@@ -431,24 +431,7 @@ h2 {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 4px;
-}
-
-.fill-category {
   background: var(--accent);
-}
-.fill-person {
-  background: #a57be0;
-}
-.fill-child {
-  background: #e07bb5;
-}
-
-.bar-threshold {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 2px;
-  background: #fff;
 }
 
 .bar-value {
@@ -468,7 +451,6 @@ h2 {
   background: var(--panel-2);
 }
 
-.behavior.override,
 .too-late-note {
   background: rgba(217, 61, 61, 0.15);
   border: 1px solid rgba(217, 61, 61, 0.5);

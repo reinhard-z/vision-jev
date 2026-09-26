@@ -13,7 +13,7 @@ import {
   STOP_GAP_M,
   CAR_LENGTH_M,
 } from "./constants";
-import type { Game } from "./engine";
+import { activeDecision, type Game } from "./engine";
 import { msToKmh } from "./physics";
 import { ZONE_LABEL, type GameObject } from "./types";
 
@@ -107,8 +107,8 @@ function drawDropHint(ctx: CanvasRenderingContext2D, game: Game): void {
 
 function drawStopLines(ctx: CanvasRenderingContext2D, game: Game): void {
   for (const obj of game.objects) {
-    const d = obj.decision;
-    if (obj.phase.kind !== "decided" || !d || obj.dragging) continue;
+    const d = activeDecision(obj);
+    if (!d || obj.dragging) continue;
     const b = d.resolved.behavior;
     const holds = b.kind === "stop" || ((b.kind === "stop_sign" || b.kind === "red_light") && !d.released);
     if (!holds) continue;
@@ -162,7 +162,6 @@ function drawObject(ctx: CanvasRenderingContext2D, game: Game, obj: GameObject):
   } else {
     const badge = badgeFor(obj);
     if (badge) label(ctx, badge.text, cx + size / 2 - 4, y + size + 4, badge.color);
-    if (obj.decision?.resolved.safetyOverride) label(ctx, "⚠ override", cx, y - 16, COLORS.stop);
   }
 
   if (!obj.dragging) drawRemoveButton(ctx, game.removeButtonCenter(obj));
@@ -204,9 +203,7 @@ function badgeFor(obj: GameObject): { text: string; color: string } | null {
     case "stop_sign":
       return d.released ? { text: "GO", color: COLORS.go } : { text: "STOP", color: COLORS.stop };
     case "red_light":
-      return d.released
-        ? { text: "GREEN", color: COLORS.go }
-        : { text: b.light.toUpperCase(), color: b.light === "red" ? COLORS.stop : COLORS.slow };
+      return d.released ? { text: "GREEN", color: COLORS.go } : { text: "WAIT", color: COLORS.stop };
     case "green_light":
       return { text: "GO", color: COLORS.go };
     case "speed_limit":
