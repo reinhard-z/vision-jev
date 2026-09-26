@@ -71,10 +71,10 @@ const kmh = (game: Game) => msToKmh(game.speedMs);
 
 describe("distanceBand", () => {
   it("scales with speed", () => {
-    const v = kmhToMs(50); // comfortable stop ≈ 19.3 m
+    const v = kmhToMs(50); // comfortable stop ≈ 13.8 m
     expect(distanceBand(60, v)).toBe("far");
-    expect(distanceBand(35, v)).toBe("medium");
-    expect(distanceBand(15, v)).toBe("near");
+    expect(distanceBand(25, v)).toBe("medium");
+    expect(distanceBand(12, v)).toBe("near");
     expect(distanceBand(15, kmhToMs(20))).toBe("far");
   });
 });
@@ -150,7 +150,7 @@ describe("Game", () => {
     run(game, 15, () => {
       if (game.speedMs === 0) stoppedFor += 1 / 120;
     });
-    expect(stoppedFor).toBeGreaterThanOrEqual(2);
+    expect(stoppedFor).toBeGreaterThanOrEqual(2 - 1e-9); // summed frame times drift slightly
     expect(stoppedFor).toBeLessThan(2.3);
     expect(game.get(id)?.passed ?? true).toBe(true);
   });

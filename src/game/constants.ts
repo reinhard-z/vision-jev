@@ -8,7 +8,7 @@ export const MIN_TARGET_KMH = 10;
 export const MAX_TARGET_KMH = 120;
 
 export const ACCEL = 2.5; // m/s², gentle acceleration
-export const COMFORT_DECEL = 5; // m/s², used to plan stops and distance bands
+export const COMFORT_DECEL = 7; // m/s², used to plan stops and distance bands
 export const MAX_DECEL = 9; // m/s², hardest the car can brake
 
 export const STOP_GAP_M = 2; // car stops this far before an object

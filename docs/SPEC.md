@@ -145,12 +145,12 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 
 - **Stub answers per sample**, not one fixed answer, so every behavior can be exercised before Jev exists. `src/api/stubAnswers.ts` maps each placeholder caption to a canned answer (varying by zone); unknown captions get a fixed fallback (`unclear` → stop on road). Delete in stage 3.
 - **Placeholder samples** are generated SVG tiles (emoji, drawn signs and lights) with hard-coded captions in `src/samples.ts`. Stage 2 replaces them with photos in `public/samples/`.
-- **Distance bands**: comfortable stopping distance at 5 m/s² (floor 4 m); `near` < 1.3×, `medium` < 2.5×, else `far`. Measured when the decision request is sent, not at drop time.
+- **Distance bands**: comfortable stopping distance at 7 m/s² (floor 4 m; the car also plans its stops at this rate); `near` < 1.3×, `medium` < 2.5×, else `far`. Measured when the decision request is sent, not at drop time.
 - **Too late** applies to road objects only: the car reaches an undecided road object, or a stop decision arrives too late to stop at max braking (9 m/s²). Undecided sidewalk objects are just passed. A decision that arrives after "too late" is still shown in the panel. The car stays stopped until the object is removed or dragged off the road.
 - **Safety override** is only flagged when it changes the outcome (Jev didn't already say stop).
 - **Speed limit** is applied when the car passes the sign, not when the decision arrives.
 - **Green light** releases every waiting red/amber light.
-- **Moving an object** to the other zone clears its decision and re-asks (caption kept); moving within a zone keeps it. Dragging off the canvas or double-clicking removes it.
+- **Moving an object** to the other zone clears its decision and re-asks (caption kept); moving within a zone keeps it. Clicking its × button, dragging it off the canvas or double-clicking removes it.
 - **Drag-only placement**: objects are placed only by drag and drop (no click-to-drop), because the drop position is the point: road vs sidewalk, and how far ahead. Own images are added to the tray (file picker or drop on the tray) and dragged from there; files can also be dropped straight onto the road. Own tray images last for the session only.
 - **Toy scale**: 8 px/m, car drawn 9 m long, objects 6.5 m; "reached" means touching the drawn tile.
 - TypeScript pinned to 6.0.x (typescript-eslint doesn't support 7 yet). pnpm 11.
