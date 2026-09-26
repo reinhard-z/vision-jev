@@ -11,6 +11,7 @@ import {
 import type { Backend } from "./protocol";
 
 export type Captioner = (image: RawImage) => Promise<string>;
+type GenerateInputs = Parameters<Florence2ForConditionalGeneration["generate"]>[0];
 
 const MODEL_ID = "onnx-community/Florence-2-base-ft";
 // Pinned so the weights can't change under us. Update deliberately.
@@ -55,11 +56,13 @@ export async function loadCaptioner(
   processor.image_processor.size = { height: IMAGE_SIZE, width: IMAGE_SIZE };
   const prompts = processor.construct_prompts(TASK);
   return async (image) => {
-    const inputs = await processor(image, prompts);
+    // The processor's call signature is untyped (`Promise<any>`); these are the model's generate() inputs.
+    const inputs = (await processor(image, prompts)) as GenerateInputs;
     // Without return_dict_in_generate, generate() returns the token ids.
     const ids = (await model.generate({ ...inputs, max_new_tokens: 60, do_sample: false })) as Tensor;
     const text = processor.batch_decode(ids, { skip_special_tokens: false })[0] ?? "";
     const result = processor.post_process_generation(text, TASK, [image.width, image.height]);
-    return String(result[TASK] ?? "");
+    const caption = result[TASK];
+    return typeof caption === "string" ? caption : "";
   };
 }

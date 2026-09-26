@@ -3,7 +3,7 @@
 // Each case is one real Jev call, so this costs money; keep runs few.
 //
 //   pnpm dev   # in another terminal
-//   node scripts/tune-policy.ts [baseUrl]   (default http://localhost:5173)
+//   pnpm tune [baseUrl]   (default http://localhost:5173)
 import { readFileSync, writeFileSync } from "node:fs";
 import type { DecideResponse, Zone } from "../shared/types.ts";
 import { resolveBehavior } from "../src/game/behaviors.ts";

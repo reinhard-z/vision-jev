@@ -3,10 +3,6 @@ import { evaluate } from "./jev";
 import { buildState, QUESTIONS, toDecideResponse } from "./policy";
 import { parseDecideRequest } from "./validate";
 
-interface Env {
-  AI: Ai;
-}
-
 const MAX_BODY_CHARS = 2048;
 
 // Static assets are served by Workers Assets; only /api/* reaches this app.

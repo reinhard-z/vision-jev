@@ -59,7 +59,7 @@ const jevBody = {
   usage: { input_tokens: 1044, output_tokens: 264 },
 };
 
-const fakeAi = (response: unknown) => ({ run: async () => response }) as unknown as Ai;
+const fakeAi = (response: unknown) => ({ run: () => Promise.resolve(response) }) as unknown as Ai;
 
 describe("evaluate + toDecideResponse", () => {
   it("unwraps the binding's envelope and maps the answers", async () => {

@@ -20,6 +20,7 @@ A browser demo: a car drives along a top-down scrolling road. The user drags ima
 - Build: `pnpm build` (type check + Vite build of client and Worker)
 - Check: `pnpm typecheck`, `pnpm lint`, `pnpm test` (Vitest, headless engine tests)
 - Deploy: `pnpm deploy`
+- Worker types: `pnpm cf-typegen` regenerates `worker-configuration.d.ts`; rerun it after changing `wrangler.jsonc`.
 - Package manager: pnpm. TypeScript is pinned to 6.0.x because typescript-eslint doesn't support 7 yet.
 
 ## Rules
