@@ -8,8 +8,8 @@ on:
 permissions:
   contents: read
 
-# A newer push supersedes a PR run. On main, runs queue instead: cancelling
-# one could stop a deploy halfway.
+# A newer push supersedes a PR run. On main, a running deploy is never
+# cancelled; GitHub keeps only the newest pending run in this group.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -32,6 +32,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - name: Worker types match wrangler.jsonc
+        # secrets.required supplies the names even without a local .dev.vars.
         run: pnpm cf-typegen && git diff --exit-code worker-configuration.d.ts
       - run: pnpm build
 

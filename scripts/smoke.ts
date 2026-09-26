@@ -4,17 +4,26 @@
 //   pnpm smoke [baseUrl]   (default https://drive.mrza.ch)
 //
 // A new version takes a few seconds to reach every Cloudflare location, so
-// failed checks are retried for up to a minute before the script gives up.
+// each check retries for up to a minute before the script gives up.
 import type { DecideRequest } from "../shared/types.ts";
 
 const base = process.argv[2] ?? "https://drive.mrza.ch";
-const ATTEMPTS = 12;
+const ATTEMPTS = 6;
 const DELAY_MS = 5000;
+const REQUEST_TIMEOUT_MS = 5000;
 
 const decideBody: DecideRequest = { caption: "a traffic cone", zone: "own_lane" };
 
 const checks: { name: string; expect: number; run: () => Promise<Response> }[] = [
-  { name: "GET /api/health", expect: 200, run: () => fetch(`${base}/api/health`) },
+  {
+    name: "GET /api/health",
+    expect: 200,
+    run: () =>
+      fetch(`${base}/api/health`, {
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        redirect: "manual",
+      }),
+  },
   {
     name: "POST /api/decide without a session",
     expect: 401,
@@ -23,6 +32,8 @@ const checks: { name: string; expect: number; run: () => Promise<Response> }[] =
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(decideBody),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        redirect: "manual",
       }),
   },
 ];

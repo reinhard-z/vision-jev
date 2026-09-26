@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "pnpm build && vite preview",
+    "preview:remote": "pnpm build && wrangler versions upload --preview-alias preview",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",

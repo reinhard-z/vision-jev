@@ -7,6 +7,8 @@
     "run_worker_first": ["/api/*"]
   },
   "routes": [{ "pattern": "drive.mrza.ch", "custom_domain": true }],
+  // Version uploads print a public URL without changing production traffic.
+  "preview_urls": true,
   "ai": { "binding": "AI" },
   // Per-IP limits, local to each Cloudflare location and eventually
   // consistent: a brake on scripted abuse, not exact accounting.
