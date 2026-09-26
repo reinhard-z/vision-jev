@@ -8,9 +8,11 @@ on:
 permissions:
   contents: read
 
+# A newer push supersedes a PR run. On main, runs queue instead: cancelling
+# one could stop a deploy halfway.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -32,3 +34,37 @@ jobs:
       - name: Worker types match wrangler.jsonc
         run: pnpm cf-typegen && git diff --exit-code worker-configuration.d.ts
       - run: pnpm build
+
+  # Every push to main that passes the checks goes live at drive.mrza.ch.
+  # CLOUDFLARE_API_TOKEN (secret) and CLOUDFLARE_ACCOUNT_ID (variable) come
+  # from the "production" environment; the Worker's own secrets stay in
+  # Cloudflare. See README "Deploying".
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://drive.mrza.ch
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0 (version from packageManager)
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Deploy
+        run: pnpm exec wrangler deploy --tag "${GITHUB_SHA::7}" --message "${COMMIT_MESSAGE%%$'\n'*}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          # Passed via env so it's never parsed as shell; the step keeps the first line.
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      - name: Smoke check drive.mrza.ch
+        run: pnpm smoke https://drive.mrza.ch

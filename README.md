@@ -80,15 +80,38 @@ All stages are done: game, in-browser vision, Jev decisions, lanes and sidewalks
 
 ## Deploying
 
-The Worker needs two secrets, set once:
+Every push to `main` deploys to https://drive.mrza.ch. The `deploy` job in [.github/workflows/ci.yml](.github/workflows/ci.yml) runs after the checks pass: it builds, runs `wrangler deploy` (tagged with the commit), then smoke-checks the live site with `pnpm smoke`. If `/api/health` doesn't answer 200, or `/api/decide` without a session doesn't answer 401 within a minute, the job fails. Deploys run one at a time and a running one is never cancelled.
+
+### One-time setup
+
+Cloudflare, the Worker's secrets (`wrangler secret put` sets them on the live Worker; they never go to GitHub):
 
 ```sh
 pnpm wrangler secret put TURNSTILE_SECRET_KEY   # from the Turnstile widget for drive.mrza.ch
-pnpm wrangler secret put SESSION_SECRET         # any random string, e.g. openssl rand -hex 32
-pnpm deploy
+pnpm wrangler secret put SESSION_SECRET   # any random string, e.g. openssl rand -hex 32
 ```
 
-Changing `SESSION_SECRET` logs everyone out; the page opens a new session on its own.
+`secrets.required` in `wrangler.jsonc` lists both, so a deploy fails if one is missing. Changing `SESSION_SECRET` logs everyone out; the page opens a new session on its own.
+
+Cloudflare, an API token for GitHub: My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template, limited to this account and the `mrza.ch` zone.
+
+GitHub, Settings → Environments → New environment `production`:
+
+- Deployment branches: selected branches, `main` only.
+- Environment secret `CLOUDFLARE_API_TOKEN`: the token above.
+- Environment variable `CLOUDFLARE_ACCOUNT_ID`: from `pnpm wrangler whoami`.
+
+`pnpm deploy` still deploys from your machine, with your own `wrangler login`.
+
+### Rolling back
+
+```sh
+pnpm wrangler deployments list   # the 10 most recent deployments, with version IDs
+pnpm wrangler rollback --message "why"   # back to the previous version
+pnpm wrangler rollback <version-id> --message "why"   # or to a given one (last 100)
+```
+
+With `--message` it doesn't ask for confirmation. A rollback only switches the code: secrets and bindings stay as they are. The next push to `main` deploys again, so revert the bad commit before pushing.
 
 ## Credits
 

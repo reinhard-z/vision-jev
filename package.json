@@ -18,6 +18,7 @@
     "deploy": "pnpm build && wrangler deploy",
     "cf-typegen": "wrangler types",
     "tune": "node scripts/tune-policy.ts",
+    "smoke": "node scripts/smoke.ts",
     "test": "vitest run"
   },
   "dependencies": {
