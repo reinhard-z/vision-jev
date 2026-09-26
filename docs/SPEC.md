@@ -76,8 +76,8 @@ Response:
 {
   "category": { "choice": "person", "confidence": 0.93, "probabilities": {} },
   "action": { "choice": "stop", "confidence": 0.9, "probabilities": {} },
-  "lightState": { "choice": "not_a_light", "probabilities": {} },
-  "speedLimit": { "choice": "none", "probabilities": {} },
+  "lightState": { "choice": "not_a_light", "confidence": 0.99, "probabilities": {} },
+  "speedLimit": { "choice": "none", "confidence": 0.99, "probabilities": {} },
   "couldBePerson": 0.97,
   "latencyMs": 180
 }

@@ -55,7 +55,11 @@ export function getSampleDragData(dt: DataTransfer): DragPayload | null {
 
 let nextOwnId = 1;
 
-/** Turn image files into tray entries. Object URLs live for the session. */
+/**
+ * Turn image files into tray entries. Object URLs live for the session and
+ * are never revoked: thought cards keep showing an image after it leaves the
+ * tray or the road, and a handful of local files is cheap to keep.
+ */
 export function samplesFromFiles(files: Iterable<File>): Sample[] {
   return [...files]
     .filter((f) => f.type.startsWith("image/"))

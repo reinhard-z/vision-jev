@@ -81,6 +81,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
       return;
     }
     const file = [...e.dataTransfer.files].find((f) => f.type.startsWith("image/"));
+    // Kept for the session, like tray images (see samplesFromFiles).
     if (file) void pipeline.spawn(URL.createObjectURL(file), x, y);
   };
 
