@@ -73,7 +73,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
     const { x, y } = toCanvas(e);
     const sample = getSampleDragData(e.dataTransfer);
     if (sample) {
-      void pipeline.spawn(sample.url, x, y, sample.sampleId);
+      void pipeline.spawn(sample.url, x, y);
       return;
     }
     const file = [...e.dataTransfer.files].find((f) => f.type.startsWith("image/"));

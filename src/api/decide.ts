@@ -1,19 +1,20 @@
 import type { DecideRequest, DecideResponse } from "../../shared/types";
-import { cannedAnswer } from "./stubAnswers";
 
-/** Client-side context for the stub. Never sent to the server. */
-export interface DecideContext {
-  /** Tray sample the object came from; undefined for the user's own images. */
-  sampleId?: string;
+export interface Decision {
+  response: DecideResponse;
+  /** Browser round trip for the request, measured here. Client-only. */
+  roundTripMs: number;
 }
 
-/**
- * Ask for a driving decision. STUB (stages 1–2): returns the canned answer
- * for the sample after a fake delay. Stage 3 replaces the body with
- * `fetch("/api/decide")` and drops `ctx`.
- */
-export async function decide(req: DecideRequest, ctx: DecideContext = {}): Promise<DecideResponse> {
-  const latencyMs = 200;
-  await new Promise((resolve) => setTimeout(resolve, latencyMs));
-  return cannedAnswer(req, ctx.sampleId, latencyMs);
+/** Ask the Worker for a driving decision. Throws on network or server errors. */
+export async function decide(req: DecideRequest): Promise<Decision> {
+  const started = performance.now();
+  const res = await fetch("/api/decide", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`/api/decide returned ${res.status}`);
+  const response = (await res.json()) as DecideResponse;
+  return { response, roundTripMs: Math.round(performance.now() - started) };
 }

@@ -7,9 +7,6 @@ import { perceive } from "./perception/perceive";
  * drop -> caption (vision) -> decision (Jev) -> behavior (game).
  */
 export class Pipeline {
-  /** Object id -> tray sample id, so the stub can answer per sample. */
-  private sampleIds = new Map<string, string>();
-
   constructor(private game: Game) {}
 
   /** Re-decide objects the game flags (e.g. moved to another zone). Returns unsubscribe. */
@@ -18,10 +15,9 @@ export class Pipeline {
   }
 
   /** Add an image at a canvas position and start perceiving it. */
-  async spawn(imageUrl: string, x: number, y: number, sampleId?: string): Promise<void> {
+  async spawn(imageUrl: string, x: number, y: number): Promise<void> {
     const image = await loadImage(imageUrl);
     const id = this.game.addObject(image, imageUrl, x, y);
-    if (sampleId !== undefined) this.sampleIds.set(id, sampleId);
     try {
       const { caption, visionMs } = await perceive(imageUrl);
       this.game.setCaption(id, caption, visionMs);
@@ -35,18 +31,16 @@ export class Pipeline {
     const ticket = this.game.beginDecision(id);
     if (!ticket) return;
     try {
-      const response = await decide(
-        {
-          caption: ticket.caption,
-          zone: ticket.zone,
-          distance: ticket.distance,
-          speedKmh: ticket.speedKmh,
-        },
-        { sampleId: this.sampleIds.get(id) },
-      );
-      this.game.applyDecision(id, ticket.seq, response);
+      const { response, roundTripMs } = await decide({
+        caption: ticket.caption,
+        zone: ticket.zone,
+        distance: ticket.distance,
+        speedKmh: ticket.speedKmh,
+      });
+      this.game.applyDecision(id, ticket.seq, response, roundTripMs);
     } catch (err) {
       console.error("decision failed", err);
+      this.game.failDecision(id, ticket.seq);
     }
   }
 }

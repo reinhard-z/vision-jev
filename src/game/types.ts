@@ -31,6 +31,8 @@ export interface GameObject {
   distanceBand?: DistanceBand;
   response?: DecideResponse;
   resolved?: ResolvedBehavior;
+  roundTripMs?: number; // browser round trip of the decision request
+  decisionFailed?: boolean;
   /** Bumped whenever a pending decision becomes stale (moved, re-zoned). */
   requestSeq: number;
   released: boolean; // stop sign done waiting, or light turned green
@@ -53,6 +55,8 @@ export interface ObjectSnapshot {
   distanceBand?: DistanceBand;
   response?: DecideResponse;
   resolved?: ResolvedBehavior;
+  roundTripMs?: number;
+  decisionFailed?: boolean;
   released: boolean;
   passed: boolean;
   removed: boolean;

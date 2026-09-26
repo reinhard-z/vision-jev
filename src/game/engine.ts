@@ -1,5 +1,5 @@
 import type { DecideResponse, DistanceBand, Zone } from "../../shared/types";
-import { resolveBehavior } from "./behaviors";
+import { failedBehavior, resolveBehavior } from "./behaviors";
 import {
   ACCEL,
   CANVAS_WIDTH,
@@ -159,10 +159,12 @@ export class Game {
     };
   }
 
-  applyDecision(id: string, seq: number, response: DecideResponse): void {
+  applyDecision(id: string, seq: number, response: DecideResponse, roundTripMs?: number): void {
     const obj = this.get(id);
     if (!obj || obj.removed || seq !== obj.requestSeq) return; // stale
     obj.response = response;
+    obj.roundTripMs = roundTripMs;
+    obj.decisionFailed = false;
     obj.resolved = resolveBehavior(response, obj.zone);
     // A decision that arrives after the car got there is still shown, but
     // the object stays "too late" until the user clears it.
@@ -174,6 +176,16 @@ export class Game {
     if (obj.resolved.behavior.kind === "speed_limit" && obj.passed) {
       this.applySpeedLimit(obj);
     }
+    this.emitObject(obj);
+  }
+
+  /** No decision could be had (network or server error): be cautious on the road. */
+  failDecision(id: string, seq: number): void {
+    const obj = this.get(id);
+    if (!obj || obj.removed || seq !== obj.requestSeq) return; // stale
+    obj.decisionFailed = true;
+    obj.resolved = failedBehavior(obj.zone);
+    if (obj.status !== "too_late") obj.status = "decided";
     this.emitObject(obj);
   }
 
@@ -256,6 +268,8 @@ export class Game {
     obj.requestSeq++;
     obj.response = undefined;
     obj.resolved = undefined;
+    obj.roundTripMs = undefined;
+    obj.decisionFailed = false;
     obj.distanceBand = undefined;
     obj.released = false;
     obj.waitStartedAt = undefined;
@@ -404,6 +418,8 @@ export class Game {
       distanceBand: obj.distanceBand,
       response: obj.response,
       resolved: obj.resolved,
+      roundTripMs: obj.roundTripMs,
+      decisionFailed: obj.decisionFailed,
       released: obj.released,
       passed: obj.passed,
       removed: obj.removed,

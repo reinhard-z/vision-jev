@@ -30,17 +30,15 @@ export const SAMPLES: Sample[] = [
   photo("leaves", "Leaves"),
 ];
 
-// Drag payload from the tray to the road: the image, plus the sample id for
-// built-in samples (the stub decision is keyed by it until Jev replaces it).
+// Drag payload from the tray to the road: just the image.
 const SAMPLE_DRAG_TYPE = "application/x-jev-sample";
 
 interface DragPayload {
   url: string;
-  sampleId?: string;
 }
 
 export function setSampleDragData(dt: DataTransfer, sample: Sample): void {
-  const payload: DragPayload = { url: sample.url, sampleId: sample.own ? undefined : sample.id };
+  const payload: DragPayload = { url: sample.url };
   dt.setData(SAMPLE_DRAG_TYPE, JSON.stringify(payload));
 }
 

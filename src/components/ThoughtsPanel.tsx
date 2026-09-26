@@ -40,6 +40,7 @@ function statusText(o: ObjectSnapshot): { text: string; tone: string } {
   if (o.removed) return { text: "removed", tone: "muted" };
   if (o.status === "too_late") return { text: "too late", tone: "stop" };
   if (o.passed) return { text: "passed", tone: "muted" };
+  if (o.decisionFailed) return { text: "decision failed", tone: "stop" };
   if (o.status === "perceiving") return { text: o.caption === undefined ? "perceiving…" : "deciding…", tone: "busy" };
   return { text: "decided", tone: "go" };
 }
@@ -109,6 +110,7 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
             </>
           )}
           {r && ` · Jev ${r.latencyMs} ms`}
+          {DEBUG && o.roundTripMs !== undefined && ` (round trip ${o.roundTripMs} ms)`}
         </p>
       )}
     </article>

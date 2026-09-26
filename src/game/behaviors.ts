@@ -20,6 +20,13 @@ export function resolveBehavior(res: DecideResponse, zone: Zone): ResolvedBehavi
   return base;
 }
 
+/** When no decision arrives: stop on the road (the old `unclear` default), ignore on the sidewalk. */
+export function failedBehavior(zone: Zone): ResolvedBehavior {
+  return zone === "road"
+    ? { behavior: { kind: "stop" }, safetyOverride: false, label: "No decision, stop until cleared" }
+    : { behavior: { kind: "continue" }, safetyOverride: false, label: "No decision, continue" };
+}
+
 /** Signs and lights by category first, otherwise the chosen action. */
 function resolveFromAnswers(res: DecideResponse): ResolvedBehavior {
   const category = res.category.choice;
@@ -37,6 +44,9 @@ function resolveFromAnswers(res: DecideResponse): ResolvedBehavior {
     }
     if (light === "green") {
       return { behavior: { kind: "green_light" }, safetyOverride: false, label: "Green light, continue" };
+    }
+    if (light === "unknown") {
+      return { behavior: { kind: "slow_down" }, safetyOverride: false, label: "Light colour unknown, slow down" };
     }
   }
   if (category === "speed_limit_sign" && res.speedLimit.choice !== "none") {
