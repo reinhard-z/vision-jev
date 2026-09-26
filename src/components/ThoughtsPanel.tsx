@@ -11,13 +11,25 @@ export function ThoughtsPanel({ game }: { game: Game }) {
   const objects = useStore(game.ui, (s) => s.cards);
 
   return (
-    <section className="thoughts">
-      <h2>Thoughts</h2>
+    <section className="thoughts" aria-labelledby="thoughts-title">
+      <h2 id="thoughts-title">Thoughts</h2>
+      <LatestDecision cards={objects} />
       {objects.length === 0 && <p className="hint">Drop something on the road to see what the car thinks.</p>}
       {objects.map((o) => (
         <ThoughtCard key={o.id} obj={o} />
       ))}
     </section>
+  );
+}
+
+/** Announces each new decision to screen readers; the cards themselves update too often. */
+function LatestDecision({ cards }: { cards: ObjectSnapshot[] }) {
+  const latest = cards.find((c) => c.phase.kind === "decided" && c.decision);
+  const text = latest?.decision ? `${latest.zone}: ${latest.decision.resolved.label}` : "";
+  return (
+    <p className="sr-only" aria-live="polite">
+      {text}
+    </p>
   );
 }
 

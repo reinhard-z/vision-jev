@@ -25,6 +25,7 @@ body {
 
 .app {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -151,15 +152,12 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: grab;
+  position: relative;
 }
 
 .sample:hover,
 .sample:active {
   border-color: var(--accent);
-}
-
-.sample {
-  position: relative;
 }
 
 .sample-remove {
@@ -205,6 +203,61 @@ h2 {
   border-radius: 4px;
 }
 
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--text);
+}
+
+.credits {
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 16px 20px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.credits::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.credits ul {
+  padding-left: 18px;
+}
+
+.credits a {
+  color: #9dbcf5;
+}
+
+.credits button {
+  padding: 6px 14px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* Road */
 

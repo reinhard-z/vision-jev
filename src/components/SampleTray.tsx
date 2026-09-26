@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from "react";
 import { SAMPLES, samplesFromFiles, setSampleDragData, type Sample } from "../samples";
+import { CreditsDialog } from "./CreditsDialog";
 import { VisionStatus } from "./VisionStatus";
 
 /**
@@ -56,7 +57,7 @@ export function SampleTray() {
         }}
       />
       <p className="hint">Or drop image files here.</p>
-      <p className="hint privacy">Images never leave your device.</p>
+      <p className="hint privacy">Images never leave your device. Only a short text description is sent.</p>
       <p className="hint">Drag onto the road or the sidewalk.</p>
       <div className="tray-grid">
         {[...own, ...SAMPLES].map((s) => (
@@ -87,6 +88,7 @@ export function SampleTray() {
           </div>
         ))}
       </div>
+      <CreditsDialog />
     </aside>
   );
 }

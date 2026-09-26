@@ -7,6 +7,14 @@ import { render } from "../game/render";
 import type { Pipeline } from "../pipeline";
 import { getSampleDragData } from "../samples";
 
+// willReadFrequently keeps the canvas on the CPU. A GPU canvas queues
+// behind the vision model's WebGPU work and drops frames (100-400 ms
+// hitches per caption); on the CPU it stays smooth. See docs/vision-models.md.
+// The first getContext() call fixes these attributes, so every call uses them.
+const CONTEXT_OPTIONS: CanvasRenderingContext2DSettings = { willReadFrequently: true };
+
+const context2d = (canvas: HTMLCanvasElement) => canvas.getContext("2d", CONTEXT_OPTIONS)!;
+
 interface Props {
   game: Game;
   pipeline: Pipeline;
@@ -30,7 +38,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
       canvas.height = Math.round(h * dpr);
       canvas.style.width = `${CANVAS_WIDTH}px`;
       canvas.style.height = `${h}px`;
-      canvas.getContext("2d", { willReadFrequently: true })!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      context2d(canvas).setTransform(dpr, 0, 0, dpr, 0, 0);
       game.setViewHeight(h);
     };
     resize();
@@ -40,10 +48,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
   }, [game]);
 
   useEffect(() => {
-    // willReadFrequently keeps the canvas on the CPU. A GPU canvas queues
-    // behind the vision model's WebGPU work and drops frames (100-400 ms
-    // hitches per caption); on the CPU it stays smooth. See docs/vision-models.md.
-    const ctx = canvasRef.current!.getContext("2d", { willReadFrequently: true })!;
+    const ctx = context2d(canvasRef.current!);
     return runLoop(
       (dt) => game.update(dt),
       () => render(ctx, game),
@@ -82,6 +87,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
   // --- moving and removing objects already on the road ---------------------
 
   const onPointerDown = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return; // primary button, touch or pen only
     const { x, y } = toCanvas(e);
     const removeId = game.hitTestRemove(x, y);
     if (removeId) {
@@ -123,6 +129,8 @@ export function RoadCanvas({ game, pipeline }: Props) {
     <div className="road" ref={wrapRef}>
       <canvas
         ref={canvasRef}
+        role="img"
+        aria-label="Top-down road with the car. Drop images on the road or the sidewalk; the Thoughts panel describes what the car decides."
         onDragOver={onDragOver}
         onDragLeave={() => game.setDropHint(null)}
         onDrop={onDrop}
