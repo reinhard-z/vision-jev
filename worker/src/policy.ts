@@ -57,8 +57,8 @@ export const QUESTIONS = {
     instructions: "What should the car do about `object_seen`, which is `location`?",
     criteria: {
       continue:
-        "Nothing on the road needs a reaction. Things on the sidewalk that are not entering the road. Signs, lights, and harmless debris",
-      slow_down: "Something could enter the road soon, or a minor obstacle is ahead",
+        "Nothing on the road needs a reaction: signs, lights, light debris the car can drive over such as a bag, leaves or litter, and things on the sidewalk that are not entering the road",
+      slow_down: "Something could enter the road soon, or a small solid obstacle is ahead",
       stop: "A person, animal, vehicle, or obstacle is on the road. If it is unclear whether something is a person, treat it as a person",
     } satisfies Record<Action, string>,
   },
