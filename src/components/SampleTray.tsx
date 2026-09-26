@@ -13,7 +13,7 @@ export function SampleTray() {
 
   const addFiles = (files: Iterable<File>) => {
     const added = samplesFromFiles(files);
-    if (added.length) setOwn((prev) => [...prev, ...added]);
+    if (added.length) setOwn((prev) => [...added, ...prev]);
   };
 
   // Files dropped on the tray go into the library. Tray tiles dragged back
@@ -59,7 +59,7 @@ export function SampleTray() {
       <p className="hint privacy">Images never leave your device.</p>
       <p className="hint">Drag onto the road or the sidewalk.</p>
       <div className="tray-grid">
-        {[...SAMPLES, ...own].map((s) => (
+        {[...own, ...SAMPLES].map((s) => (
           <div
             key={s.id}
             className="sample"
@@ -73,8 +73,7 @@ export function SampleTray() {
               if (img) e.dataTransfer.setDragImage(img, img.width / 2, img.height / 2);
             }}
           >
-            <img src={s.url} alt="" draggable={false} />
-            <span>{s.label}</span>
+            <img src={s.url} alt={s.label} draggable={false} />
             {s.own && (
               <button
                 className="sample-remove"
