@@ -112,6 +112,8 @@ Shape (values illustrative):
 }
 ```
 
+**Observed through the Workers AI binding (2026-09-26):** `env.AI.run` returns the body above wrapped in an envelope: `{ "state": "Completed", "result": { "model", "answers", "usage" }, "gatewayMetadata": { "keySource": "Unified" } }`. Jev is billed through prepaid AI Gateway credits (Unified Billing), not the free Workers AI allowance; without credits the call fails with `2021: Insufficient AI Gateway credits`.
+
 - noul answers use the key `noul` (a probability).
 - choice answers use `choice`, `confidence`, `probabilities`.
 - score answers use `score`, `confidence`, `legend`, `probabilities`. Probability keys are level indices as strings.

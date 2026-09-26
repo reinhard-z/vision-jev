@@ -24,7 +24,8 @@ export type Category = (typeof CATEGORIES)[number];
 export const ACTIONS = ["continue", "slow_down", "stop"] as const;
 export type Action = (typeof ACTIONS)[number];
 
-export const LIGHT_STATES = ["red", "amber", "green", "not_a_light"] as const;
+// `unknown`: a traffic light whose caption doesn't say which lamp is lit.
+export const LIGHT_STATES = ["red", "amber", "green", "unknown", "not_a_light"] as const;
 export type LightState = (typeof LIGHT_STATES)[number];
 
 export const SPEED_LIMITS = ["30", "50", "80", "120", "none"] as const;
@@ -32,6 +33,8 @@ export type SpeedLimit = (typeof SPEED_LIMITS)[number];
 
 export const CAPTION_MAX_LENGTH = 300;
 export const SPEED_KMH_MAX = 130;
+
+export const DECIDE_REQUEST_KEYS = ["caption", "zone", "distance", "speedKmh", "turnstileToken"] as const;
 
 export interface DecideRequest {
   caption: string; // 1–300 chars
@@ -53,5 +56,5 @@ export interface DecideResponse {
   lightState: ChoiceAnswer<LightState>;
   speedLimit: ChoiceAnswer<SpeedLimit>;
   couldBePerson: number;
-  latencyMs: number;
+  latencyMs: number; // Jev call time inside the Worker
 }
