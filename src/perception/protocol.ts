@@ -8,7 +8,7 @@ export type ToWorker =
 
 export type FromWorker =
   | { type: "progress"; loadedBytes: number; totalBytes: number }
-  | { type: "ready"; backend: Backend; loadMs: number }
+  | { type: "ready"; backend: Backend; loadMs: number; model: string }
   | { type: "loadError"; message: string }
   | { type: "caption"; id: number; text: string; ms: number }
   | { type: "captionError"; id: number; message: string };

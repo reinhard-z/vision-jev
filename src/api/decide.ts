@@ -13,7 +13,7 @@ export interface DecideContext {
  * `fetch("/api/decide")` and drops `ctx`.
  */
 export async function decide(req: DecideRequest, ctx: DecideContext = {}): Promise<DecideResponse> {
-  const latencyMs = Math.round(600 + Math.random() * 900);
+  const latencyMs = 200;
   await new Promise((resolve) => setTimeout(resolve, latencyMs));
   return cannedAnswer(req, ctx.sampleId, latencyMs);
 }

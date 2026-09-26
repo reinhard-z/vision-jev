@@ -286,6 +286,7 @@ h2 {
 
 .card header {
   display: flex;
+  align-items: center;
   gap: 10px;
 }
 
@@ -296,11 +297,6 @@ h2 {
   border-radius: 6px;
   background: #fff;
   flex: none;
-}
-
-.caption {
-  margin: 0 0 4px;
-  font-size: 13.5px;
 }
 
 .meta {
@@ -421,6 +417,61 @@ h2 {
   color: var(--muted);
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
+}
+
+/* Info icon with the vision caption, on hover or keyboard focus */
+
+.info {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 5px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  font: italic 600 9.5px/1 Georgia, serif;
+  color: var(--muted);
+  cursor: help;
+  vertical-align: -2px;
+}
+
+.info:hover,
+.info:focus-visible {
+  color: var(--text);
+  border-color: var(--text);
+  outline: none;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: -8px;
+  z-index: 10;
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.4);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  text-align: left;
+}
+
+.info:hover .tooltip,
+.info:focus-visible .tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltip-model {
+  font-size: 11.5px;
+  color: var(--muted);
 }
 
 /* The tray stays a side column at every width; it just gets narrower. */

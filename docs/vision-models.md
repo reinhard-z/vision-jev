@@ -2,7 +2,7 @@
 
 Which in-browser model captions the dropped images. Measured on 2026-09-26 with Transformers.js 4.3.0 on an Apple Silicon Mac: headed Chrome for WebGPU, headless Chromium for the Wasm fallback. Every model was run in greedy decoding (`do_sample: false`).
 
-**Decision: Florence-2-base-ft with the `<CAPTION>` task**, revision `e88a44eaf3791a35eae0c5a47b3dbcd36e67eb6f`. It is the only candidate that described both people correctly and named the lit lamp on most traffic lights, at about 1 s per caption on WebGPU. Configuration is in `src/perception/model.ts`.
+**Decision: Florence-2-base-ft with the `<CAPTION>` task, fed 384×384 images**, revision `e88a44eaf3791a35eae0c5a47b3dbcd36e67eb6f`. (First chosen at the native 768 px; switched to 384 px for speed, see [Input resolution](#input-resolution).) It is the only candidate that described both people correctly and named the lit lamp on most traffic lights, at about 1 s per caption on WebGPU. Configuration is in `src/perception/model.ts`.
 
 ## Test images
 
@@ -84,3 +84,34 @@ Measured in the running app with a rAF frame-time recorder and a `longtask` obse
 - **First version: stutter on WebGPU.** The main thread was never blocked (no long tasks), but frames were dropped for 70–480 ms, at model load and in the first ~400 ms of each caption, when the vision and text encoders run. Chrome's 2D canvas is GPU-accelerated, so the road canvas queued behind the inference work on the GPU. A page without a per-frame canvas showed no dropped frames with the same model.
 - **Fix: CPU canvas** (`getContext("2d", { willReadFrequently: true })` in `RoadCanvas.tsx`). With 8 objects captioned back to back on WebGPU, the max frame was 18 ms, with none over 50 ms (120 Hz display; median 8.3 ms, p95 10.1 ms, up from 9.3 ms).
 - **Wasm fallback** (headless Chromium without WebGPU flags, where `requestAdapter()` returns null in the page and the worker): median 16.7 ms, max 16.8 ms at 60 Hz during 45 s of continuous captioning.
+
+## Input resolution
+
+Profiling Florence-2 at 768 px on WebGPU (M1): preprocessing ~35 ms, image and prompt encoding up to the first token ~980 ms, then ~12 ms per generated token (~150 ms for a caption). Almost all the time is the vision encoder, whose cost grows with pixel count. Other vision-encoder precisions were not faster (time to first token: fp16 ~0.98 s, q4f16 ~1.07 s, fp32 ~1.37 s, q4 ~1.39 s).
+
+Feeding smaller images (`processor.image_processor.size`), same weights:
+
+| Input | Per caption (harness) | Output |
+|---|---|---|
+| 768 px (native) | ~1.1 s | Full sentences |
+| 384 px | ~0.37–0.40 s | Full sentences; named the lamp on 5/5 lights |
+| 512 px | ~0.5 s | One-word labels ("boxer", "soccer ball", "unanswerable") |
+| 576 px | ~0.59 s | One-word labels |
+| 1152 px | ~2.2 s | One-word labels, some wrong ("lion" for the dog) |
+
+Only 384 and 768 produce captions; everything else collapses to single labels. The app now uses 384 px. Known quirk at 384 px: it often invents a second object ("Two children playing with soccer balls", "Two teddy bears", "Two cats"). It named the 80 sign's number but not the 30 sign's.
+
+In the app at 384 px: 0.39–0.46 s vision time per caption after a 0.6 s first caption, with no frame over 50 ms during captioning.
+
+## Faster models (WebGPU, M1)
+
+Also tested for speed, `<CAPTION>` or plain prompt, same 18 images:
+
+| Model | Per caption | Download | Lamp named (5) | Notes |
+|---|---|---|---|---|
+| LFM2.5-VL-450M (`onnx-community/LFM2.5-VL-450M-ONNX`) | 0.80 s | 545 MB | 5/5 | Best captions of the fast group: both people, both speed-limit numbers, "plastic bag", "pile of brown leaves". License and Wasm speed not checked. |
+| distilvit (`Mozilla/distilvit`) | 0.40 s | 561 MB | 1/5 | "A traffic light with a heart symbol"; calls speed signs stop signs |
+| vit-gpt2 (`Xenova/vit-gpt2-image-captioning`) | 0.59 s | 789 MB | 2/5 | Says "green" for red; bag becomes "a broken umbrella" |
+| FastVLM-0.5B (`onnx-community/FastVLM-0.5B-ONNX`) | 2.25 s | 807 MB | 5/5 | Detailed but verbose and slow on an M1 |
+
+distilvit and vit-gpt2 only load with the fp32 decoder; their fp16 merged decoders are rejected by onnxruntime-web ("Subgraph output (logits) is an outer scope value being returned directly").

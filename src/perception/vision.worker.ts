@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 // Runs the vision model off the main thread so the game loop never waits on it.
 import { RawImage } from "@huggingface/transformers";
-import { loadCaptioner, type Captioner } from "./model";
+import { loadCaptioner, MODEL_LABEL, type Captioner } from "./model";
 import type { Backend, FromWorker, ToWorker } from "./protocol";
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -48,7 +48,7 @@ async function load(): Promise<Captioner> {
     files.clear();
     c = await loadCaptioner(backend, onProgress);
   }
-  send({ type: "ready", backend, loadMs: Math.round(performance.now() - t0) });
+  send({ type: "ready", backend, loadMs: Math.round(performance.now() - t0), model: MODEL_LABEL });
   return c;
 }
 

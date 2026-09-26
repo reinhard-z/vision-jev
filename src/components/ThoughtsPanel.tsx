@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { ACTIONS } from "../../shared/types";
+import { DEBUG } from "../debug";
 import { SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
 import type { Game } from "../game/engine";
 import type { ObjectSnapshot } from "../game/types";
+import { getVisionStatus, subscribeVision } from "../perception/perceive";
 
 const MAX_CARDS = 30;
 
@@ -54,7 +56,6 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
       <header>
         <img src={o.imageUrl} alt="" />
         <div>
-          <p className="caption">{o.caption ?? <em>perceiving…</em>}</p>
           <p className="meta">
             {o.zone}
             {o.distanceBand && ` · ${o.distanceBand}`}
@@ -101,10 +102,31 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
 
       {(o.visionMs !== undefined || r) && (
         <p className="latency">
-          {o.visionMs !== undefined && `vision ${o.visionMs} ms`}
+          {o.visionMs !== undefined && (
+            <>
+              vision {o.visionMs} ms
+              {DEBUG && o.caption !== undefined && <VisionInfo caption={o.caption} />}
+            </>
+          )}
           {r && ` · Jev ${r.latencyMs} ms`}
         </p>
       )}
     </article>
+  );
+}
+
+/** Debug only: info icon whose tooltip shows what the vision model saw, and which model it was. */
+function VisionInfo({ caption }: { caption: string }) {
+  const vision = useSyncExternalStore(subscribeVision, getVisionStatus);
+  const model =
+    vision.state === "ready" ? `${vision.model} · ${vision.backend === "webgpu" ? "WebGPU" : "Wasm"}` : "vision model";
+  return (
+    <span className="info" tabIndex={0} aria-label={`Caption: ${caption.replace(/\.$/, "")}. Model: ${model}`}>
+      i
+      <span className="tooltip" role="tooltip">
+        <span className="tooltip-caption">“{caption}”</span>
+        <span className="tooltip-model">{model}</span>
+      </span>
+    </span>
   );
 }

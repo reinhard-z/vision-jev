@@ -9,7 +9,7 @@ export interface Perception {
 /** Model loading state, for the progress bar. */
 export type VisionStatus =
   | { state: "loading"; loadedBytes: number; totalBytes: number }
-  | { state: "ready"; backend: Backend; loadMs: number }
+  | { state: "ready"; backend: Backend; loadMs: number; model: string }
   | { state: "error"; message: string };
 
 // Images are downscaled before they go to the worker. The models resize to
@@ -41,7 +41,7 @@ function getWorker(): Worker {
         setStatus({ state: "loading", loadedBytes: msg.loadedBytes, totalBytes: msg.totalBytes });
         break;
       case "ready":
-        setStatus({ state: "ready", backend: msg.backend, loadMs: msg.loadMs });
+        setStatus({ state: "ready", backend: msg.backend, loadMs: msg.loadMs, model: msg.model });
         break;
       case "loadError":
         setStatus({ state: "error", message: msg.message });
