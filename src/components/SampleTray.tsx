@@ -41,6 +41,21 @@ export function SampleTray() {
     >
       <h2>Samples</h2>
       <VisionStatus />
+      <button className="upload" onClick={() => fileInput.current?.click()}>
+        Add your own images…
+      </button>
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        onChange={(e) => {
+          if (e.target.files) addFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <p className="hint">Or drop image files here.</p>
       <p className="hint">Drag onto the road or the sidewalk.</p>
       <div className="tray-grid">
         {[...SAMPLES, ...own].map((s) => (
@@ -72,21 +87,7 @@ export function SampleTray() {
           </div>
         ))}
       </div>
-      <button className="upload" onClick={() => fileInput.current?.click()}>
-        Add your own images…
-      </button>
-      <input
-        ref={fileInput}
-        type="file"
-        accept="image/*"
-        multiple
-        hidden
-        onChange={(e) => {
-          if (e.target.files) addFiles(e.target.files);
-          e.target.value = "";
-        }}
-      />
-      <p className="hint">Or drop image files here. Click an object's × (or drag it off the canvas) to remove it.</p>
+      <p className="hint">Click an object's × (or drag it off the canvas) to remove it.</p>
       <p className="hint privacy">Images never leave your device. Only the caption is sent.</p>
     </aside>
   );
