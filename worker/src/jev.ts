@@ -1,4 +1,5 @@
 // The only place that talks to Jev. Swap providers here (docs/jev.md).
+import { z } from "zod";
 
 const MODEL = "typesafe/jev";
 
@@ -6,12 +7,28 @@ export type JevQuestion =
   | { type: "noul"; instructions: string; criteria?: { true: string; false: string } }
   | { type: "choice"; instructions: string; criteria: Record<string, string> };
 
-export type JevAnswer =
-  | { type: "noul"; noul: number }
-  | { type: "choice"; choice: string; confidence: number; probabilities: Record<string, number> };
+export type Questions = Record<string, JevQuestion>;
 
-export interface JevResult {
-  answers: Record<string, JevAnswer>;
+export interface NoulAnswer {
+  type: "noul";
+  noul: number;
+}
+
+export interface ChoiceAnswer<L extends string> {
+  type: "choice";
+  choice: L;
+  confidence: number;
+  /** Every label of the question, 0 when Jev gave none. */
+  probabilities: Record<L, number>;
+}
+
+/** Answers typed per question: choice labels come from each question's criteria. */
+export type Answers<Q extends Questions> = {
+  [K in keyof Q]: Q[K] extends { type: "choice"; criteria: infer C } ? ChoiceAnswer<keyof C & string> : NoulAnswer;
+};
+
+export interface JevResult<Q extends Questions> {
+  answers: Answers<Q>;
   model: string;
   inputTokens: number;
   /** Time spent in the Jev call, as seen by the Worker. */
@@ -21,61 +38,55 @@ export interface JevResult {
 export class JevError extends Error {}
 
 /** Ask all questions against one state in a single call. */
-export async function evaluate(
+export async function evaluate<Q extends Questions>(
   ai: Ai,
   state: Record<string, string>,
-  questions: Record<string, JevQuestion>,
-): Promise<JevResult> {
+  questions: Q,
+): Promise<JevResult<Q>> {
   const started = Date.now();
-  const envelope = await ai.run(MODEL, { state, questions });
+  const envelope: unknown = await ai.run(MODEL, { state, questions });
   const latencyMs = Date.now() - started;
-  const raw = unwrap(envelope);
 
   // Answers always fit the schema in theory; check anyway rather than trust it.
-  const answers: Record<string, JevAnswer> = {};
-  const rawAnswers = raw.answers;
-  if (!isObject(rawAnswers)) throw new JevError("response has no answers");
-  for (const [key, q] of Object.entries(questions)) {
-    const a = rawAnswers[key];
-    if (!isObject(a) || a.type !== q.type) throw new JevError(`answer ${key} missing or wrong type`);
-    if (q.type === "noul") {
-      if (!isProbability(a.noul)) throw new JevError(`answer ${key} has no noul`);
-      answers[key] = { type: "noul", noul: a.noul };
-    } else {
-      const { choice, confidence, probabilities } = a;
-      if (typeof choice !== "string" || !(choice in q.criteria)) throw new JevError(`answer ${key} has unknown choice`);
-      if (!isProbability(confidence) || !isObject(probabilities)) throw new JevError(`answer ${key} is incomplete`);
-      const probs: Record<string, number> = {};
-      for (const label of Object.keys(q.criteria)) {
-        const p = probabilities[label];
-        probs[label] = isProbability(p) ? p : 0;
-      }
-      answers[key] = { type: "choice", choice, confidence, probabilities: probs };
-    }
+  const parsed = responseSchema(questions).safeParse(envelope);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    throw new JevError(`unexpected response at ${issue?.path.join(".") || "root"}: ${issue?.message ?? "invalid"}`);
   }
+  const body = "result" in parsed.data ? parsed.data.result : parsed.data;
+  return {
+    // The schema was built from `questions`, so the answers have exactly this shape.
+    answers: body.answers as Answers<Q>,
+    model: body.model ?? MODEL,
+    inputTokens: body.usage?.input_tokens ?? 0,
+    latencyMs,
+  };
+}
 
-  const usage = raw.usage;
-  const inputTokens = isObject(usage) && typeof usage.input_tokens === "number" ? usage.input_tokens : 0;
-  const model = typeof raw.model === "string" ? raw.model : MODEL;
-  return { answers, model, inputTokens, latencyMs };
+const probability = z.number().min(0).max(1);
+
+function answerSchema(q: JevQuestion) {
+  if (q.type === "noul") return z.object({ type: z.literal("noul"), noul: probability });
+  const labels = Object.keys(q.criteria);
+  return z.object({
+    type: z.literal("choice"),
+    choice: z.enum(labels),
+    confidence: probability,
+    probabilities: z
+      .record(z.string(), z.unknown())
+      .transform((p) => Object.fromEntries(labels.map((l) => [l, probability.safeParse(p[l]).data ?? 0]))),
+  });
 }
 
 /**
- * The binding (via AI Gateway) wraps the documented body as
- * `{ state: "Completed", result: {...}, gatewayMetadata }`. Accept both.
+ * The documented body, or the binding's envelope around it
+ * (`{ state: "Completed", result: {...}, gatewayMetadata }`, via AI Gateway).
  */
-function unwrap(envelope: Record<string, unknown>): Record<string, unknown> {
-  if ("answers" in envelope) return envelope;
-  if (envelope.state !== "Completed" || !isObject(envelope.result)) {
-    throw new JevError(`unexpected response state: ${String(envelope.state).slice(0, 40)}`);
-  }
-  return envelope.result;
-}
-
-function isObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
-function isProbability(v: unknown): v is number {
-  return typeof v === "number" && v >= 0 && v <= 1;
+function responseSchema(questions: Questions) {
+  const body = z.object({
+    model: z.string().optional(),
+    answers: z.object(Object.fromEntries(Object.entries(questions).map(([key, q]) => [key, answerSchema(q)]))),
+    usage: z.object({ input_tokens: z.number().optional() }).optional(),
+  });
+  return z.union([z.object({ state: z.literal("Completed"), result: body }), body]);
 }

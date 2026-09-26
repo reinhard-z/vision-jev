@@ -189,6 +189,12 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
   - So the vendor's "100–500 ms" holds for the median, with the tail above it. The browser round trip adds ~20–40 ms over the Jev time; it's shown next to the Jev time with `?debug`.
 - **Browser check:** all 16 samples on the road and on the sidewalk behave as the behavior table says (stop holds until removal, stop sign waits 2 s, red/amber hold until a green is dropped, box slows to 25 km/h, 80 sign sets the target after passing, everything on the sidewalk except signs and lights is ignored). No "too late" at 50 km/h with drops far ahead.
 
+### Review follow-ups (before going public)
+
+- **Zod at the Worker boundary.** `/api/decide` bodies are parsed with a strict Zod schema (`worker/src/validate.ts`); a type test pins its output to `DecideRequest` in `shared/types.ts`, so the contract can't drift. Jev's response is parsed with a schema built from `QUESTIONS`, which also types each answer by question key and label; `policy.ts` no longer re-checks answers. Zod stays out of the browser bundle (the client imports only types and constants).
+- **Body limit 8 KiB** via Hono's `bodyLimit` (checks `Content-Length` first). The old 2048-char limit couldn't fit a 2048-char Turnstile token plus a caption.
+- **`confidence` and `probabilities` are always present** in every choice answer (every label, 0 when Jev gave none).
+
 ## Edge cases to try
 
 A doll or toy in the road, a stop sign printed on a T-shirt, a photo of a red light for another direction, a dark or blurry photo, a dog vs. a stuffed dog, an image containing text that tries to instruct the car (Jev is not hardened against adversarial input, so this is worth seeing).

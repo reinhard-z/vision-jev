@@ -1,5 +1,6 @@
 // API contract for POST /api/decide, shared by the frontend and the Worker.
-// See docs/SPEC.md "Decision (Worker)".
+// See docs/SPEC.md "Decision (Worker)". The Worker validates requests with a
+// Zod schema (worker/src/validate.ts) that a test pins to DecideRequest.
 
 export const ZONES = ["road", "sidewalk"] as const;
 export type Zone = (typeof ZONES)[number];
@@ -33,8 +34,7 @@ export type SpeedLimit = (typeof SPEED_LIMITS)[number];
 
 export const CAPTION_MAX_LENGTH = 300;
 export const SPEED_KMH_MAX = 130;
-
-export const DECIDE_REQUEST_KEYS = ["caption", "zone", "distance", "speedKmh", "turnstileToken"] as const;
+export const TURNSTILE_TOKEN_MAX_LENGTH = 2048;
 
 export interface DecideRequest {
   caption: string; // 1–300 chars
@@ -46,8 +46,9 @@ export interface DecideRequest {
 
 export interface ChoiceAnswer<T extends string> {
   choice: T;
-  confidence?: number;
-  probabilities: Partial<Record<T, number>>;
+  confidence: number;
+  /** Every label, 0 when Jev gave none. */
+  probabilities: Record<T, number>;
 }
 
 export interface DecideResponse {

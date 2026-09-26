@@ -11,8 +11,7 @@ import type {
   SpeedLimit,
   Zone,
 } from "../../shared/types";
-import { ACTIONS, CATEGORIES, LIGHT_STATES, SPEED_LIMITS } from "../../shared/types";
-import type { JevAnswer, JevQuestion, JevResult } from "./jev";
+import type { ChoiceAnswer as JevChoiceAnswer, JevResult, Questions } from "./jev";
 
 const LOCATION: Record<Zone, string> = {
   road: "on the road, in the car's lane",
@@ -92,29 +91,21 @@ export const QUESTIONS = {
       false: "Clearly not a person",
     },
   },
-} satisfies Record<string, JevQuestion>;
+} satisfies Questions;
 
 /** Map Jev's answers to the API response. */
-export function toDecideResponse(result: JevResult): DecideResponse {
+export function toDecideResponse(result: JevResult<typeof QUESTIONS>): DecideResponse {
   const a = result.answers;
   return {
-    category: choice(a.category, CATEGORIES),
-    action: choice(a.action, ACTIONS),
-    lightState: choice(a.light_state, LIGHT_STATES),
-    speedLimit: choice(a.speed_limit, SPEED_LIMITS),
-    couldBePerson: noul(a.could_be_person),
+    category: choice(a.category),
+    action: choice(a.action),
+    lightState: choice(a.light_state),
+    speedLimit: choice(a.speed_limit),
+    couldBePerson: a.could_be_person.noul,
     latencyMs: result.latencyMs,
   };
 }
 
-function choice<T extends string>(a: JevAnswer | undefined, labels: readonly T[]): ChoiceAnswer<T> {
-  if (a?.type !== "choice" || !(labels as readonly string[]).includes(a.choice)) throw new Error("bad choice answer");
-  const probabilities: Partial<Record<T, number>> = {};
-  for (const l of labels) probabilities[l] = a.probabilities[l] ?? 0;
-  return { choice: a.choice as T, confidence: a.confidence, probabilities };
-}
-
-function noul(a: JevAnswer | undefined): number {
-  if (a?.type !== "noul") throw new Error("bad noul answer");
-  return a.noul;
+function choice<L extends string>({ choice, confidence, probabilities }: JevChoiceAnswer<L>): ChoiceAnswer<L> {
+  return { choice, confidence, probabilities };
 }

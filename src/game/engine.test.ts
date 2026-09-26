@@ -111,7 +111,7 @@ describe("resolveBehavior", () => {
   });
 
   it("keeps speed for a speed limit sign without a readable number", () => {
-    const res = { ...req("limit30", "road"), speedLimit: { choice: "none" as const, probabilities: {} } };
+    const res = { ...req("limit30", "road"), speedLimit: pick<SpeedLimit>("none") };
     expect(resolveBehavior(res, "road").behavior.kind).toBe("continue");
   });
 

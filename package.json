@@ -22,7 +22,8 @@
     "@huggingface/transformers": "4.3.0",
     "hono": "^4.13.9",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.60.0",

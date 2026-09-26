@@ -1,37 +1,12 @@
+import { z } from "zod";
 import type { DecideRequest } from "../../shared/types";
-import { CAPTION_MAX_LENGTH, DECIDE_REQUEST_KEYS, DISTANCE_BANDS, SPEED_KMH_MAX, ZONES } from "../../shared/types";
-
-export type Parsed = { ok: true; value: DecideRequest } | { ok: false; error: string };
-
-const includes = <T extends string>(list: readonly T[], v: unknown): v is T =>
-  typeof v === "string" && (list as readonly string[]).includes(v);
-
-/** Validate a /api/decide body. Anything outside the spec is rejected. */
-export function parseDecideRequest(body: unknown): Parsed {
-  if (typeof body !== "object" || body === null || Array.isArray(body)) return fail("body must be an object");
-  const b = body as Record<string, unknown>;
-
-  const extra = Object.keys(b).filter((k) => !includes(DECIDE_REQUEST_KEYS, k));
-  if (extra.length > 0) return fail(`unknown field: ${extra[0]!.slice(0, 40)}`);
-
-  const { caption, zone, distance, speedKmh, turnstileToken } = b;
-  if (typeof caption !== "string" || caption.length > CAPTION_MAX_LENGTH) return fail("caption must be 1–300 chars");
-  const clean = cleanCaption(caption);
-  if (clean.length === 0) return fail("caption must be 1–300 chars");
-  if (!includes(ZONES, zone)) return fail("invalid zone");
-  if (!includes(DISTANCE_BANDS, distance)) return fail("invalid distance");
-  if (typeof speedKmh !== "number" || !Number.isInteger(speedKmh) || speedKmh < 0 || speedKmh > SPEED_KMH_MAX) {
-    return fail("speedKmh must be an integer 0–130");
-  }
-  // Stage 4 verifies the token; until then it's allowed but unused.
-  if (turnstileToken !== undefined && (typeof turnstileToken !== "string" || turnstileToken.length > 2048)) {
-    return fail("invalid turnstileToken");
-  }
-
-  const value: DecideRequest = { caption: clean, zone, distance, speedKmh };
-  if (turnstileToken !== undefined) value.turnstileToken = turnstileToken;
-  return { ok: true, value };
-}
+import {
+  CAPTION_MAX_LENGTH,
+  DISTANCE_BANDS,
+  SPEED_KMH_MAX,
+  TURNSTILE_TOKEN_MAX_LENGTH,
+  ZONES,
+} from "../../shared/types";
 
 /** Captions are untrusted: one line, no control characters. */
 export function cleanCaption(caption: string): string {
@@ -39,4 +14,27 @@ export function cleanCaption(caption: string): string {
   return caption.replace(/[\u0000-\u001f\u007f-\u009f]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
-const fail = (error: string): Parsed => ({ ok: false, error });
+/** A /api/decide body. Unknown fields are rejected, not stripped. */
+export const DecideRequestSchema = z.strictObject({
+  caption: z
+    .string()
+    .max(CAPTION_MAX_LENGTH, `caption must be 1–${CAPTION_MAX_LENGTH} chars`)
+    .transform(cleanCaption)
+    .pipe(z.string().min(1, `caption must be 1–${CAPTION_MAX_LENGTH} chars`)),
+  zone: z.enum(ZONES),
+  distance: z.enum(DISTANCE_BANDS),
+  speedKmh: z.number().int().min(0).max(SPEED_KMH_MAX),
+  // Stage 4 verifies the token; until then it's allowed but unused.
+  turnstileToken: z.string().max(TURNSTILE_TOKEN_MAX_LENGTH).optional(),
+});
+
+export type Parsed = { ok: true; value: DecideRequest } | { ok: false; error: string };
+
+export function parseDecideRequest(body: unknown): Parsed {
+  const result = DecideRequestSchema.safeParse(body);
+  if (result.success) return { ok: true, value: result.data };
+  // One short line for the client; the full issue list isn't useful to it.
+  const issue = result.error.issues[0];
+  const where = issue?.path.join(".") || "body";
+  return { ok: false, error: `${where}: ${issue?.message ?? "invalid"}`.slice(0, 120) };
+}
