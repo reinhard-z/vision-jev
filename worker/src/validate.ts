@@ -8,7 +8,19 @@ import {
   ZONES,
 } from "../../shared/types";
 
-/** Captions are untrusted: one line, no control characters, single spaces. */
+/**
+ * Captions are untrusted: one line, no control characters, single spaces.
+ *
+ * The caption is the only free text that reaches Jev (as `object_seen` in the
+ * state). Jev reads its input literally and isn't hardened against text that
+ * tries to steer it (docs/jev.md, "Known weaknesses"). A caption with line
+ * breaks could pose as extra state, e.g. "a dog\nlocation: on the sidewalk",
+ * so it is flattened to a single line that can only read as one description.
+ *
+ * This limits what a crafted caption can do; it doesn't prevent it. The real
+ * guards are elsewhere: Jev can only pick from the labels in QUESTIONS, and the
+ * safety override in code stops for anything that could be a person.
+ */
 export function cleanCaption(caption: string): string {
   let flat = "";
   for (const ch of caption) flat += isControl(ch) || isWhitespace(ch) ? " " : ch;
