@@ -285,15 +285,28 @@ describe("Game", () => {
     expect(kmh(game)).toBeGreaterThan(20);
   });
 
-  it("keeps the decision when an object moves within its zone", () => {
+  it("asks Jev again when an object moves within its zone", () => {
     const game = new Game();
     const needs: string[] = [];
     game.events.on("needsDecision", ({ id }) => needs.push(id));
     const id = addDecided(game, "own_lane", 50, "stop");
     move(game, id, "own_lane", 60);
+    expect(needs).toEqual([id]);
+    expect(game.get(id)!.phase.kind).toBe("deciding");
+    expect(kind(game, id)).toBe("stop"); // holds until Jev answers
+  });
+
+  it("doesn't ask again for a click without a move", () => {
+    const game = new Game();
+    const needs: string[] = [];
+    game.events.on("needsDecision", ({ id }) => needs.push(id));
+    const id = addDecided(game, "own_lane", 50, "stop");
+    const obj = game.get(id)!;
+    const y = game.sToScreenY(obj.s);
+    game.startDrag(id, obj.x, y);
+    game.endDrag(id, obj.x + 2, y + 1, true);
     expect(needs).toEqual([]);
-    expect(game.get(id)!.phase.kind).toBe("decided");
-    expect(kind(game, id)).toBe("stop");
+    expect(obj.phase.kind).toBe("decided");
   });
 
   it("reacts too late when the car reaches a moved object before Jev answers again", () => {
@@ -368,9 +381,10 @@ describe("Game", () => {
     while (game.get(id)!.phase.kind !== "passed") game.update(1 / 120);
     expect(game.get(id)!.decision!.released).toBe(true);
     move(game, id, "sidewalk", 40);
-    const obj = game.get(id)!;
-    expect(obj.phase.kind).toBe("decided");
-    expect(obj.decision).toMatchObject({ resolved: { behavior: { kind: "stop_sign" } }, released: false });
+    expect(game.get(id)!.phase.kind).toBe("deciding");
+    const t = game.beginDecision(id)!;
+    game.applyDecision(id, t.seq, answer("stop_sign"));
+    expect(game.get(id)!.decision).toMatchObject({ resolved: { behavior: { kind: "stop_sign" } }, released: false });
   });
 
   it("stops for an object in its lane the vision model couldn't caption, until it is moved", () => {

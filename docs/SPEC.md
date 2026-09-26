@@ -13,7 +13,7 @@ This is a toy, not a model of real autonomous driving.
 - The user drags an image file (or picks from a tray of sample images) onto a zone. The image appears at that spot, some distance ahead of the car, and scrolls towards it.
 - The drop position decides the location. The vision model only has to say _what_ the thing is; Jev gets the caption and the zone.
 - Captioning starts when a tray image is picked up, so the vision model works while the user picks a spot. Files dragged in from outside the browser can only be read on drop.
-- Moving an object to another zone asks Jev again. What it decided before holds until the new answer arrives.
+- Moving an object asks Jev again, in the same zone too. What it decided before holds until the new answer arrives. A click without a move (under 4 px) doesn't ask.
 - The car has a target speed (default 50 km/h) and accelerates/brakes smoothly towards it.
 
 ### Latency as a mechanic
@@ -36,7 +36,7 @@ Jev decides; the game carries out its `action` (`src/game/behaviors.ts`) and han
 | `go`             | Continue, and release any light the car is waiting at                                                   |
 | `change_speed`   | Set target speed to Jev's `speed_limit` answer when passing it; keep speed if Jev read no number (`none`) |
 
-Only when there is no answer at all (no caption, or the request failed) does the game decide: stop in your lane, slow down in the oncoming lane, continue on the sidewalk. Moving an object whose request failed asks again.
+Only when there is no answer at all (no caption, or the request failed) does the game decide: stop in your lane, slow down in the oncoming lane, continue on the sidewalk. Moving the object asks Jev again.
 
 ## Perception (browser)
 
@@ -209,7 +209,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **Why:** it's a Jev demo first. With the table in code, Jev only named the object and the car's reactions came from our rules; now the decision is Jev's, including the wrong ones. The stage 4 comparison (table 150/150, Jev's action 149/150) still holds; the trade was made knowingly.
 - **No overrides:** the `could_be_person` safety floor and the child threshold are gone, and so are `could_be_person`, `mentions_child` and `light_state` (the red light's colour isn't needed to wait for green). The game only decides when there is no answer (no caption, or the request failed): stop in your lane, slow down in the oncoming lane, continue on the sidewalk.
 - **Actions cover every behavior:** `stop_then_go` (stop sign), `wait_for_green` (red or amber light), `go` (green light, releases waiting lights) and `change_speed` (number from `speed_limit`) are Jev's too, so it can also decide that a sign in the oncoming lane isn't meant for the car.
-- **Moving an object** to another zone asks Jev again; the old decision keeps driving the car until the answer arrives, and reaching the object in your lane first counts as too late. Moving within a zone keeps the decision; moving a failed object retries it.
+- **Moving an object** asks Jev again, within its zone too: it's Jev's call every time, and a move is how to see it decide again. The old decision keeps driving the car until the answer arrives, and reaching the object in your lane first counts as too late. A click under 4 px isn't a move, so it costs no call.
 - **Captioning starts at drag start** for tray images, cached by image URL (a failure is forgotten, so it's retried). Files dragged in from outside the browser can't be read before the drop.
 - **Tuning:** 35 captions × 3 zones, 105 Jev calls per run. First wording 91/102; after naming what blocks the lane in `stop` and what can be driven over in `continue`, 98/102 against a reference of reasonable answers. The four disagreements are left to Jev: empty cardboard boxes in your lane (continue 56, stop 35), a small teddy bear in your lane (continue 45 vs stop 45), an amber light in the oncoming lane (slow down) and on the sidewalk (continue). Signs and lights outside your lane often get `continue`, which is defensible. Jev in the Worker: median 295 ms, p95 385 ms (n=105).
 

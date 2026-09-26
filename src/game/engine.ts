@@ -28,7 +28,7 @@ import type { Decision, FailedStage, GameObject, ObjectSnapshot, Zone } from "./
 
 /** Commands for the pipeline. UI state goes through `ui` instead. */
 export interface GameEvents extends Record<string, unknown> {
-  /** An object needs a new decision: it was moved to another zone, or its request failed and it was moved. */
+  /** An object needs a new decision: it was moved. */
   needsDecision: { id: string };
   /** An object was removed; any pending work for it is stale. */
   removed: { id: string };
@@ -41,6 +41,9 @@ export interface DecisionTicket {
 }
 
 let nextId = 1;
+
+/** A drag shorter than this (CSS px) is a click. */
+const CLICK_SLOP_PX = 4;
 
 /**
  * Game state and simulation. Plain class, no React. The render loop reads
@@ -64,6 +67,8 @@ export class Game {
 
   private addedAt = new Map<string, number>();
   private dragPos = new Map<string, { x: number; y: number }>();
+  /** Where each drag began, to tell a move from a click. */
+  private dragStart = new Map<string, { x: number; y: number }>();
 
   // --- coordinates ---------------------------------------------------------
 
@@ -151,7 +156,7 @@ export class Game {
 
   /**
    * Snapshot the inputs for a decision request: the caption and the zone.
-   * Moving the object to another zone makes the request stale and asks again.
+   * Moving the object makes the request stale and asks again.
    */
   beginDecision(id: string): DecisionTicket | null {
     const obj = this.get(id);
@@ -197,6 +202,7 @@ export class Game {
     obj.requestSeq++;
     this.objects = this.objects.filter((o) => o !== obj);
     this.dragPos.delete(id);
+    this.dragStart.delete(id);
     this.emitObject(obj);
     this.addedAt.delete(id);
     this.events.emit("removed", { id });
@@ -266,6 +272,7 @@ export class Game {
     if (!obj) return;
     obj.dragging = true;
     this.dragPos.set(id, { x, y });
+    this.dragStart.set(id, { x, y });
   }
 
   dragTo(id: string, x: number, y: number): void {
@@ -275,7 +282,9 @@ export class Game {
   /** Finish a drag. Dropping outside the canvas removes the object. */
   endDrag(id: string, x: number, y: number, insideCanvas: boolean): void {
     const obj = this.get(id);
+    const start = this.dragStart.get(id);
     this.dragPos.delete(id);
+    this.dragStart.delete(id);
     if (!obj) return;
     obj.dragging = false;
     if (!insideCanvas) {
@@ -283,18 +292,12 @@ export class Game {
       return;
     }
     const pos = this.clampDrop(x, y);
-    const newZone = this.zoneAt(pos.x);
     const { phase } = obj;
     obj.x = pos.x;
     obj.s = pos.s;
-    // Within a zone an active decision still holds, unless its request
-    // failed. A passed or too-late object is back ahead of the car (drops are
-    // clamped ahead), so it starts over.
-    const outcome = obj.decision?.outcome;
-    const failedRequest = outcome?.kind === "failed" && outcome.stage === "decision";
-    const zoneChanged = newZone !== obj.zone;
-    if (!zoneChanged && !failedRequest && phase.kind !== "passed" && phase.kind !== "too_late") return;
-    obj.zone = newZone;
+    // A click isn't a move: nothing to ask again.
+    if (start && Math.hypot(x - start.x, y - start.y) < CLICK_SLOP_PX) return;
+    obj.zone = this.zoneAt(pos.x);
 
     if (obj.caption === undefined) {
       // No caption, so nothing to ask Jev: still perceiving, or it failed.
@@ -305,21 +308,13 @@ export class Game {
         obj.phase = { kind: "perceiving" };
         this.emitObject(obj);
       }
-    } else if (zoneChanged || failedRequest) {
-      // Jev decides for the new place (moving a failed object also retries
-      // it). What it decided before holds until the answer arrives.
+    } else {
+      // Every move is Jev's to decide again, in any zone. A pending request
+      // is stale; what it decided before holds until the answer arrives.
       obj.requestSeq++;
       obj.phase = { kind: "deciding" };
       this.emitObject(obj);
       this.events.emit("needsDecision", { id });
-    } else if (obj.decision) {
-      // Same zone, same answer: it applies again from the start.
-      obj.phase = { kind: "decided" };
-      this.setDecision(obj, obj.decision);
-    } else {
-      // Jev's answer is still on its way; it applies here.
-      obj.phase = { kind: "deciding" };
-      this.emitObject(obj);
     }
     if (phase.kind === "too_late") this.emitTooLate();
   }
