@@ -21,18 +21,16 @@ import {
   STOP_SIGN_WAIT_S,
 } from "./constants";
 import { Emitter } from "./emitter";
+import { createUiStore, upsertCard } from "./uiStore";
 import { distanceBand, kmhToMs, maxSpeedToStopWithin, msToKmh } from "./physics";
 import type { Decision, FailedStage, GameObject, ObjectSnapshot } from "./types";
 
+/** Commands for the pipeline. UI state goes through `ui` instead. */
 export interface GameEvents extends Record<string, unknown> {
-  /** An object was added or its status changed. Upsert by id. */
-  object: ObjectSnapshot;
   /** An object needs a (new) decision, e.g. after being moved to another zone. */
   needsDecision: { id: string };
-  /** The car reached an object too late. `null` when cleared. */
-  tooLate: { id: string; reason: string } | null;
-  /** Base target speed changed (speed limit sign or user). */
-  targetSpeed: number;
+  /** An object was removed; any pending work for it is stale. */
+  removed: { id: string };
 }
 
 export interface DecisionTicket {
@@ -47,10 +45,12 @@ let nextId = 1;
 
 /**
  * Game state and simulation. Plain class, no React. The render loop reads
- * from it every frame; React only hears about status changes via `events`.
+ * from it every frame; React reads the `ui` store, which changes only on
+ * events (new object, decision, speed limit), never per frame.
  */
 export class Game {
   readonly events = new Emitter<GameEvents>();
+  readonly ui = createUiStore({ cards: [], targetKmh: DEFAULT_TARGET_KMH, tooLate: null });
 
   carS = 0; // position of the car's front bumper, metres
   speedMs = kmhToMs(DEFAULT_TARGET_KMH);
@@ -204,6 +204,7 @@ export class Game {
     this.dragPos.delete(id);
     this.emitObject(obj);
     this.addedAt.delete(id);
+    this.events.emit("removed", { id });
     if (wasTooLate) this.emitTooLate();
   }
 
@@ -229,7 +230,7 @@ export class Game {
     const clamped = Math.min(MAX_TARGET_KMH, Math.max(MIN_TARGET_KMH, Math.round(kmh)));
     if (clamped === this.baseTargetKmh) return;
     this.baseTargetKmh = clamped;
-    this.events.emit("targetSpeed", clamped);
+    this.ui.setState({ targetKmh: clamped }, false, "targetSpeed");
   }
 
   // --- dragging objects on the canvas -------------------------------------
@@ -439,14 +440,13 @@ export class Game {
   }
 
   private emitTooLate(): void {
-    for (const o of this.objects) {
-      if (o.phase.kind === "too_late") return this.events.emit("tooLate", { id: o.id, reason: o.phase.reason });
-    }
-    this.events.emit("tooLate", null);
+    const first = this.objects.find((o) => o.phase.kind === "too_late");
+    const tooLate = first?.phase.kind === "too_late" ? { id: first.id, reason: first.phase.reason } : null;
+    this.ui.setState({ tooLate }, false, "tooLate");
   }
 
   private emitObject(obj: GameObject): void {
-    this.events.emit("object", {
+    const snap: ObjectSnapshot = {
       id: obj.id,
       imageUrl: obj.imageUrl,
       zone: obj.zone,
@@ -457,7 +457,8 @@ export class Game {
       // Decisions are mutated in place (released, wait timer); snapshot a copy.
       decision: obj.decision && { ...obj.decision },
       addedAt: this.addedAt.get(obj.id) ?? 0,
-    });
+    };
+    this.ui.setState((s) => ({ cards: upsertCard(s.cards, snap) }), false, `object/${obj.phase.kind}`);
   }
 }
 

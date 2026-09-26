@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type DragEvent, type MouseEvent, type PointerEvent } from "react";
+import { useEffect, useRef, type DragEvent, type MouseEvent, type PointerEvent } from "react";
+import { useStore } from "zustand";
 import { CANVAS_WIDTH } from "../game/constants";
 import type { Game } from "../game/engine";
 import { runLoop } from "../game/loop";
@@ -16,9 +17,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragId = useRef<string | null>(null);
-  const [tooLate, setTooLate] = useState<{ id: string; reason: string } | null>(null);
-
-  useEffect(() => game.events.on("tooLate", setTooLate), [game]);
+  const tooLate = useStore(game.ui, (s) => s.tooLate);
 
   // Size the canvas to its container (height) and device pixel ratio.
   useEffect(() => {

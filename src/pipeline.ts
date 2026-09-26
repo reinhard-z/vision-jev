@@ -15,12 +15,10 @@ export class Pipeline {
   /** Re-decide objects the game flags (e.g. moved to another zone). Returns unsubscribe. */
   attach(): () => void {
     const offNeeds = this.game.events.on("needsDecision", ({ id }) => void this.runDecision(id));
-    const offObject = this.game.events.on("object", ({ id, phase }) => {
-      if (phase.kind === "removed") this.cancel(id);
-    });
+    const offRemoved = this.game.events.on("removed", ({ id }) => this.cancel(id));
     return () => {
       offNeeds();
-      offObject();
+      offRemoved();
       for (const id of [...this.inFlight.keys()]) this.cancel(id);
     };
   }

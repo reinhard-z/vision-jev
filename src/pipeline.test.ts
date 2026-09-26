@@ -35,11 +35,7 @@ describe("Pipeline", () => {
   let game: Game;
   let pipeline: Pipeline;
   let detach: () => void;
-  const objects = () => {
-    const snaps = new Map<string, { phase: string }>();
-    game.events.on("object", (o) => snaps.set(o.id, { phase: o.phase.kind }));
-    return snaps;
-  };
+  const cards = () => game.ui.getState().cards;
 
   beforeEach(() => {
     vi.stubGlobal("Image", FakeImage);
@@ -58,16 +54,14 @@ describe("Pipeline", () => {
   it("captions, decides and applies the decision", async () => {
     vi.mocked(perceive).mockResolvedValue({ caption: "a child", visionMs: 5 });
     vi.mocked(decide).mockResolvedValue({ response: stop, roundTripMs: 7 });
-    const snaps = objects();
     await pipeline.spawn("/samples/child.jpg", roadX, 100);
-    expect([...snaps.values()].at(-1)).toEqual({ phase: "decided" });
+    expect(cards().map((c) => c.phase.kind)).toEqual(["decided"]);
     expect(vi.mocked(decide).mock.calls[0]![0]).toMatchObject({ caption: "a child", zone: "road" });
   });
 
   it("adds nothing for an image that won't load, and doesn't reject", async () => {
-    const snaps = objects();
     await expect(pipeline.spawn("blob:broken", roadX, 100)).resolves.toBeUndefined();
-    expect(snaps.size).toBe(0);
+    expect(cards()).toEqual([]);
     expect(perceive).not.toHaveBeenCalled();
   });
 

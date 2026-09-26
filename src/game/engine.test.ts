@@ -193,13 +193,11 @@ describe("Game", () => {
 
   it("reacts too late when the car reaches an undecided road object", () => {
     const game = new Game();
-    const tooLate: unknown[] = [];
-    game.events.on("tooLate", (e) => tooLate.push(e));
     const id = add(game, "road", 10);
     run(game, 2);
     expect(game.get(id)!.phase.kind).toBe("too_late");
     expect(game.speedMs).toBe(0);
-    expect(tooLate).toHaveLength(1);
+    expect(game.ui.getState().tooLate).toEqual({ id, reason: "The car reached it before a decision arrived." });
 
     // A late decision is recorded but doesn't clear the state.
     game.setCaption(id, "caption of leaves", 0);
@@ -209,7 +207,7 @@ describe("Game", () => {
     expect(game.get(id)!.decision?.resolved.behavior.kind).toBe("continue");
 
     game.removeObject(id);
-    expect(tooLate.at(-1)).toBeNull();
+    expect(game.ui.getState().tooLate).toBeNull();
     run(game, 2);
     expect(game.speedMs).toBeGreaterThan(0);
   });
@@ -326,11 +324,27 @@ describe("Game", () => {
 
   it("keeps a removed card in place and forgets the object", () => {
     const game = new Game();
-    const snaps: { phase: string; addedAt: number }[] = [];
-    game.events.on("object", (o) => snaps.push({ phase: o.phase.kind, addedAt: o.addedAt }));
-    const id = add(game, "road", 40);
-    game.removeObject(id);
-    expect(snaps.at(-1)).toEqual({ phase: "removed", addedAt: snaps[0]!.addedAt });
-    expect(game.get(id)).toBeUndefined();
+    const first = add(game, "road", 40);
+    add(game, "road", 50);
+    const before = game.ui.getState().cards.map((c) => c.id);
+    game.removeObject(first);
+    const { cards } = game.ui.getState();
+    expect(cards.map((c) => c.id)).toEqual(before);
+    expect(cards.find((c) => c.id === first)?.phase.kind).toBe("removed");
+    expect(game.get(first)).toBeUndefined();
+  });
+
+  it("publishes UI state only on events, newest card first", () => {
+    const game = new Game();
+    let updates = 0;
+    game.ui.subscribe(() => updates++);
+    const a = add(game, "sidewalk", 60);
+    const b = add(game, "sidewalk", 70);
+    expect(game.ui.getState().cards.map((c) => c.id)).toEqual([b, a]);
+    updates = 0;
+    run(game, 1); // 120 frames, nothing passed or decided
+    expect(updates).toBe(0);
+    game.setBaseTarget(80);
+    expect(game.ui.getState().targetKmh).toBe(80);
   });
 });

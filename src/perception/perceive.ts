@@ -1,3 +1,4 @@
+import { createStore } from "zustand/vanilla";
 import { CAPTION_MAX_LENGTH } from "../../shared/types";
 import type { Backend, FromWorker, ToWorker } from "./protocol";
 
@@ -16,15 +17,15 @@ export type VisionStatus =
 // well under this anyway; it keeps transfers and decoding cheap for big photos.
 const MAX_IMAGE_SIDE = 768;
 
+/** Model loading state for React (`useStore(visionStore)`). */
+export const visionStore = createStore<VisionStatus>()(() => ({ state: "loading", loadedBytes: 0, totalBytes: 0 }));
+
 let worker: Worker | null = null;
-let status: VisionStatus = { state: "loading", loadedBytes: 0, totalBytes: 0 };
-const listeners = new Set<() => void>();
 const pending = new Map<number, { resolve: (p: Perception) => void; reject: (e: Error) => void }>();
 let nextId = 1;
 
 function setStatus(next: VisionStatus): void {
-  status = next;
-  for (const l of listeners) l();
+  visionStore.setState(next, true);
 }
 
 function post(msg: ToWorker, transfer: Transferable[] = []): void {
@@ -74,15 +75,6 @@ export function loadVision(): void {
   if (!worker) post({ type: "load" });
 }
 
-export function getVisionStatus(): VisionStatus {
-  return status;
-}
-
-export function subscribeVision(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
 /**
  * Caption an image in the vision worker. Requests queue up in the worker and
  * run one at a time; ones sent before the model is ready wait for it.
@@ -94,6 +86,7 @@ export async function perceive(imageUrl: string): Promise<Perception> {
   const image = await downscaledBitmap(blob);
   const id = nextId++;
   return new Promise((resolve, reject) => {
+    const status = visionStore.getState();
     if (status.state === "error") {
       image.close();
       return reject(new Error(status.message));

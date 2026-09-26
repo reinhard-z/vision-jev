@@ -196,6 +196,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **`confidence` and `probabilities` are always present** in every choice answer (every label, 0 when Jev gave none).
 - **Object lifecycle is one `phase`** (perceiving → deciding → decided → passed, plus too_late and removed) instead of separate flags; stop-sign/red-light progress lives in a `Decision` that is replaced whole on re-decide. Fixes a passed object dragged back ahead of the car being ignored (it's now re-decided, even within the same zone).
 - **Vision failures stop the car on the road** like decision failures ("Couldn't see what it is, stop until cleared"; continue on the sidewalk). Before, the object stayed "perceiving…" and the car reported "too late".
+- **UI state in Zustand.** `Game` owns a vanilla store (`game.ui`: thought cards, target speed, too-late banner) and `perceive.ts` exports `visionStore`; components read them with `useStore`. The stores change only on events, never per frame. The emitter remains for pipeline commands (`needsDecision`, `removed`). Redux DevTools shows the game store in dev builds.
 
 ## Edge cases to try
 

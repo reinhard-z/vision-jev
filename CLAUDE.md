@@ -31,7 +31,7 @@ A browser demo: a car drives along a top-down scrolling road. The user drags ima
 - `/api/decide` accepts only the fields defined in the spec, validates them, and rejects anything else. The Jev questions and policy live on the server, never in the request.
 - Do arithmetic in code, not in Jev: distances, stopping, speeds, timers. Jev gets pre-computed descriptions like "far ahead".
 - Keep the vision model off the main thread so the game loop never freezes.
-- The game loop runs in `requestAnimationFrame` with its state in a ref or a plain module, not in React state. React re-renders only for UI changes (new decisions, loading progress), never once per frame.
+- The game loop runs in `requestAnimationFrame` with its state in a plain class (`Game`), not in React state. React reads Zustand vanilla stores (`game.ui`, `visionStore`) that change only on events (new decisions, loading progress), never once per frame. Don't put per-frame values (position, speed) in a store.
 - Share request/response types between frontend and Worker from one file (e.g. `shared/types.ts`) so the API contract can't drift.
 - Model weights load from Hugging Face with a pinned revision. Never commit weights to this repo or serve them from the Worker.
 - Work stage by stage as defined in `docs/SPEC.md`: plan first, then implement, then run it and verify. When a stage works, tick it off in the spec and note any decisions that changed.

@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
+import { useStore } from "zustand";
 import { MAX_TARGET_KMH, MIN_TARGET_KMH } from "../game/constants";
 import type { Game } from "../game/engine";
 
 /** Target speed slider. Speed limit signs move it too. */
 export function SpeedControl({ game }: { game: Game }) {
-  const [target, setTarget] = useState(game.baseTargetKmh);
-
-  useEffect(() => game.events.on("targetSpeed", setTarget), [game]);
+  const target = useStore(game.ui, (s) => s.targetKmh);
 
   return (
     <label className="speed">

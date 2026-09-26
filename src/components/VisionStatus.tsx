@@ -1,11 +1,11 @@
-import { useSyncExternalStore } from "react";
-import { getVisionStatus, subscribeVision } from "../perception/perceive";
+import { useStore } from "zustand";
+import { visionStore } from "../perception/perceive";
 
 const mb = (bytes: number) => (bytes / 1e6).toFixed(0);
 
 /** First-load progress for the vision model, then which backend it runs on. */
 export function VisionStatus() {
-  const status = useSyncExternalStore(subscribeVision, getVisionStatus);
+  const status = useStore(visionStore);
 
   if (status.state === "error") {
     return (

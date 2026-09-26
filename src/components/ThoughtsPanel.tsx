@@ -1,27 +1,14 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useStore } from "zustand";
 import { ACTIONS } from "../../shared/types";
 import { DEBUG } from "../debug";
 import { SAFETY_PERSON_THRESHOLD } from "../game/behaviors";
 import type { Game } from "../game/engine";
 import { STOP_SIGN_WAIT_S } from "../game/constants";
 import type { Decision, ObjectSnapshot } from "../game/types";
-import { getVisionStatus, subscribeVision } from "../perception/perceive";
-
-const MAX_CARDS = 30;
+import { visionStore } from "../perception/perceive";
 
 export function ThoughtsPanel({ game }: { game: Game }) {
-  const [objects, setObjects] = useState<ObjectSnapshot[]>([]);
-
-  useEffect(
-    () =>
-      game.events.on("object", (snap) =>
-        setObjects((prev) => {
-          const rest = prev.filter((o) => o.id !== snap.id);
-          return [snap, ...rest].sort((a, b) => b.addedAt - a.addedAt).slice(0, MAX_CARDS);
-        }),
-      ),
-    [game],
-  );
+  const objects = useStore(game.ui, (s) => s.cards);
 
   return (
     <section className="thoughts">
@@ -139,7 +126,7 @@ function ThoughtCard({ obj: o }: { obj: ObjectSnapshot }) {
 
 /** Debug only: info icon whose tooltip shows what the vision model saw, and which model it was. */
 function VisionInfo({ caption }: { caption: string }) {
-  const vision = useSyncExternalStore(subscribeVision, getVisionStatus);
+  const vision = useStore(visionStore);
   const model =
     vision.state === "ready" ? `${vision.model} · ${vision.backend === "webgpu" ? "WebGPU" : "Wasm"}` : "vision model";
   return (

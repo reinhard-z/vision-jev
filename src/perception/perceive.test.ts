@@ -33,12 +33,12 @@ describe("perceive", () => {
   });
 
   it("rejects waiting captions when the worker crashes, and later ones right away", async () => {
-    const { perceive, getVisionStatus } = await import("./perceive");
+    const { perceive, visionStore } = await import("./perceive");
     const pending = perceive("/samples/dog.jpg");
     await vi.waitFor(() => expect(FakeWorker.last?.posted).toHaveLength(2));
     FakeWorker.last!.onerror!({ message: "" } as ErrorEvent);
     await expect(pending).rejects.toThrow("vision worker crashed");
-    expect(getVisionStatus()).toEqual({ state: "error", message: "vision worker crashed" });
+    expect(visionStore.getState()).toEqual({ state: "error", message: "vision worker crashed" });
     await expect(perceive("/samples/cat.jpg")).rejects.toThrow("vision worker crashed");
   });
 });
