@@ -186,6 +186,16 @@ h2 {
   border-color: var(--accent);
 }
 
+.tray-grid-loading .sample {
+  opacity: 0.4;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.tray-grid-loading .sample:hover {
+  border-color: var(--border);
+}
+
 .sample-remove {
   position: absolute;
   top: 2px;

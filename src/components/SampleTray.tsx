@@ -1,4 +1,6 @@
 import { useRef, useState, type DragEvent } from "react";
+import { useStore } from "zustand";
+import { visionStore } from "../perception/perceive";
 import type { Pipeline } from "../pipeline";
 import { SAMPLES, samplesFromFiles, setSampleDragData, type Sample } from "../samples";
 import { CreditsDialog } from "./CreditsDialog";
@@ -13,6 +15,8 @@ export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
   const [own, setOwn] = useState<Sample[]>([]);
   const [fileOver, setFileOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  // Nothing can be captioned until the model is loaded, so the tiles can't be dragged yet.
+  const loading = useStore(visionStore, (s) => s.state === "loading");
 
   const addFiles = (files: Iterable<File>) => {
     const added = samplesFromFiles(files);
@@ -60,13 +64,13 @@ export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
       />
       <p className="hint">Or drop image files here.</p>
       <p className="hint">Drag into a lane or onto the sidewalk.</p>
-      <div className="tray-grid">
+      <div className={`tray-grid ${loading ? "tray-grid-loading" : ""}`} aria-disabled={loading}>
         {[...own, ...SAMPLES].map((s) => (
           <div
             key={s.id}
             className="sample"
-            draggable
-            title={s.label}
+            draggable={!loading}
+            title={loading ? `${s.label} (waiting for the vision model)` : s.label}
             onDragStart={(e) => {
               setSampleDragData(e.dataTransfer, s);
               pipeline.prefetch(s.url);
