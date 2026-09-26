@@ -8,9 +8,7 @@
 
 A vision model running in the browser describes each image. Jev receives the caption and the object's location through Cloudflare Workers AI, and its chosen action drives the car. The Thoughts panel shows the action probabilities and resulting behavior, including the wrong decisions.
 
-![Jev Driver demo showing images placed along the road and Jev's action probabilities in the Thoughts panel](docs/assets/jev-driver-demo.gif)
-
-This is a demo of a "System One" split, not a model of real autonomous driving.
+https://github.com/user-attachments/assets/635437a8-d4f1-4d02-883b-53b56ef28bb2
 
 ## Try it
 
