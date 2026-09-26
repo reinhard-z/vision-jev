@@ -6,6 +6,7 @@ export type ToWorker = { type: "load" } | { type: "caption"; id: number; image: 
 
 export type FromWorker =
   | { type: "progress"; loadedBytes: number; totalBytes: number }
+  | { type: "warming" }
   | { type: "ready"; backend: Backend; loadMs: number; model: string }
   | { type: "loadError"; message: string }
   | { type: "caption"; id: number; text: string; ms: number }

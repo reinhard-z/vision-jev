@@ -15,8 +15,8 @@ export function SampleTray({ pipeline }: { pipeline: Pipeline }) {
   const [own, setOwn] = useState<Sample[]>([]);
   const [fileOver, setFileOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  // Nothing can be captioned until the model is loaded, so the tiles can't be dragged yet.
-  const loading = useStore(visionStore, (s) => s.state === "loading");
+  // Keep dragging disabled until loading and the first inference have finished.
+  const loading = useStore(visionStore, (s) => s.state === "loading" || s.state === "warming");
 
   const addFiles = (files: Iterable<File>) => {
     const added = samplesFromFiles(files);

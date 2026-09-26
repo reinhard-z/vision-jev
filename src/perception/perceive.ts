@@ -10,6 +10,7 @@ export interface Perception {
 /** Model loading state, for the progress bar. */
 export type VisionStatus =
   | { state: "loading"; loadedBytes: number; totalBytes: number }
+  | { state: "warming" }
   | { state: "ready"; backend: Backend; loadMs: number; model: string }
   | { state: "error"; message: string };
 
@@ -40,6 +41,9 @@ function getWorker(): Worker {
     switch (msg.type) {
       case "progress":
         setStatus({ state: "loading", loadedBytes: msg.loadedBytes, totalBytes: msg.totalBytes });
+        break;
+      case "warming":
+        setStatus({ state: "warming" });
         break;
       case "ready":
         setStatus({ state: "ready", backend: msg.backend, loadMs: msg.loadMs, model: msg.model });

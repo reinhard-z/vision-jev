@@ -22,6 +22,7 @@ async function pickBackend(): Promise<Backend> {
   return "wasm";
 }
 
+/** Load and exercise the caption pipeline before accepting the first user image. */
 async function load(): Promise<Captioner> {
   const t0 = performance.now();
   const files = new Map<string, { loaded: number; total: number }>();
@@ -48,6 +49,10 @@ async function load(): Promise<Captioner> {
     files.clear();
     c = await loadCaptioner(backend, onProgress);
   }
+  send({ type: "warming" });
+  // The processor resizes this neutral RGB pixel to the normal model input size.
+  // Run a full caption so both the image encoder and text decoder are exercised.
+  await c(new RawImage(new Uint8ClampedArray([127, 127, 127]), 1, 1, 3));
   send({ type: "ready", backend, loadMs: Math.round(performance.now() - t0), model: MODEL_LABEL });
   return c;
 }

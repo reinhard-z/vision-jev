@@ -21,8 +21,17 @@ export function VisionStatus() {
         Vision model ready · {status.backend === "webgpu" ? "WebGPU" : "Wasm (CPU, slower)"}
         <span className="tooltip" role="tooltip">
           <span>{status.model}</span>
-          <span className="tooltip-model">Loaded in {(status.loadMs / 1000).toFixed(1)} s</span>
+          <span className="tooltip-model">Loaded and warmed up in {(status.loadMs / 1000).toFixed(1)} s</span>
         </span>
+      </div>
+    );
+  }
+
+  if (status.state === "warming") {
+    return (
+      <div className="vision-status" role="status">
+        <div>Warming up vision model…</div>
+        <div className="vision-note">Preparing the first caption.</div>
       </div>
     );
   }
