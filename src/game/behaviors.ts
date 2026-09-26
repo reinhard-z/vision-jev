@@ -49,7 +49,14 @@ function resolveFromAnswers(res: DecideResponse): ResolvedBehavior {
       return { behavior: { kind: "slow_down" }, safetyOverride: false, label: "Light colour unknown, slow down" };
     }
   }
-  if (category === "speed_limit_sign" && res.speedLimit.choice !== "none") {
+  if (category === "speed_limit_sign") {
+    if (res.speedLimit.choice === "none") {
+      return {
+        behavior: { kind: "continue" },
+        safetyOverride: false,
+        label: "Speed limit sign, number not readable: keep speed",
+      };
+    }
     const kmh = Number(res.speedLimit.choice);
     return {
       behavior: { kind: "speed_limit", kmh },

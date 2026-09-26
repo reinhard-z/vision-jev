@@ -110,6 +110,11 @@ describe("resolveBehavior", () => {
     expect(resolveBehavior(req("child", "sidewalk"), "sidewalk").behavior.kind).toBe("continue");
   });
 
+  it("keeps speed for a speed limit sign without a readable number", () => {
+    const res = { ...req("limit30", "road"), speedLimit: { choice: "none" as const, probabilities: {} } };
+    expect(resolveBehavior(res, "road").behavior.kind).toBe("continue");
+  });
+
   it("slows down for a traffic light whose colour is unknown", () => {
     expect(resolveBehavior(req("unlit", "road"), "road").behavior.kind).toBe("slow_down");
   });
