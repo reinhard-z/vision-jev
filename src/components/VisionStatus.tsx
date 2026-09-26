@@ -17,8 +17,12 @@ export function VisionStatus() {
 
   if (status.state === "ready") {
     return (
-      <div className="vision-status" title={`${status.model} · loaded in ${(status.loadMs / 1000).toFixed(1)} s`}>
+      <div className="vision-status vision-ready" tabIndex={0}>
         Vision model ready · {status.backend === "webgpu" ? "WebGPU" : "Wasm (CPU, slower)"}
+        <span className="tooltip" role="tooltip">
+          <span>{status.model}</span>
+          <span className="tooltip-model">Loaded in {(status.loadMs / 1000).toFixed(1)} s</span>
+        </span>
       </div>
     );
   }

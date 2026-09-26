@@ -101,6 +101,32 @@ h2 {
   margin: 6px 0 10px;
 }
 
+/* Hover shows the full model. The tray scrolls and would clip a tooltip
+   above or beside it, so this one opens below and keeps the status width. */
+.vision-ready {
+  position: relative;
+  cursor: help;
+}
+
+.vision-ready:focus-visible {
+  outline: 1px solid var(--muted);
+}
+
+.vision-ready .tooltip {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  width: auto;
+  right: 0;
+}
+
+.vision-ready:hover .tooltip,
+.vision-ready:focus-visible .tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .vision-error {
   color: #ffb4b4;
 }
