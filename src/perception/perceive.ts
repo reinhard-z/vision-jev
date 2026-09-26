@@ -44,9 +44,7 @@ function getWorker(): Worker {
         setStatus({ state: "ready", backend: msg.backend, loadMs: msg.loadMs, model: msg.model });
         break;
       case "loadError":
-        setStatus({ state: "error", message: msg.message });
-        for (const p of pending.values()) p.reject(new Error(msg.message));
-        pending.clear();
+        fail(msg.message);
         break;
       case "caption": {
         const caption = msg.text.trim().slice(0, CAPTION_MAX_LENGTH) || "nothing recognisable";
@@ -60,8 +58,15 @@ function getWorker(): Worker {
         break;
     }
   };
-  worker.onerror = (e) => setStatus({ state: "error", message: e.message || "vision worker crashed" });
+  worker.onerror = (e) => fail(e.message || "vision worker crashed");
   return worker;
+}
+
+/** The model can't caption anything any more: say so and settle every waiting request. */
+function fail(message: string): void {
+  setStatus({ state: "error", message });
+  for (const p of pending.values()) p.reject(new Error(message));
+  pending.clear();
 }
 
 /** Start downloading the model. Safe to call more than once. */
@@ -89,7 +94,10 @@ export async function perceive(imageUrl: string): Promise<Perception> {
   const image = await downscaledBitmap(blob);
   const id = nextId++;
   return new Promise((resolve, reject) => {
-    if (status.state === "error") return reject(new Error(status.message));
+    if (status.state === "error") {
+      image.close();
+      return reject(new Error(status.message));
+    }
     pending.set(id, { resolve, reject });
     post({ type: "caption", id, image }, [image]);
   });
