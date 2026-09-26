@@ -23,7 +23,7 @@ export class Pipeline {
     const id = this.game.addObject(image, imageUrl, x, y);
     if (sampleId !== undefined) this.sampleIds.set(id, sampleId);
     try {
-      const { caption, visionMs } = await perceive();
+      const { caption, visionMs } = await perceive(imageUrl);
       this.game.setCaption(id, caption, visionMs);
       await this.runDecision(id);
     } catch (err) {

@@ -4,11 +4,15 @@ import { SampleTray } from "./components/SampleTray";
 import { SpeedControl } from "./components/SpeedControl";
 import { ThoughtsPanel } from "./components/ThoughtsPanel";
 import { Game } from "./game/engine";
+import { loadVision } from "./perception/perceive";
 import { Pipeline } from "./pipeline";
 
 export function App() {
   const [game] = useState(() => new Game());
   const [pipeline] = useState(() => new Pipeline(game));
+
+  // Start downloading the vision model right away, not on the first drop.
+  useEffect(loadVision, []);
 
   useEffect(() => {
     // Dev-only handle for poking at the game from the console.

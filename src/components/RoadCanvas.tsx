@@ -31,7 +31,7 @@ export function RoadCanvas({ game, pipeline }: Props) {
       canvas.height = Math.round(h * dpr);
       canvas.style.width = `${CANVAS_WIDTH}px`;
       canvas.style.height = `${h}px`;
-      canvas.getContext("2d")!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      canvas.getContext("2d", { willReadFrequently: true })!.setTransform(dpr, 0, 0, dpr, 0, 0);
       game.setViewHeight(h);
     };
     resize();
@@ -41,7 +41,10 @@ export function RoadCanvas({ game, pipeline }: Props) {
   }, [game]);
 
   useEffect(() => {
-    const ctx = canvasRef.current!.getContext("2d")!;
+    // willReadFrequently keeps the canvas on the CPU. A GPU canvas queues
+    // behind the vision model's WebGPU work and drops frames (100-400 ms
+    // hitches per caption); on the CPU it stays smooth. See docs/vision-models.md.
+    const ctx = canvasRef.current!.getContext("2d", { willReadFrequently: true })!;
     return runLoop(
       (dt) => game.update(dt),
       () => render(ctx, game),

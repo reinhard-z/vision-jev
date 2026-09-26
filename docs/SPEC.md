@@ -132,7 +132,7 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 ## Stages
 
 - [x] **1. Game with stub.** Road, car, zones, drag-and-drop, scrolling objects, behaviors, thoughts panel. `decide()` on the client returns a fixed fake answer after a fake delay.
-- [ ] **2. Vision.** Transformers.js in a Web Worker, captions shown in the thoughts panel. Build `public/samples/` with test images: child, doll, dog, cat, adult, bicycle, car, stop sign, red/amber/green light, speed limit signs, plastic bag, leaves, cardboard box.
+- [x] **2. Vision.** Transformers.js in a Web Worker, captions shown in the thoughts panel. Build `public/samples/` with test images: child, doll, dog, cat, adult, bicycle, car, stop sign, red/amber/green light, speed limit signs, plastic bag, leaves, cardboard box.
 - [ ] **3. Jev.** Worker endpoint, `worker/src/jev.ts`, replace the stub. Tune policy wording against the samples.
 - [ ] **4. Harden and deploy.** Validation, rate limiting, Turnstile, pinned model revision, deploy.
 
@@ -152,6 +152,18 @@ Built with React + TypeScript. The road is a single `<canvas>` component that ow
 - **Toy scale**: 8 px/m, car drawn 9 m long, objects 6.5 m; "reached" means touching the drawn tile.
 - TypeScript pinned to 6.0.x (typescript-eslint doesn't support 7 yet). pnpm 11.
 
+### Stage 2
+
+- **Model: Florence-2-base-ft, `<CAPTION>` task**, revision `e88a44ea`, via Transformers.js 4.3.0 (pinned exactly). Chosen over SmolVLM-256M/500M and Moondream2 after captioning every sample on WebGPU and Wasm; the full comparison is in `docs/vision-models.md`. It was the only small model that described both the child and the adult, and named the lit lamp on 4 of 5 lights. ~1.1 s per caption on WebGPU, ~15 s on Wasm. Download ~357 MB on WebGPU (fp16 vision), ~228 MB on Wasm (q8).
+- **Lamp state is borderline.** Florence-2 sometimes says only "a traffic light", and which light it misses depends on the backend's precision. Stage 3 must handle a traffic light caption with no lamp colour (the current behavior table has no row for that).
+- **No prompt hint about traffic lights.** Asking the chat models "which lamp is lit" made them call dogs and cats traffic lights; Florence-2 takes fixed task tokens anyway.
+- **Worker design:** one module worker (`src/perception/vision.worker.ts`) loads the model on app start and captions one image at a time in arrival order. Images are decoded and downscaled to ≤768 px on the main thread via `createImageBitmap` and transferred. Backend: WebGPU if `requestAdapter()` succeeds, else Wasm; a failed WebGPU load also falls back to Wasm. All model-specific code is in `src/perception/model.ts`.
+- **`visionMs` is model time only**, not time spent queued behind other captions. When many images are dropped at once, an object can be "too late" although its vision and Jev times look short.
+- **Road canvas runs on the CPU** (`willReadFrequently: true`). The GPU-accelerated canvas queued behind WebGPU inference and dropped frames for 100–400 ms per caption, although the main thread was idle. With the CPU canvas: no frame over 50 ms on WebGPU or Wasm.
+- **Sample photos** are from Wikimedia Commons, ≤512 px, with sources and licenses in `public/samples/CREDITS.md`. Samples carry no captions any more; every image goes through the vision model.
+- **Stub keyed by sample id.** The tray drag payload carries the sample id, the pipeline remembers it per object, and `decide(req, { sampleId })` looks up the canned answer by it. The id never goes into `DecideRequest`. Own images get the `unclear` fallback. Deleted with the stub in stage 3.
+- `onnxruntime-node` and `protobufjs` build scripts are declined in `pnpm-workspace.yaml`; the app only uses onnxruntime-web in the browser. At runtime the onnxruntime-web binaries load from jsDelivr (Transformers.js's default, pinned to the version it bundles, `1.31.0-dev.20260914`). **Stage 4:** the Vite build also emits an unused copy, `ort-wasm-simd-threaded.asyncify-*.wasm` (26.9 MB). That's probably over the Workers static-asset per-file limit (25 MiB; check current docs), so exclude it from the assets or self-host it deliberately before deploying.
+
 ## Edge cases to try
 
 A doll or toy in the road, a stop sign printed on a T-shirt, a photo of a red light for another direction, a dark or blurry photo, a dog vs. a stuffed dog, an image containing text that tries to instruct the car (Jev is not hardened against adversarial input, so this is worth seeing).
@@ -159,5 +171,5 @@ A doll or toy in the road, a stop sign printed on a T-shirt, a photo of a red li
 ## Open questions
 
 - Should a person on the sidewalk make the car slow down slightly rather than continue? (Currently: continue.)
-- Which vision model gives the best caption quality per megabyte?
+- ~~Which vision model gives the best caption quality per megabyte?~~ Florence-2 base; see `docs/vision-models.md`.
 - Jev pricing on Workers AI.

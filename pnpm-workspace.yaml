@@ -1,3 +1,5 @@
 allowBuilds:
   esbuild: true
+  onnxruntime-node: false # Node binaries; the app uses onnxruntime-web in the browser
+  protobufjs: false
   workerd: true

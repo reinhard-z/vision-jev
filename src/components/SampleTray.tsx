@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from "react";
 import { SAMPLES, samplesFromFiles, setSampleDragData, type Sample } from "../samples";
+import { VisionStatus } from "./VisionStatus";
 
 /**
  * Sample images plus the user's own. Placing is drag-only: where you drop
@@ -39,6 +40,7 @@ export function SampleTray() {
       }}
     >
       <h2>Samples</h2>
+      <VisionStatus />
       <p className="hint">Drag onto the road or the sidewalk.</p>
       <div className="tray-grid">
         {[...SAMPLES, ...own].map((s) => (

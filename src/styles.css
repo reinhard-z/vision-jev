@@ -89,6 +89,44 @@ h2 {
   color: #b6c4dc;
 }
 
+/* Vision model status */
+
+.vision-status {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--panel-2);
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0 10px;
+}
+
+.vision-error {
+  color: #ffb4b4;
+}
+
+.vision-bytes {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.vision-bar {
+  height: 6px;
+  margin: 6px 0 4px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vision-bar > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s;
+}
+
+.vision-note {
+  font-size: 11px;
+}
+
 /* Sample tray */
 
 .tray {
