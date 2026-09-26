@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+      runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+    ignore:
+      # Pinned on purpose: see CLAUDE.md (typescript-eslint support) and
+      # src/perception/model.ts (model revision is tested against this version).
+      - dependency-name: typescript
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: "@huggingface/transformers"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
