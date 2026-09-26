@@ -11,7 +11,10 @@ import {
 /** Captions are untrusted: one line, no control characters. */
 export function cleanCaption(caption: string): string {
   // eslint-disable-next-line no-control-regex
-  return caption.replace(/[\u0000-\u001f\u007f-\u009f]+/g, " ").replace(/\s+/g, " ").trim();
+  return caption
+    .replace(/[\u0000-\u001f\u007f-\u009f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** A /api/decide body. Unknown fields are rejected, not stripped. */

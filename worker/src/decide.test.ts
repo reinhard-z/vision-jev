@@ -6,7 +6,12 @@ import { evaluate, JevError } from "./jev";
 import { buildState, QUESTIONS, toDecideResponse } from "./policy";
 import { DecideRequestSchema, parseDecideRequest } from "./validate";
 
-const valid: DecideRequest = { caption: "A red stop sign against a blue sky", zone: "road", distance: "far", speedKmh: 50 };
+const valid: DecideRequest = {
+  caption: "A red stop sign against a blue sky",
+  zone: "road",
+  distance: "far",
+  speedKmh: 50,
+};
 
 describe("parseDecideRequest", () => {
   it("produces exactly the shared DecideRequest type", () => {

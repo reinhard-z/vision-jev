@@ -33,7 +33,12 @@ app.post(
       const result = await evaluate(c.env.AI, buildState(parsed.value), QUESTIONS);
       const response = toDecideResponse(result);
       console.log(
-        JSON.stringify({ event: "decide", model: result.model, jevMs: result.latencyMs, inputTokens: result.inputTokens }),
+        JSON.stringify({
+          event: "decide",
+          model: result.model,
+          jevMs: result.latencyMs,
+          inputTokens: result.inputTokens,
+        }),
       );
       c.header("Server-Timing", `jev;dur=${result.latencyMs}, total;dur=${Date.now() - started}`);
       return c.json(response);

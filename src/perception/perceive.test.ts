@@ -20,8 +20,14 @@ describe("perceive", () => {
   beforeEach(() => {
     vi.resetModules(); // perceive.ts keeps the worker in module state
     vi.stubGlobal("Worker", FakeWorker);
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve({ blob: () => Promise.resolve(new Blob()) })));
-    vi.stubGlobal("createImageBitmap", vi.fn(() => Promise.resolve(bitmap())));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve({ blob: () => Promise.resolve(new Blob()) })),
+    );
+    vi.stubGlobal(
+      "createImageBitmap",
+      vi.fn(() => Promise.resolve(bitmap())),
+    );
   });
 
   it("resolves with the worker's caption", async () => {

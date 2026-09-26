@@ -47,7 +47,8 @@ export const QUESTIONS = {
       speed_limit_sign: "A speed limit sign",
       other_sign: "Any other sign",
       obstacle: "A solid object that could damage the car or block the road, such as a box, rock, toy or furniture",
-      harmless_debris: "Something light the car can safely drive over, such as a plastic or paper bag, leaves or litter",
+      harmless_debris:
+        "Something light the car can safely drive over, such as a plastic or paper bag, leaves or litter",
       unclear: "`object_seen` is too vague to tell what it is",
     } satisfies Record<Category, string>,
   },

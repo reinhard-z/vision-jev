@@ -1,0 +1,4 @@
+pnpm-lock.yaml
+worker-configuration.d.ts
+docs/jev-tuning/results.json
+*.md

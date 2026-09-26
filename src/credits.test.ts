@@ -26,7 +26,9 @@ describe("parseCredits", () => {
 
   it("keeps parentheses inside URLs", () => {
     const child = credits.find((c) => c.file === "child.jpg")!;
-    expect(child.source).toMatchObject({ url: "https://commons.wikimedia.org/wiki/File:Boy_and_Ball_(8257295231).jpg" });
+    expect(child.source).toMatchObject({
+      url: "https://commons.wikimedia.org/wiki/File:Boy_and_Ball_(8257295231).jpg",
+    });
   });
 
   it("keeps plain-text cells as text", () => {

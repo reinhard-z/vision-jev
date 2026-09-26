@@ -2,9 +2,7 @@
 
 export type Backend = "webgpu" | "wasm";
 
-export type ToWorker =
-  | { type: "load" }
-  | { type: "caption"; id: number; image: ImageBitmap };
+export type ToWorker = { type: "load" } | { type: "caption"; id: number; image: ImageBitmap };
 
 export type FromWorker =
   | { type: "progress"; loadedBytes: number; totalBytes: number }

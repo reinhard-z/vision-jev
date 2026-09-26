@@ -36,7 +36,11 @@ export function failedBehavior(zone: Zone, stage: FailedStage): ResolvedBehavior
 function resolveFromAnswers(res: DecideResponse): ResolvedBehavior {
   const category = res.category.choice;
   if (category === "stop_sign") {
-    return { behavior: { kind: "stop_sign" }, safetyOverride: false, label: `Stop at sign, wait ${STOP_SIGN_WAIT_S} s` };
+    return {
+      behavior: { kind: "stop_sign" },
+      safetyOverride: false,
+      label: `Stop at sign, wait ${STOP_SIGN_WAIT_S} s`,
+    };
   }
   if (category === "traffic_light") {
     const light = res.lightState.choice;

@@ -18,7 +18,7 @@ A browser demo: a car drives along a top-down scrolling road. The user drags ima
 
 - Dev: `pnpm dev` (Vite + Worker in workerd via `@cloudflare/vite-plugin`)
 - Build: `pnpm build` (type check + Vite build of client and Worker)
-- Check: `pnpm typecheck`, `pnpm lint`, `pnpm test` (Vitest, headless engine tests)
+- Check: `pnpm typecheck`, `pnpm lint`, `pnpm format:check` (Prettier), `pnpm test` (Vitest, headless engine, pipeline and Worker tests)
 - Deploy: `pnpm deploy`
 - Worker types: `pnpm cf-typegen` regenerates `worker-configuration.d.ts`; rerun it after changing `wrangler.jsonc`.
 - Package manager: pnpm. TypeScript is pinned to 6.0.x because typescript-eslint doesn't support 7 yet.

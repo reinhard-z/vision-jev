@@ -9,7 +9,11 @@
   --slow: #e0a019;
   --stop: #d93d3d;
   --accent: #5b8def;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   color: var(--text);
   background: var(--bg);
 }
@@ -474,7 +478,9 @@ h2 {
   margin-left: 5px;
   border: 1px solid var(--muted);
   border-radius: 50%;
-  font: italic 600 9.5px/1 Georgia, serif;
+  font:
+    italic 600 9.5px/1 Georgia,
+    serif;
   color: var(--muted);
   cursor: help;
   vertical-align: -2px;
@@ -500,7 +506,11 @@ h2 {
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgb(0 0 0 / 0.4);
-  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font:
+    13px/1.4 system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   color: var(--text);
   text-align: left;
 }
