@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/github/license/reinhard-z/vision-jev)](LICENSE)
 [![Mentioned in Awesome Jev](https://awesome.re/mentioned-badge.svg)](https://github.com/yibie/awesome-jev)
 
+Listed in [awesome-jev](https://github.com/yibie/awesome-jev) ![stars](https://img.shields.io/github/stars/yibie/awesome-jev?style=flat-square&label=%E2%98%85) and [awesome-typesafe-jev](https://github.com/AbdelStark/awesome-typesafe-jev) ![stars](https://img.shields.io/github/stars/AbdelStark/awesome-typesafe-jev?style=flat-square&label=%E2%98%85)
+
 **Can Jev drive a car?** An experiment with [Jev](https://developers.cloudflare.com/ai/models/typesafe/jev/), a fast classification model from TypeSafe, to see what it can do when decisions have to happen in real time.
 
 I built a browser game where it drives a car. You drag images of pedestrians, obstacles or traffic signs onto the road. A vision model in your browser writes a short caption for each image, and Jev uses that caption and the object's location to decide whether to stop, slow down or keep going.
